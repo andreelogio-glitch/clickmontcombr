@@ -30,6 +30,7 @@ const statusLabels: Record<string, string> = {
   aceito: "Aceito",
   pago: "Pago",
   desmontagem_confirmada: "Desmontagem OK",
+  aguardando_liberacao: "Aguardando liberação",
   concluido: "Concluído",
 };
 
@@ -39,6 +40,7 @@ const statusColors: Record<string, string> = {
   aceito: "bg-accent text-accent-foreground",
   pago: "bg-success text-success-foreground",
   desmontagem_confirmada: "bg-accent text-accent-foreground",
+  aguardando_liberacao: "bg-primary/80 text-primary-foreground",
   concluido: "bg-muted text-muted-foreground",
 };
 

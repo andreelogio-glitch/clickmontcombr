@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,7 @@ const statusLabels: Record<string, string> = {
   aceito: "Aguardando pagamento",
   pago: "Pago ✓",
   desmontagem_confirmada: "Desmontagem confirmada",
+  aguardando_liberacao: "Aguardando liberação",
   concluido: "Concluído",
 };
 
@@ -46,12 +47,14 @@ const statusColors: Record<string, string> = {
   aceito: "bg-primary text-primary-foreground",
   pago: "bg-success text-success-foreground",
   desmontagem_confirmada: "bg-accent text-accent-foreground",
+  aguardando_liberacao: "bg-primary/80 text-primary-foreground",
   concluido: "bg-secondary text-secondary-foreground",
 };
 
 const ClienteHome = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [bids, setBids] = useState<Record<string, Bid[]>>({});
   const [loading, setLoading] = useState(true);
@@ -59,6 +62,20 @@ const ClienteHome = () => {
   const [helpSubject, setHelpSubject] = useState("");
   const [helpDescription, setHelpDescription] = useState("");
   const [helpSubmitting, setHelpSubmitting] = useState(false);
+
+  // Handle Mercado Pago return
+  useEffect(() => {
+    const paymentStatus = searchParams.get("payment");
+    const orderId = searchParams.get("order");
+    if (paymentStatus === "success" && orderId && user) {
+      markAsPaid(orderId);
+      // Clean URL params
+      setSearchParams({});
+    } else if (paymentStatus === "failure") {
+      toast.error("Pagamento não concluído. Tente novamente.");
+      setSearchParams({});
+    }
+  }, [searchParams, user]);
 
   useEffect(() => {
     if (user) fetchData();
@@ -113,8 +130,7 @@ const ClienteHome = () => {
       });
       if (error) throw error;
       if (data?.checkout_url) {
-        window.open(data.checkout_url, "_blank");
-        markAsPaid(orderId);
+        window.location.href = data.checkout_url;
       } else {
         toast.error("Erro ao gerar link de pagamento");
       }
@@ -137,6 +153,7 @@ const ClienteHome = () => {
     const montadorAmount = calcMontadorReceives(acceptedBid.amount);
     const first40 = calcDesmontagemFirst(montadorAmount);
 
+    // Update order status
     await supabase.from("orders").update({ status: "desmontagem_confirmada" }).eq("id", orderId);
 
     // Create wallet transaction with auditoria status
@@ -149,7 +166,7 @@ const ClienteHome = () => {
       description: `Desmontagem 40% - Pedido confirmado pelo cliente`,
     });
 
-    toast.success("Desmontagem confirmada! Pagamento enviado para auditoria.");
+    toast.success("Obrigado! O pagamento de 40% foi enviado para análise da plataforma e será liberado ao montador em breve.");
     fetchData();
   };
 
@@ -164,8 +181,10 @@ const ClienteHome = () => {
     const releaseAmount = isDesmontagem ? calcDesmontagemSecond(montadorAmount) : montadorAmount;
     const label = isDesmontagem ? "Montagem 60%" : "Serviço completo";
 
-    await supabase.from("orders").update({ status: "concluido" }).eq("id", orderId);
+    // Set order to aguardando_liberacao
+    await supabase.from("orders").update({ status: "aguardando_liberacao" }).eq("id", orderId);
 
+    // Create wallet transaction with auditoria status
     await supabase.from("wallet_transactions").insert({
       montador_id: acceptedBid.montador_id,
       order_id: orderId,
@@ -175,7 +194,7 @@ const ClienteHome = () => {
       description: `${label} - Pedido confirmado pelo cliente`,
     });
 
-    toast.success("Serviço concluído! Pagamento enviado para auditoria.");
+    toast.success("Obrigado! O pagamento foi enviado para análise da plataforma e será liberado ao montador em breve.");
     fetchData();
   };
 
@@ -294,12 +313,13 @@ const ClienteHome = () => {
                   )}
 
                   {order.status === "aceito" && acceptedBid && (
-                    <div className="border-t border-border pt-3">
-                      <p className="text-sm mb-2">
-                        Total a pagar: <strong className="text-primary">R$ {calcClientTotal(acceptedBid.amount).toFixed(2)}</strong>
+                    <div className="border-t border-border pt-3 space-y-3">
+                      <p className="text-sm">
+                        Total a pagar: <strong className="text-primary text-lg">R$ {calcClientTotal(acceptedBid.amount).toFixed(2)}</strong>
                       </p>
+                      <p className="text-xs text-muted-foreground">Aceita PIX, Cartão de Crédito/Débito e Boleto via Mercado Pago</p>
                       <Button className="w-full bg-[hsl(200,80%,50%)] hover:bg-[hsl(200,80%,40%)] text-primary-foreground" onClick={() => handlePayment(order.id)}>
-                        <ExternalLink className="h-4 w-4 mr-2" /> Pagar com Mercado Pago
+                        <ExternalLink className="h-4 w-4 mr-2" /> Pagar Montagem
                       </Button>
                     </div>
                   )}
@@ -328,8 +348,21 @@ const ClienteHome = () => {
                     </div>
                   )}
 
+                  {/* Aguardando liberação */}
+                  {order.status === "aguardando_liberacao" && (
+                    <div className="border-t border-border pt-3">
+                      <div className="rounded-lg bg-primary/10 border border-primary/20 p-3 flex items-start gap-2">
+                        <span className="text-lg">⏳</span>
+                        <div>
+                          <p className="text-sm font-medium">Serviço confirmado por você!</p>
+                          <p className="text-xs text-muted-foreground">O pagamento está em análise pela plataforma e será liberado ao montador em breve.</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex gap-2 flex-wrap">
-                    {["com_lance", "aceito", "pago", "desmontagem_confirmada", "concluido"].includes(order.status) && (
+                    {["com_lance", "aceito", "pago", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(order.status) && (
                       <Button variant="outline" size="sm" onClick={() => navigate(`/chat/${order.id}`)}>
                         <MessageSquare className="h-4 w-4 mr-1" /> Abrir Chat
                       </Button>
