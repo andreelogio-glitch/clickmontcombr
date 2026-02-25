@@ -7,56 +7,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Shield, Package, AlertTriangle, Eye, DollarSign, CheckCircle, XCircle, Landmark, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Order {
-  id: string;
-  title: string;
-  furniture_type: string;
-  status: string;
-  service_type: string;
-  created_at: string;
-  client_id: string;
-  address: string;
-  photo_url: string | null;
+  id: string; title: string; furniture_type: string; status: string;
+  service_type: string; created_at: string; client_id: string;
+  address: string; photo_url: string | null;
 }
-
 interface Ticket {
-  id: string;
-  order_id: string;
-  opened_by: string;
-  subject: string;
-  description: string;
-  status: string;
-  created_at: string;
+  id: string; order_id: string; opened_by: string; subject: string;
+  description: string; status: string; created_at: string;
 }
-
 interface Profile {
-  user_id: string;
-  full_name: string;
-  role: string;
-  phone: string | null;
-  pix_key: string | null;
+  user_id: string; full_name: string; role: string;
+  phone: string | null; pix_key: string | null;
 }
-
 interface WalletTx {
-  id: string;
-  montador_id: string;
-  order_id: string | null;
-  type: string;
-  description: string;
-  amount: number;
-  status: string;
-  created_at: string;
-}
-
-interface Bid {
-  id: string;
-  order_id: string;
-  montador_id: string;
-  amount: number;
-  accepted: boolean | null;
+  id: string; montador_id: string; order_id: string | null;
+  type: string; description: string; amount: number;
+  status: string; created_at: string;
 }
 
 const orderStatusLabels: Record<string, string> = {
@@ -79,40 +50,42 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [bids, setBids] = useState<Bid[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [walletTxs, setWalletTxs] = useState<WalletTx[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
+
+  // Confirmation modal state
+  const [confirmAction, setConfirmAction] = useState<{
+    type: "authorize" | "block" | "withdraw";
+    tx: WalletTx;
+    montadorName: string;
+  } | null>(null);
 
   useEffect(() => {
     if (isAdmin) fetchAll();
   }, [isAdmin]);
 
   const fetchAll = async () => {
-    const [ordersRes, ticketsRes, walletRes, bidsRes] = await Promise.all([
+    const [ordersRes, ticketsRes, walletRes] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("support_tickets").select("*").order("created_at", { ascending: false }),
       supabase.from("wallet_transactions").select("*").order("created_at", { ascending: false }),
-      supabase.from("bids").select("*").eq("accepted", true),
     ]);
 
     const allOrders = (ordersRes.data || []) as Order[];
     const allTickets = (ticketsRes.data || []) as Ticket[];
     const allWallet = (walletRes.data || []) as WalletTx[];
-    const allBids = (bidsRes.data || []) as Bid[];
 
     setOrders(allOrders);
     setTickets(allTickets);
     setWalletTxs(allWallet);
-    setBids(allBids);
 
     const userIds = [
       ...new Set([
         ...allOrders.map((o) => o.client_id),
         ...allTickets.map((t) => t.opened_by),
         ...allWallet.map((w) => w.montador_id),
-        ...allBids.map((b) => b.montador_id),
       ]),
     ];
     if (userIds.length > 0) {
@@ -127,51 +100,16 @@ const AdminDashboard = () => {
     setLoading(false);
   };
 
-  // Parse amount from ticket description like "Valor a liberar: R$ 123.45"
-  const parseAmountFromDescription = (desc: string): number => {
-    const match = desc.match(/Valor a liberar: R\$ ([\d.,]+)/);
-    if (match) return parseFloat(match[1].replace(",", "."));
-    return 0;
-  };
-
-  // Parse montador_id from description
-  const parseMontadorFromDescription = (desc: string): string | null => {
-    const match = desc.match(/montador ([a-f0-9-]{36})/);
-    return match ? match[1] : null;
-  };
-
-  const handleAuthorizePayment = async (ticket: Ticket) => {
-    setProcessing(ticket.id);
+  const executeAuthorize = async (tx: WalletTx) => {
+    setProcessing(tx.id);
     try {
-      const amount = parseAmountFromDescription(ticket.description);
-      let montadorId = parseMontadorFromDescription(ticket.description);
-
-      // Fallback: find montador from accepted bid on the order
-      if (!montadorId) {
-        const bid = bids.find((b) => b.order_id === ticket.order_id && b.accepted);
-        montadorId = bid?.montador_id || null;
-      }
-
-      if (!montadorId || amount <= 0) {
-        toast.error("Não foi possível extrair os dados do pagamento.");
-        return;
-      }
-
-      // Create wallet transaction as disponivel
-      const { error: walletErr } = await supabase.from("wallet_transactions").insert({
-        montador_id: montadorId,
-        order_id: ticket.order_id,
-        type: "credit",
-        status: "disponivel",
-        amount,
-        description: ticket.subject,
-      });
-      if (walletErr) throw walletErr;
-
-      // Close the ticket
-      await supabase.from("support_tickets").update({ status: "resolvido" }).eq("id", ticket.id);
-
+      const { error } = await supabase
+        .from("wallet_transactions")
+        .update({ status: "disponivel" })
+        .eq("id", tx.id);
+      if (error) throw error;
       toast.success("Pagamento autorizado! Saldo liberado para o montador.");
+      setConfirmAction(null);
       fetchAll();
     } catch (err: any) {
       toast.error(err.message);
@@ -180,11 +118,16 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleBlockPayment = async (ticket: Ticket) => {
-    setProcessing(ticket.id);
+  const executeBlock = async (tx: WalletTx) => {
+    setProcessing(tx.id);
     try {
-      await supabase.from("support_tickets").update({ status: "em_analise" }).eq("id", ticket.id);
+      const { error } = await supabase
+        .from("wallet_transactions")
+        .update({ status: "bloqueado" })
+        .eq("id", tx.id);
+      if (error) throw error;
       toast.success("Pagamento bloqueado para análise.");
+      setConfirmAction(null);
       fetchAll();
     } catch (err: any) {
       toast.error(err.message);
@@ -193,7 +136,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleConfirmWithdraw = async (tx: WalletTx) => {
+  const executeWithdraw = async (tx: WalletTx) => {
     setProcessing(tx.id);
     try {
       const { error } = await supabase
@@ -202,6 +145,7 @@ const AdminDashboard = () => {
         .eq("id", tx.id);
       if (error) throw error;
       toast.success("Saque confirmado como pago!");
+      setConfirmAction(null);
       fetchAll();
     } catch (err: any) {
       toast.error(err.message);
@@ -232,13 +176,7 @@ const AdminDashboard = () => {
   }
 
   const openTickets = tickets.filter((t) => t.status === "aberto" || t.status === "em_analise");
-  // Payment audit tickets - those with "Liberação de pagamento" in subject and still open
-  const paymentTickets = tickets.filter(
-    (t) => t.subject.startsWith("Liberação de pagamento") && (t.status === "aberto" || t.status === "em_analise")
-  );
-  const generalTickets = tickets.filter(
-    (t) => !t.subject.startsWith("Liberação de pagamento")
-  );
+  const auditTxs = walletTxs.filter((t) => t.type === "credit" && t.status === "auditoria");
   const pendingWithdrawals = walletTxs.filter((t) => t.type === "debit" && t.status === "pendente");
 
   return (
@@ -247,166 +185,122 @@ const AdminDashboard = () => {
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <Shield className="h-6 w-6 text-primary" /> Painel Administrativo
         </h1>
-        <p className="text-muted-foreground">Visão completa de pedidos, tickets e pagamentos</p>
+        <p className="text-muted-foreground">Centro de comando de pagamentos e gestão</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <Card>
-          <CardContent className="py-4 text-center">
-            <p className="text-2xl font-bold">{orders.length}</p>
-            <p className="text-xs text-muted-foreground">Pedidos totais</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="py-4 text-center">
-            <p className="text-2xl font-bold">{orders.filter((o) => o.status === "pendente").length}</p>
-            <p className="text-xs text-muted-foreground">Pendentes</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="py-4 text-center">
-            <p className="text-2xl font-bold text-warning">{openTickets.length}</p>
-            <p className="text-xs text-muted-foreground">Tickets abertos</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="py-4 text-center">
-            <p className="text-2xl font-bold text-primary">{paymentTickets.length}</p>
-            <p className="text-xs text-muted-foreground">Pgtos p/ auditar</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="py-4 text-center">
-            <p className="text-2xl font-bold text-gold">{pendingWithdrawals.length}</p>
-            <p className="text-xs text-muted-foreground">Saques pendentes</p>
-          </CardContent>
-        </Card>
+        <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold">{orders.length}</p><p className="text-xs text-muted-foreground">Pedidos</p></CardContent></Card>
+        <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold">{orders.filter((o) => o.status === "pendente").length}</p><p className="text-xs text-muted-foreground">Pendentes</p></CardContent></Card>
+        <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold text-warning">{openTickets.length}</p><p className="text-xs text-muted-foreground">Tickets</p></CardContent></Card>
+        <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold text-primary">{auditTxs.length}</p><p className="text-xs text-muted-foreground">Em Auditoria</p></CardContent></Card>
+        <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold text-gold">{pendingWithdrawals.length}</p><p className="text-xs text-muted-foreground">Saques</p></CardContent></Card>
       </div>
 
-      <Tabs defaultValue="audit">
+      <Tabs defaultValue="financeiro">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="audit" className="gap-1">
-            <DollarSign className="h-4 w-4" /> Auditoria ({paymentTickets.length})
-          </TabsTrigger>
-          <TabsTrigger value="withdrawals" className="gap-1">
-            <Landmark className="h-4 w-4" /> Saques ({pendingWithdrawals.length})
-          </TabsTrigger>
-          <TabsTrigger value="orders" className="gap-1">
-            <Package className="h-4 w-4" /> Pedidos ({orders.length})
-          </TabsTrigger>
-          <TabsTrigger value="tickets" className="gap-1">
-            <AlertTriangle className="h-4 w-4" /> Tickets ({generalTickets.length})
-          </TabsTrigger>
+          <TabsTrigger value="financeiro" className="gap-1"><DollarSign className="h-4 w-4" /> Financeiro ({auditTxs.length + pendingWithdrawals.length})</TabsTrigger>
+          <TabsTrigger value="orders" className="gap-1"><Package className="h-4 w-4" /> Pedidos ({orders.length})</TabsTrigger>
+          <TabsTrigger value="tickets" className="gap-1"><AlertTriangle className="h-4 w-4" /> Tickets ({tickets.length})</TabsTrigger>
         </TabsList>
 
-        {/* Audit Tab */}
-        <TabsContent value="audit" className="mt-4 space-y-3">
-          <h2 className="text-lg font-semibold">Pagamentos Pendentes de Auditoria</h2>
-          {paymentTickets.length === 0 ? (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhum pagamento pendente de auditoria.</CardContent></Card>
-          ) : (
-            paymentTickets.map((ticket) => {
-              const order = orders.find((o) => o.id === ticket.order_id);
-              const client = profiles[ticket.opened_by];
-              const amount = parseAmountFromDescription(ticket.description);
-              let montadorId = parseMontadorFromDescription(ticket.description);
-              if (!montadorId) {
-                const bid = bids.find((b) => b.order_id === ticket.order_id && b.accepted);
-                montadorId = bid?.montador_id || null;
-              }
-              const montador = montadorId ? profiles[montadorId] : null;
+        {/* Financeiro Tab - Two columns */}
+        <TabsContent value="financeiro" className="mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Column A: Liberação de Serviços */}
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-primary" /> Liberação de Serviços
+              </h2>
+              {auditTxs.length === 0 ? (
+                <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhum pagamento em auditoria.</CardContent></Card>
+              ) : (
+                auditTxs.map((tx) => {
+                  const montador = profiles[tx.montador_id];
+                  const order = orders.find((o) => o.id === tx.order_id);
+                  return (
+                    <Card key={tx.id} className="border-primary/30">
+                      <CardContent className="py-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <p className="font-medium">{tx.description}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Montador: <strong>{montador?.full_name || "?"}</strong>
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              PIX: <strong>{montador?.pix_key || "N/A"}</strong>
+                            </p>
+                            {order && (
+                              <p className="text-xs text-muted-foreground">
+                                Pedido: {order.title} · {order.service_type === "desmontagem" ? "📦" : "🔧"} {order.service_type}
+                              </p>
+                            )}
+                            {order?.photo_url && (
+                              <img src={order.photo_url} alt="Foto" className="h-16 w-16 rounded-md object-cover mt-1" />
+                            )}
+                            <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleString("pt-BR")}</p>
+                          </div>
+                          <p className="text-xl font-bold text-primary">R$ {tx.amount.toFixed(2)}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            className="bg-success hover:bg-success/80 text-success-foreground"
+                            onClick={() => setConfirmAction({ type: "authorize", tx, montadorName: montador?.full_name || "Montador" })}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" /> Autorizar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => setConfirmAction({ type: "block", tx, montadorName: montador?.full_name || "Montador" })}
+                          >
+                            <XCircle className="h-4 w-4 mr-1" /> Bloquear
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </div>
 
-              return (
-                <Card key={ticket.id} className="border-primary/30">
-                  <CardContent className="py-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <p className="font-medium">{ticket.subject}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Montador: <strong>{montador?.full_name || "?"}</strong> · PIX: <strong>{montador?.pix_key || "N/A"}</strong>
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Cliente: <strong>{client?.full_name || "?"}</strong>
-                        </p>
-                        {order && (
-                          <p className="text-xs text-muted-foreground">
-                            Pedido: {order.title} · {order.service_type === "desmontagem" ? "📦 Desmontagem" : "🔧 Montagem"}
-                          </p>
-                        )}
-                        {order?.photo_url && (
-                          <img src={order.photo_url} alt="Foto do serviço" className="h-20 w-20 rounded-md object-cover mt-1" />
-                        )}
-                        <p className="text-xs text-muted-foreground mt-1">{ticket.description}</p>
-                        <p className="text-xs text-muted-foreground">{new Date(ticket.created_at).toLocaleString("pt-BR")}</p>
-                        <Badge className={ticket.status === "em_analise" ? "bg-destructive text-destructive-foreground" : "bg-warning text-warning-foreground"}>
-                          {ticket.status === "em_analise" ? "🔒 Em análise" : "⏳ Aguardando"}
-                        </Badge>
-                      </div>
-                      <p className="text-xl font-bold text-primary">R$ {amount.toFixed(2)}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        className="bg-success hover:bg-success/80 text-success-foreground"
-                        disabled={processing === ticket.id}
-                        onClick={() => handleAuthorizePayment(ticket)}
-                      >
-                        {processing === ticket.id ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CheckCircle className="h-4 w-4 mr-1" />}
-                        Autorizar Pagamento
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        disabled={processing === ticket.id}
-                        onClick={() => handleBlockPayment(ticket)}
-                      >
-                        <XCircle className="h-4 w-4 mr-1" /> Bloquear/Analisar
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
-        </TabsContent>
-
-        {/* Withdrawals Tab */}
-        <TabsContent value="withdrawals" className="mt-4 space-y-3">
-          <h2 className="text-lg font-semibold">Solicitações de Saque</h2>
-          {pendingWithdrawals.length === 0 ? (
-            <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhum saque pendente.</CardContent></Card>
-          ) : (
-            pendingWithdrawals.map((tx) => {
-              const montador = profiles[tx.montador_id];
-              return (
-                <Card key={tx.id} className="border-gold/30">
-                  <CardContent className="flex items-center justify-between py-4">
-                    <div className="space-y-1">
-                      <p className="font-medium">{montador?.full_name || "Montador"}</p>
-                      <p className="text-sm text-muted-foreground">
-                        PIX: <strong>{montador?.pix_key || "N/A"}</strong>
-                      </p>
-                      <p className="text-xs text-muted-foreground">{tx.description}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleString("pt-BR")}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <p className="text-lg font-bold text-destructive">R$ {Math.abs(tx.amount).toFixed(2)}</p>
-                      <Button
-                        size="sm"
-                        className="bg-success hover:bg-success/80 text-success-foreground"
-                        disabled={processing === tx.id}
-                        onClick={() => handleConfirmWithdraw(tx)}
-                      >
-                        {processing === tx.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-1" />}
-                        Confirmar Pagamento
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
+            {/* Column B: Pedidos de Saque */}
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Landmark className="h-5 w-5 text-gold" /> Pedidos de Saque
+              </h2>
+              {pendingWithdrawals.length === 0 ? (
+                <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhum saque pendente.</CardContent></Card>
+              ) : (
+                pendingWithdrawals.map((tx) => {
+                  const montador = profiles[tx.montador_id];
+                  return (
+                    <Card key={tx.id} className="border-gold/30">
+                      <CardContent className="py-4 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <p className="font-medium">{montador?.full_name || "Montador"}</p>
+                            <p className="text-sm text-muted-foreground">PIX: <strong>{montador?.pix_key || "N/A"}</strong></p>
+                            <p className="text-xs text-muted-foreground">{tx.description}</p>
+                            <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleString("pt-BR")}</p>
+                          </div>
+                          <p className="text-lg font-bold text-destructive">R$ {Math.abs(tx.amount).toFixed(2)}</p>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="bg-success hover:bg-success/80 text-success-foreground"
+                          onClick={() => setConfirmAction({ type: "withdraw", tx, montadorName: montador?.full_name || "Montador" })}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" /> Confirmar Transferência
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </div>
+          </div>
         </TabsContent>
 
         {/* Orders Tab */}
@@ -419,7 +313,7 @@ const AdminDashboard = () => {
                   <div className="space-y-1">
                     <p className="font-medium">{order.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      Cliente: {client?.full_name || "?"} • {order.furniture_type} • {order.service_type === "desmontagem" ? "📦 Desmontagem" : "🔧 Montagem"}
+                      Cliente: {client?.full_name || "?"} • {order.furniture_type} • {order.service_type === "desmontagem" ? "📦" : "🔧"} {order.service_type}
                     </p>
                     <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString("pt-BR")}</p>
                   </div>
@@ -435,7 +329,7 @@ const AdminDashboard = () => {
 
         {/* Tickets Tab */}
         <TabsContent value="tickets" className="mt-4 space-y-3">
-          {generalTickets.map((ticket) => {
+          {tickets.map((ticket) => {
             const opener = profiles[ticket.opened_by];
             return (
               <Card key={ticket.id} className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => navigate("/admin/assistencia")}>
@@ -453,6 +347,50 @@ const AdminDashboard = () => {
           })}
         </TabsContent>
       </Tabs>
+
+      {/* Confirmation Modal */}
+      <Dialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {confirmAction?.type === "authorize" && "Confirmar Autorização de Pagamento"}
+              {confirmAction?.type === "block" && "Confirmar Bloqueio de Pagamento"}
+              {confirmAction?.type === "withdraw" && "Confirmar Transferência PIX"}
+            </DialogTitle>
+            <DialogDescription>
+              {confirmAction?.type === "authorize" && (
+                <>Deseja realmente autorizar o pagamento de <strong className="text-success">R$ {confirmAction.tx.amount.toFixed(2)}</strong> para o montador <strong>{confirmAction.montadorName}</strong>? O valor será creditado no saldo disponível.</>
+              )}
+              {confirmAction?.type === "block" && (
+                <>Deseja bloquear o pagamento de <strong className="text-destructive">R$ {confirmAction.tx.amount.toFixed(2)}</strong> para <strong>{confirmAction.montadorName}</strong>? O valor ficará retido para análise.</>
+              )}
+              {confirmAction?.type === "withdraw" && (
+                <>Confirma que a transferência PIX de <strong className="text-destructive">R$ {Math.abs(confirmAction.tx.amount).toFixed(2)}</strong> para <strong>{confirmAction.montadorName}</strong> foi realizada?</>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setConfirmAction(null)} disabled={!!processing}>
+              Cancelar
+            </Button>
+            <Button
+              className={confirmAction?.type === "block" ? "bg-destructive hover:bg-destructive/80 text-destructive-foreground" : "bg-success hover:bg-success/80 text-success-foreground"}
+              disabled={!!processing}
+              onClick={() => {
+                if (!confirmAction) return;
+                if (confirmAction.type === "authorize") executeAuthorize(confirmAction.tx);
+                else if (confirmAction.type === "block") executeBlock(confirmAction.tx);
+                else if (confirmAction.type === "withdraw") executeWithdraw(confirmAction.tx);
+              }}
+            >
+              {processing ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              {confirmAction?.type === "authorize" && "Sim, Autorizar"}
+              {confirmAction?.type === "block" && "Sim, Bloquear"}
+              {confirmAction?.type === "withdraw" && "Sim, Confirmar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
