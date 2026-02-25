@@ -32,12 +32,15 @@ interface WalletTx {
 
 const orderStatusLabels: Record<string, string> = {
   pendente: "Pendente", com_lance: "Com lance", aceito: "Aceito",
-  pago: "Pago", desmontagem_confirmada: "Desmontagem OK", concluido: "Concluído",
+  pago: "Pago", desmontagem_confirmada: "Desmontagem OK",
+  aguardando_liberacao: "Aguardando liberação", concluido: "Concluído",
 };
 const orderStatusColors: Record<string, string> = {
   pendente: "bg-muted text-muted-foreground", com_lance: "bg-warning text-warning-foreground",
   aceito: "bg-primary text-primary-foreground", pago: "bg-success text-success-foreground",
-  desmontagem_confirmada: "bg-accent text-accent-foreground", concluido: "bg-secondary text-secondary-foreground",
+  desmontagem_confirmada: "bg-accent text-accent-foreground",
+  aguardando_liberacao: "bg-primary/80 text-primary-foreground",
+  concluido: "bg-secondary text-secondary-foreground",
 };
 const ticketStatusColors: Record<string, string> = {
   aberto: "bg-warning text-warning-foreground", em_analise: "bg-primary text-primary-foreground",
@@ -108,6 +111,16 @@ const AdminDashboard = () => {
         .update({ status: "disponivel" })
         .eq("id", tx.id);
       if (error) throw error;
+
+      // Also update the order to concluido if it's aguardando_liberacao
+      if (tx.order_id) {
+        await supabase
+          .from("orders")
+          .update({ status: "concluido" })
+          .eq("id", tx.order_id)
+          .eq("status", "aguardando_liberacao");
+      }
+
       toast.success("Pagamento autorizado! Saldo liberado para o montador.");
       setConfirmAction(null);
       fetchAll();
