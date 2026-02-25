@@ -109,18 +109,11 @@ const ClienteHome = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: {
-          order_id: orderId,
-          title: order.title,
-          amount: totalAmount,
-        },
+        body: { order_id: orderId, title: order.title, amount: totalAmount },
       });
-
       if (error) throw error;
-
       if (data?.checkout_url) {
         window.open(data.checkout_url, "_blank");
-        // Mark as paid optimistically (in production, use webhook)
         markAsPaid(orderId);
       } else {
         toast.error("Erro ao gerar link de pagamento");
@@ -146,15 +139,17 @@ const ClienteHome = () => {
 
     await supabase.from("orders").update({ status: "desmontagem_confirmada" }).eq("id", orderId);
 
-    // Create wallet transaction with aguardando_admin status
-    await supabase.from("support_tickets").insert({
-      opened_by: user!.id,
+    // Create wallet transaction with auditoria status
+    await supabase.from("wallet_transactions").insert({
+      montador_id: acceptedBid.montador_id,
       order_id: orderId,
-      subject: "Liberação de pagamento - Desmontagem 40%",
-      description: `Cliente confirmou desmontagem. Valor a liberar: R$ ${first40.toFixed(2)} (40% de R$ ${montadorAmount.toFixed(2)}) para montador ${acceptedBid.montador_id}.`,
+      type: "credit",
+      status: "auditoria",
+      amount: first40,
+      description: `Desmontagem 40% - Pedido confirmado pelo cliente`,
     });
 
-    toast.success("Desmontagem confirmada! Pagamento enviado para auditoria da plataforma.");
+    toast.success("Desmontagem confirmada! Pagamento enviado para auditoria.");
     fetchData();
   };
 
@@ -166,20 +161,21 @@ const ClienteHome = () => {
     const order = orders.find((o) => o.id === orderId);
     const isDesmontagem = order?.service_type === "desmontagem";
     const montadorAmount = calcMontadorReceives(acceptedBid.amount);
-
-    await supabase.from("orders").update({ status: "concluido" }).eq("id", orderId);
-
     const releaseAmount = isDesmontagem ? calcDesmontagemSecond(montadorAmount) : montadorAmount;
     const label = isDesmontagem ? "Montagem 60%" : "Serviço completo";
 
-    await supabase.from("support_tickets").insert({
-      opened_by: user!.id,
+    await supabase.from("orders").update({ status: "concluido" }).eq("id", orderId);
+
+    await supabase.from("wallet_transactions").insert({
+      montador_id: acceptedBid.montador_id,
       order_id: orderId,
-      subject: `Liberação de pagamento - ${label}`,
-      description: `Cliente confirmou conclusão. Valor a liberar: R$ ${releaseAmount.toFixed(2)} para montador ${acceptedBid.montador_id}.`,
+      type: "credit",
+      status: "auditoria",
+      amount: releaseAmount,
+      description: `${label} - Pedido confirmado pelo cliente`,
     });
 
-    toast.success("Serviço concluído! Pagamento enviado para auditoria da plataforma.");
+    toast.success("Serviço concluído! Pagamento enviado para auditoria.");
     fetchData();
   };
 
@@ -274,7 +270,6 @@ const ClienteHome = () => {
                   <p className="text-sm text-muted-foreground">{order.furniture_type}</p>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {/* Show bids with fee breakdown */}
                   {orderBids.length > 0 && order.status === "com_lance" && (
                     <div className="space-y-2">
                       <p className="text-sm font-medium">Lances recebidos:</p>
@@ -284,12 +279,9 @@ const ClienteHome = () => {
                           <div key={bid.id} className="flex items-center justify-between rounded-lg border border-border p-3">
                             <div>
                               <p className="font-semibold text-primary flex items-center gap-1">
-                                <DollarSign className="h-4 w-4" />
-                                R$ {clientTotal.toFixed(2)}
+                                <DollarSign className="h-4 w-4" /> R$ {clientTotal.toFixed(2)}
                               </p>
-                              <p className="text-xs text-muted-foreground">
-                                (Lance: R$ {bid.amount.toFixed(2)} + taxa plataforma 20%)
-                              </p>
+                              <p className="text-xs text-muted-foreground">(Lance: R$ {bid.amount.toFixed(2)} + taxa 20%)</p>
                               {bid.message && <p className="text-sm text-muted-foreground mt-1">{bid.message}</p>}
                             </div>
                             <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => acceptBid(bid)}>
@@ -301,7 +293,6 @@ const ClienteHome = () => {
                     </div>
                   )}
 
-                  {/* Payment button */}
                   {order.status === "aceito" && acceptedBid && (
                     <div className="border-t border-border pt-3">
                       <p className="text-sm mb-2">
@@ -313,15 +304,12 @@ const ClienteHome = () => {
                     </div>
                   )}
 
-                  {/* Desmontagem split confirmation buttons */}
                   {isDesmontagem && order.status === "pago" && (
                     <div className="border-t border-border pt-3 space-y-2">
                       <p className="text-xs text-muted-foreground">
-                        Ao confirmar a desmontagem, o pagamento de 40% será enviado para auditoria da plataforma antes de ser liberado ao montador.
+                        Ao confirmar a desmontagem, o pagamento de 40% será enviado para auditoria da plataforma.
                       </p>
-                      <Button size="sm" onClick={() => confirmDesmontagem(order.id)}>
-                        ✅ Confirmar Desmontagem Concluída
-                      </Button>
+                      <Button size="sm" onClick={() => confirmDesmontagem(order.id)}>✅ Confirmar Desmontagem Concluída</Button>
                     </div>
                   )}
 
@@ -330,21 +318,16 @@ const ClienteHome = () => {
                       <p className="text-xs text-muted-foreground">
                         Desmontagem confirmada! Confirme a montagem para liberar os 60% restantes (sujeito à auditoria).
                       </p>
-                      <Button size="sm" onClick={() => confirmConcluido(order.id)}>
-                        ✅ Confirmar Montagem Concluída
-                      </Button>
+                      <Button size="sm" onClick={() => confirmConcluido(order.id)}>✅ Confirmar Montagem Concluída</Button>
                     </div>
                   )}
 
                   {!isDesmontagem && order.status === "pago" && (
                     <div className="border-t border-border pt-3">
-                      <Button size="sm" onClick={() => confirmConcluido(order.id)}>
-                        ✅ Confirmar Serviço Concluído
-                      </Button>
+                      <Button size="sm" onClick={() => confirmConcluido(order.id)}>✅ Confirmar Serviço Concluído</Button>
                     </div>
                   )}
 
-                  {/* Chat + Help buttons */}
                   <div className="flex gap-2 flex-wrap">
                     {["com_lance", "aceito", "pago", "desmontagem_confirmada", "concluido"].includes(order.status) && (
                       <Button variant="outline" size="sm" onClick={() => navigate(`/chat/${order.id}`)}>
@@ -361,37 +344,23 @@ const ClienteHome = () => {
           })}
         </div>
       )}
-      {/* Help Dialog */}
+
       <Dialog open={!!helpOrderId} onOpenChange={(open) => !open && setHelpOrderId(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Preciso de Ajuda</DialogTitle>
-            <DialogDescription>Descreva o problema. Nossa equipe mediará o caso de forma imparcial.</DialogDescription>
+            <DialogDescription>Descreva o problema. Nossa equipe mediará o caso.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label>Assunto</Label>
-              <input
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={helpSubject}
-                onChange={(e) => setHelpSubject(e.target.value)}
-                placeholder="Ex: Peça danificada"
-              />
+              <input className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={helpSubject} onChange={(e) => setHelpSubject(e.target.value)} placeholder="Ex: Peça danificada" />
             </div>
             <div>
               <Label>Descrição</Label>
-              <Textarea
-                value={helpDescription}
-                onChange={(e) => setHelpDescription(e.target.value)}
-                placeholder="Descreva o que aconteceu..."
-                rows={4}
-              />
+              <Textarea value={helpDescription} onChange={(e) => setHelpDescription(e.target.value)} placeholder="Descreva o que aconteceu..." rows={4} />
             </div>
-            <Button
-              className="w-full gradient-primary text-primary-foreground"
-              onClick={handleSubmitHelp}
-              disabled={helpSubmitting || !helpSubject || !helpDescription}
-            >
+            <Button className="w-full gradient-primary text-primary-foreground" onClick={handleSubmitHelp} disabled={helpSubmitting || !helpSubject || !helpDescription}>
               {helpSubmitting ? "Enviando..." : "Abrir Chamado"}
             </Button>
           </div>
