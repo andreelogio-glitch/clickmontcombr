@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { PlusCircle, Package, DollarSign, Check, MessageSquare, ExternalLink } from "lucide-react";
+import { PlusCircle, Package, DollarSign, Check, MessageSquare, ExternalLink, HelpCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { calcClientTotal, calcMontadorReceives, calcDesmontagemFirst, calcDesmontagemSecond } from "@/lib/fees";
 
 interface Order {
@@ -52,6 +55,10 @@ const ClienteHome = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [bids, setBids] = useState<Record<string, Bid[]>>({});
   const [loading, setLoading] = useState(true);
+  const [helpOrderId, setHelpOrderId] = useState<string | null>(null);
+  const [helpSubject, setHelpSubject] = useState("");
+  const [helpDescription, setHelpDescription] = useState("");
+  const [helpSubmitting, setHelpSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) fetchData();
@@ -139,6 +146,39 @@ const ClienteHome = () => {
     await supabase.from("orders").update({ status: "concluido" }).eq("id", orderId);
     toast.success("Serviço concluído! Restante liberado para o montador.");
     fetchData();
+  };
+
+  const handleOpenHelp = (orderId: string) => {
+    setHelpOrderId(orderId);
+    setHelpSubject("");
+    setHelpDescription("");
+  };
+
+  const handleSubmitHelp = async () => {
+    if (!helpOrderId || !helpSubject || !helpDescription || !user) return;
+    setHelpSubmitting(true);
+    try {
+      const { data, error } = await supabase.from("support_tickets").insert({
+        order_id: helpOrderId,
+        opened_by: user.id,
+        subject: helpSubject,
+        description: helpDescription,
+      }).select().single();
+      if (error) throw error;
+      if (data) {
+        await supabase.from("ticket_messages").insert({
+          ticket_id: data.id,
+          sender_id: user.id,
+          message: helpDescription,
+        });
+      }
+      toast.success("Chamado aberto! Nossa equipe analisará o caso.");
+      setHelpOrderId(null);
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setHelpSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -269,18 +309,59 @@ const ClienteHome = () => {
                     </div>
                   )}
 
-                  {/* Chat button */}
-                  {["com_lance", "aceito", "pago", "desmontagem_confirmada", "concluido"].includes(order.status) && (
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/chat/${order.id}`)}>
-                      <MessageSquare className="h-4 w-4 mr-1" /> Abrir Chat
+                  {/* Chat + Help buttons */}
+                  <div className="flex gap-2 flex-wrap">
+                    {["com_lance", "aceito", "pago", "desmontagem_confirmada", "concluido"].includes(order.status) && (
+                      <Button variant="outline" size="sm" onClick={() => navigate(`/chat/${order.id}`)}>
+                        <MessageSquare className="h-4 w-4 mr-1" /> Abrir Chat
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" className="text-warning" onClick={() => handleOpenHelp(order.id)}>
+                      <HelpCircle className="h-4 w-4 mr-1" /> Preciso de Ajuda
                     </Button>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
             );
           })}
         </div>
       )}
+      {/* Help Dialog */}
+      <Dialog open={!!helpOrderId} onOpenChange={(open) => !open && setHelpOrderId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Preciso de Ajuda</DialogTitle>
+            <DialogDescription>Descreva o problema. Nossa equipe mediará o caso de forma imparcial.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Assunto</Label>
+              <input
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={helpSubject}
+                onChange={(e) => setHelpSubject(e.target.value)}
+                placeholder="Ex: Peça danificada"
+              />
+            </div>
+            <div>
+              <Label>Descrição</Label>
+              <Textarea
+                value={helpDescription}
+                onChange={(e) => setHelpDescription(e.target.value)}
+                placeholder="Descreva o que aconteceu..."
+                rows={4}
+              />
+            </div>
+            <Button
+              className="w-full gradient-primary text-primary-foreground"
+              onClick={handleSubmitHelp}
+              disabled={helpSubmitting || !helpSubject || !helpDescription}
+            >
+              {helpSubmitting ? "Enviando..." : "Abrir Chamado"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

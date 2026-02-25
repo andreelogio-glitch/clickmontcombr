@@ -9,6 +9,7 @@ import PedirMontagemPage from "./pages/PedirMontagemPage";
 import ChatPage from "./pages/ChatPage";
 import AssistenciaPage from "./pages/AssistenciaPage";
 import AdminAssistenciaPage from "./pages/AdminAssistenciaPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/pedir-montagem" element={<PedirMontagemPage />} />
           <Route path="/chat/:orderId" element={<ChatPage />} />
           <Route path="/assistencia" element={<AssistenciaPage />} />
+          <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/assistencia" element={<AdminAssistenciaPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
