@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_training_data: {
+        Row: {
+          address_region: string | null
+          bid_amount: number | null
+          brand: string | null
+          created_at: string
+          final_amount: number | null
+          furniture_type: string | null
+          id: string
+          order_id: string | null
+          resolution_type: string | null
+          service_type: string | null
+        }
+        Insert: {
+          address_region?: string | null
+          bid_amount?: number | null
+          brand?: string | null
+          created_at?: string
+          final_amount?: number | null
+          furniture_type?: string | null
+          id?: string
+          order_id?: string | null
+          resolution_type?: string | null
+          service_type?: string | null
+        }
+        Update: {
+          address_region?: string | null
+          bid_amount?: number | null
+          brand?: string | null
+          created_at?: string
+          final_amount?: number | null
+          furniture_type?: string | null
+          id?: string
+          order_id?: string | null
+          resolution_type?: string | null
+          service_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_training_data_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bids: {
         Row: {
           accepted: boolean | null
@@ -171,15 +218,115 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          opened_by: string
+          order_id: string
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          opened_by: string
+          order_id: string
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          opened_by?: string
+          order_id?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_messages: {
+        Row: {
+          created_at: string
+          id: string
+          media_url: string | null
+          message: string
+          sender_id: string
+          ticket_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          media_url?: string | null
+          message: string
+          sender_id: string
+          ticket_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          media_url?: string | null
+          message?: string
+          sender_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -306,6 +453,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
