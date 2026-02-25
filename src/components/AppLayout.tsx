@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Home, PlusCircle, LayoutDashboard, LogOut } from "lucide-react";
+import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Shield } from "lucide-react";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
 interface AppLayoutProps {
@@ -46,6 +46,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 </Button>
               </Link>
             )}
+            <Link to="/assistencia">
+              <Button variant={isActive("/assistencia") ? "default" : "ghost"} size="sm">
+                <AlertTriangle className="h-4 w-4 mr-1" /> Ajuda
+              </Button>
+            </Link>
             <Button variant="ghost" size="sm" onClick={signOut}>
               <LogOut className="h-4 w-4 mr-1" /> Sair
             </Button>
