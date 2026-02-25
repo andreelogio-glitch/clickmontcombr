@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { User, Wrench, Camera, FileText, Upload } from "lucide-react";
+import { User, Wrench, Camera, FileText, Upload, DollarSign } from "lucide-react";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
 const Auth = () => {
@@ -25,6 +25,7 @@ const Auth = () => {
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [experienceFile, setExperienceFile] = useState<File | null>(null);
+  const [pixKey, setPixKey] = useState("");
   const selfieRef = useRef<HTMLInputElement>(null);
   const documentRef = useRef<HTMLInputElement>(null);
   const experienceRef = useRef<HTMLInputElement>(null);
@@ -78,6 +79,10 @@ const Auth = () => {
             phone: phone || null,
             lgpd_accepted_at: new Date().toISOString(),
           };
+
+          if (role === "montador") {
+            updates.pix_key = pixKey || null;
+          }
 
           if (role === "montador" && selfieFile && documentFile && experienceFile) {
             const [selfieUrl, docUrl, expUrl] = await Promise.all([
@@ -154,6 +159,20 @@ const Auth = () => {
                 {role === "montador" && (
                   <div className="space-y-3 rounded-lg border border-border p-4">
                     <p className="text-sm font-medium text-foreground">Verificação obrigatória do montador</p>
+
+                    <div>
+                      <Label className="text-xs flex items-center gap-1">
+                        <DollarSign className="h-3.5 w-3.5" /> Chave PIX (para recebimentos)
+                      </Label>
+                      <Input
+                        placeholder="CPF, email, telefone ou chave aleatória"
+                        value={pixKey}
+                        onChange={(e) => setPixKey(e.target.value)}
+                        className="mt-1"
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">É através dessa chave que você receberá seus pagamentos.</p>
+                    </div>
 
                     <div>
                       <Label className="text-xs flex items-center gap-1">

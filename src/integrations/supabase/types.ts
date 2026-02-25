@@ -186,6 +186,7 @@ export type Database = {
           is_verified: boolean
           lgpd_accepted_at: string | null
           phone: string | null
+          pix_key: string | null
           role: string
           selfie_url: string | null
           user_id: string
@@ -199,6 +200,7 @@ export type Database = {
           is_verified?: boolean
           lgpd_accepted_at?: string | null
           phone?: string | null
+          pix_key?: string | null
           role?: string
           selfie_url?: string | null
           user_id: string
@@ -212,6 +214,7 @@ export type Database = {
           is_verified?: boolean
           lgpd_accepted_at?: string | null
           phone?: string | null
+          pix_key?: string | null
           role?: string
           selfie_url?: string | null
           user_id?: string
@@ -311,6 +314,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          id: string
+          montador_id: string
+          order_id: string | null
+          status: string
+          type: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description: string
+          id?: string
+          montador_id: string
+          order_id?: string | null
+          status?: string
+          type?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          id?: string
+          montador_id?: string
+          order_id?: string | null
+          status?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

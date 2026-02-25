@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Shield } from "lucide-react";
+import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Shield, Wallet, Info } from "lucide-react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
@@ -42,11 +42,18 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               </>
             )}
             {profile?.role === "montador" && (
-              <Link to="/dashboard">
-                <Button variant={isActive("/dashboard") ? "default" : "ghost"} size="sm">
-                  <LayoutDashboard className="h-4 w-4 mr-1" /> Pedidos
-                </Button>
-              </Link>
+              <>
+                <Link to="/">
+                  <Button variant={isActive("/") ? "default" : "ghost"} size="sm">
+                    <LayoutDashboard className="h-4 w-4 mr-1" /> Pedidos
+                  </Button>
+                </Link>
+                <Link to="/carteira">
+                  <Button variant={isActive("/carteira") ? "default" : "ghost"} size="sm">
+                    <Wallet className="h-4 w-4 mr-1" /> Carteira
+                  </Button>
+                </Link>
+              </>
             )}
             <Link to="/assistencia">
               <Button variant={isActive("/assistencia") ? "default" : "ghost"} size="sm">
@@ -60,6 +67,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 </Button>
               </Link>
             )}
+            <Link to="/quem-somos">
+              <Button variant={isActive("/quem-somos") ? "default" : "ghost"} size="sm">
+                <Info className="h-4 w-4 mr-1" /> Sobre
+              </Button>
+            </Link>
             <Button variant="ghost" size="sm" onClick={signOut}>
               <LogOut className="h-4 w-4 mr-1" /> Sair
             </Button>
