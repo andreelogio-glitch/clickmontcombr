@@ -2,7 +2,8 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Wrench, Home, PlusCircle, LayoutDashboard, LogOut, MessageSquare } from "lucide-react";
+import { Home, PlusCircle, LayoutDashboard, LogOut } from "lucide-react";
+import logoClickmont from "@/assets/logo-clickmont.png";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -16,16 +17,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
-              <Wrench className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold">
-              <span className="text-gradient">Clickmont</span> Pro
-            </span>
+            <img src={logoClickmont} alt="Clickmont" className="h-9 w-9 rounded-lg object-contain" />
+            <span className="text-lg font-bold text-foreground">Clickmont</span>
           </Link>
 
           <nav className="flex items-center gap-1">
@@ -57,8 +53,15 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         </div>
       </header>
 
-      {/* Main */}
       <main className="container py-6">{children}</main>
+
+      {/* Footer with small logo */}
+      <footer className="border-t border-border py-4">
+        <div className="container flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <img src={logoClickmont} alt="Clickmont" className="h-5 w-5" />
+          <span>© {new Date().getFullYear()} Clickmont</span>
+        </div>
+      </footer>
     </div>
   );
 };
