@@ -93,10 +93,34 @@ const ClienteHome = () => {
     }
   };
 
-  const handlePayment = (orderId: string) => {
-    const checkoutUrl = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=SEU_PREFERENCE_ID`;
-    window.open(checkoutUrl, "_blank");
-    markAsPaid(orderId);
+  const handlePayment = async (orderId: string) => {
+    const order = orders.find((o) => o.id === orderId);
+    const acceptedBid = (bids[orderId] || []).find((b) => b.accepted);
+    if (!order || !acceptedBid) return;
+
+    const totalAmount = calcClientTotal(acceptedBid.amount);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
+          order_id: orderId,
+          title: order.title,
+          amount: totalAmount,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.checkout_url) {
+        window.open(data.checkout_url, "_blank");
+        // Mark as paid optimistically (in production, use webhook)
+        markAsPaid(orderId);
+      } else {
+        toast.error("Erro ao gerar link de pagamento");
+      }
+    } catch (error: any) {
+      toast.error("Erro no pagamento: " + error.message);
+    }
   };
 
   const markAsPaid = async (orderId: string) => {

@@ -50,36 +50,48 @@
     --sidebar-accent-foreground: 220 10% 90%;
     --sidebar-border: 220 20% 20%;
     --sidebar-ring: 25 95% 53%;
+
+    --gold: 40 80% 55%;
+    --gold-foreground: 40 10% 10%;
   }
 
   .dark {
-    --background: 220 25% 8%;
-    --foreground: 220 10% 95%;
+    --background: 225 20% 7%;
+    --foreground: 40 20% 92%;
 
-    --card: 220 25% 12%;
-    --card-foreground: 220 10% 95%;
+    --card: 225 18% 11%;
+    --card-foreground: 40 20% 92%;
 
-    --popover: 220 25% 12%;
-    --popover-foreground: 220 10% 95%;
+    --popover: 225 18% 11%;
+    --popover-foreground: 40 20% 92%;
 
-    --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 35 85% 50%;
+    --primary-foreground: 225 20% 7%;
 
-    --secondary: 220 20% 18%;
-    --secondary-foreground: 220 10% 95%;
+    --secondary: 225 15% 16%;
+    --secondary-foreground: 40 15% 85%;
 
-    --muted: 220 20% 15%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 225 15% 14%;
+    --muted-foreground: 220 10% 50%;
 
-    --accent: 25 50% 15%;
-    --accent-foreground: 25 95% 70%;
+    --accent: 35 40% 14%;
+    --accent-foreground: 35 80% 65%;
 
-    --destructive: 0 62% 30%;
+    --destructive: 0 62% 40%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
-    --ring: 25 95% 53%;
+    --border: 225 15% 18%;
+    --input: 225 15% 18%;
+    --ring: 35 85% 50%;
+
+    --success: 142 60% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 80% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --gold: 40 80% 55%;
+    --gold-foreground: 40 10% 10%;
   }
 }
 
@@ -89,23 +101,33 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased dark;
     font-family: 'Inter', sans-serif;
   }
 }
 
 @layer utilities {
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(25 95% 53%), hsl(15 90% 45%));
+    background: linear-gradient(135deg, hsl(35 85% 50%), hsl(25 80% 42%));
   }
   
   .gradient-dark {
-    background: linear-gradient(135deg, hsl(220 25% 10%), hsl(220 30% 15%));
+    background: linear-gradient(135deg, hsl(225 20% 7%), hsl(225 25% 12%));
+  }
+
+  .gradient-gold {
+    background: linear-gradient(135deg, hsl(40 80% 55%), hsl(30 75% 45%));
   }
 
   .text-gradient {
-    background: linear-gradient(135deg, hsl(25 95% 53%), hsl(15 90% 45%));
+    background: linear-gradient(135deg, hsl(40 80% 55%), hsl(25 80% 42%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+  }
+
+  .glass-card {
+    background: hsl(225 18% 11% / 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(225 15% 18% / 0.6);
   }
 }
