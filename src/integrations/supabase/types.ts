@@ -97,6 +97,7 @@ export type Database = {
           furniture_type: string
           id: string
           photo_url: string | null
+          service_type: string
           status: string
           title: string
         }
@@ -109,6 +110,7 @@ export type Database = {
           furniture_type: string
           id?: string
           photo_url?: string | null
+          service_type?: string
           status?: string
           title: string
         }
@@ -121,6 +123,7 @@ export type Database = {
           furniture_type?: string
           id?: string
           photo_url?: string | null
+          service_type?: string
           status?: string
           title?: string
         }
@@ -129,26 +132,41 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          document_url: string | null
+          experience_proof_url: string | null
           full_name: string
           id: string
+          is_verified: boolean
+          lgpd_accepted_at: string | null
           phone: string | null
           role: string
+          selfie_url: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          document_url?: string | null
+          experience_proof_url?: string | null
           full_name: string
           id?: string
+          is_verified?: boolean
+          lgpd_accepted_at?: string | null
           phone?: string | null
           role?: string
+          selfie_url?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          document_url?: string | null
+          experience_proof_url?: string | null
           full_name?: string
           id?: string
+          is_verified?: boolean
+          lgpd_accepted_at?: string | null
           phone?: string | null
           role?: string
+          selfie_url?: string | null
           user_id?: string
         }
         Relationships: []
