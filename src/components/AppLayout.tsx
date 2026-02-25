@@ -17,11 +17,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur-md">
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img src={logoClickmont} alt="Clickmont" className="h-9 w-9 rounded-lg object-contain" />
-            <span className="text-lg font-bold text-foreground">Clickmont</span>
+            <span className="text-lg font-bold text-gradient">Clickmont</span>
           </Link>
 
           <nav className="flex items-center gap-1">
