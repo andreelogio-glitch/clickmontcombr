@@ -8,8 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Wallet, Clock, ArrowDownCircle, DollarSign, Landmark } from "lucide-react";
-import { calcMontadorReceives, PLATFORM_MONTADOR_FEE } from "@/lib/fees";
+import { Wallet, Clock, ArrowDownCircle, DollarSign, Landmark, ShieldCheck, Loader2 } from "lucide-react";
 
 interface WalletTransaction {
   id: string;
@@ -23,12 +22,14 @@ interface WalletTransaction {
 
 const statusLabel: Record<string, string> = {
   pendente: "Pendente",
+  aguardando_admin: "Aguardando liberação da plataforma",
   disponivel: "Disponível",
   sacado: "Sacado",
 };
 
 const statusColor: Record<string, string> = {
   pendente: "bg-warning text-warning-foreground",
+  aguardando_admin: "bg-primary/80 text-primary-foreground",
   disponivel: "bg-success text-success-foreground",
   sacado: "bg-muted text-muted-foreground",
 };
@@ -58,12 +59,19 @@ const CarteiraMontador = () => {
   };
 
   const availableBalance = transactions
-    .filter((t) => t.status === "disponivel")
+    .filter((t) => t.status === "disponivel" && t.type === "credit")
     .reduce((sum, t) => sum + t.amount, 0);
 
   const pendingBalance = transactions
-    .filter((t) => t.status === "pendente")
+    .filter((t) => t.status === "pendente" || t.status === "aguardando_admin")
+    .filter((t) => t.type === "credit")
     .reduce((sum, t) => sum + t.amount, 0);
+
+  const withdrawnTotal = transactions
+    .filter((t) => t.type === "debit")
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+  const netAvailable = availableBalance - withdrawnTotal;
 
   const handleWithdraw = async () => {
     const amount = parseFloat(withdrawAmount);
@@ -72,22 +80,24 @@ const CarteiraMontador = () => {
       toast.error("Informe sua chave PIX.");
       return;
     }
-    if (!amount || amount <= 0 || amount > availableBalance) {
+    if (!amount || amount <= 0 || amount > netAvailable) {
       toast.error("Valor inválido ou superior ao saldo disponível.");
       return;
     }
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("support_tickets").insert({
-        opened_by: user!.id,
-        order_id: transactions.find((t) => t.status === "disponivel")?.order_id || transactions[0]?.order_id,
-        subject: "Solicitação de Saque",
-        description: `Saque de R$ ${amount.toFixed(2)} via PIX: ${key}`,
+      const { error } = await supabase.from("wallet_transactions").insert({
+        montador_id: user!.id,
+        type: "debit",
+        status: "pendente",
+        amount: -amount,
+        description: `Saque PIX: ${key} - R$ ${amount.toFixed(2)}`,
       });
       if (error) throw error;
-      toast.success("Solicitação de saque enviada! O admin irá processar.");
+      toast.success("Solicitação de saque enviada! Aguarde aprovação do admin.");
       setDialogOpen(false);
       setWithdrawAmount("");
+      fetchTransactions();
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -114,7 +124,7 @@ const CarteiraMontador = () => {
       </div>
 
       {/* Balance Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="border-success/30">
           <CardContent className="flex items-center gap-4 py-6">
             <div className="rounded-full bg-success/20 p-3">
@@ -122,7 +132,7 @@ const CarteiraMontador = () => {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Saldo Disponível</p>
-              <p className="text-2xl font-bold text-success">R$ {availableBalance.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-success">R$ {Math.max(0, netAvailable).toFixed(2)}</p>
             </div>
           </CardContent>
         </Card>
@@ -138,12 +148,26 @@ const CarteiraMontador = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="border-primary/30">
+          <CardContent className="flex items-center gap-4 py-6">
+            <div className="rounded-full bg-primary/20 p-3">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">PIX cadastrado</p>
+              <p className="text-sm font-medium truncate max-w-[140px]">
+                {(profile as any)?.pix_key || "Não informado"}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Withdraw Button */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
-          <Button className="gradient-primary text-primary-foreground w-full sm:w-auto" disabled={availableBalance <= 0}>
+          <Button className="gradient-primary text-primary-foreground w-full sm:w-auto" disabled={netAvailable <= 0}>
             <Landmark className="h-4 w-4 mr-2" />
             Solicitar Saque via PIX
           </Button>
@@ -154,7 +178,7 @@ const CarteiraMontador = () => {
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Saldo disponível: <strong className="text-success">R$ {availableBalance.toFixed(2)}</strong>
+              Saldo disponível: <strong className="text-success">R$ {Math.max(0, netAvailable).toFixed(2)}</strong>
             </p>
             <div>
               <Label>Chave PIX</Label>
@@ -171,7 +195,7 @@ const CarteiraMontador = () => {
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 placeholder="0.00"
-                max={availableBalance}
+                max={netAvailable}
               />
             </div>
             <Button
@@ -179,18 +203,30 @@ const CarteiraMontador = () => {
               disabled={submitting}
               onClick={handleWithdraw}
             >
-              {submitting ? "Enviando..." : "Confirmar Saque"}
+              {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</> : "Confirmar Saque"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Aguardando admin notice */}
+      {transactions.some((t) => t.status === "aguardando_admin") && (
+        <Card className="border-primary/40 bg-primary/5">
+          <CardContent className="py-4 flex items-center gap-3">
+            <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
+            <p className="text-sm">
+              Você tem serviços concluídos pelo cliente. O valor está <strong>aguardando liberação da plataforma</strong> e será disponibilizado após auditoria.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Transaction History */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ArrowDownCircle className="h-5 w-5" />
-            Histórico de Ganhos
+            Histórico de Transações
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -200,14 +236,16 @@ const CarteiraMontador = () => {
             <div className="space-y-3">
               {transactions.map((tx) => (
                 <div key={tx.id} className="flex items-center justify-between rounded-lg border border-border p-3">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{tx.description}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{tx.description}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(tx.created_at).toLocaleDateString("pt-BR")}
+                      {new Date(tx.created_at).toLocaleDateString("pt-BR")} · {tx.type === "debit" ? "Saque" : "Crédito"}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-semibold">R$ {tx.amount.toFixed(2)}</span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className={`font-semibold ${tx.type === "debit" ? "text-destructive" : ""}`}>
+                      {tx.type === "debit" ? "-" : "+"}R$ {Math.abs(tx.amount).toFixed(2)}
+                    </span>
                     <Badge className={statusColor[tx.status] || "bg-muted"}>
                       {statusLabel[tx.status] || tx.status}
                     </Badge>

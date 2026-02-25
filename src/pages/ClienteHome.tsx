@@ -137,14 +137,49 @@ const ClienteHome = () => {
   };
 
   const confirmDesmontagem = async (orderId: string) => {
+    const orderBids = bids[orderId] || [];
+    const acceptedBid = orderBids.find((b) => b.accepted);
+    if (!acceptedBid) return;
+
+    const montadorAmount = calcMontadorReceives(acceptedBid.amount);
+    const first40 = calcDesmontagemFirst(montadorAmount);
+
     await supabase.from("orders").update({ status: "desmontagem_confirmada" }).eq("id", orderId);
-    toast.success("Desmontagem confirmada! 40% liberado para o montador.");
+
+    // Create wallet transaction with aguardando_admin status
+    await supabase.from("support_tickets").insert({
+      opened_by: user!.id,
+      order_id: orderId,
+      subject: "Liberação de pagamento - Desmontagem 40%",
+      description: `Cliente confirmou desmontagem. Valor a liberar: R$ ${first40.toFixed(2)} (40% de R$ ${montadorAmount.toFixed(2)}) para montador ${acceptedBid.montador_id}.`,
+    });
+
+    toast.success("Desmontagem confirmada! Pagamento enviado para auditoria da plataforma.");
     fetchData();
   };
 
   const confirmConcluido = async (orderId: string) => {
+    const orderBids = bids[orderId] || [];
+    const acceptedBid = orderBids.find((b) => b.accepted);
+    if (!acceptedBid) return;
+
+    const order = orders.find((o) => o.id === orderId);
+    const isDesmontagem = order?.service_type === "desmontagem";
+    const montadorAmount = calcMontadorReceives(acceptedBid.amount);
+
     await supabase.from("orders").update({ status: "concluido" }).eq("id", orderId);
-    toast.success("Serviço concluído! Restante liberado para o montador.");
+
+    const releaseAmount = isDesmontagem ? calcDesmontagemSecond(montadorAmount) : montadorAmount;
+    const label = isDesmontagem ? "Montagem 60%" : "Serviço completo";
+
+    await supabase.from("support_tickets").insert({
+      opened_by: user!.id,
+      order_id: orderId,
+      subject: `Liberação de pagamento - ${label}`,
+      description: `Cliente confirmou conclusão. Valor a liberar: R$ ${releaseAmount.toFixed(2)} para montador ${acceptedBid.montador_id}.`,
+    });
+
+    toast.success("Serviço concluído! Pagamento enviado para auditoria da plataforma.");
     fetchData();
   };
 
@@ -282,7 +317,7 @@ const ClienteHome = () => {
                   {isDesmontagem && order.status === "pago" && (
                     <div className="border-t border-border pt-3 space-y-2">
                       <p className="text-xs text-muted-foreground">
-                        Ao confirmar a desmontagem, 40% será liberado ao montador. Os outros 60% após a montagem.
+                        Ao confirmar a desmontagem, o pagamento de 40% será enviado para auditoria da plataforma antes de ser liberado ao montador.
                       </p>
                       <Button size="sm" onClick={() => confirmDesmontagem(order.id)}>
                         ✅ Confirmar Desmontagem Concluída
@@ -293,7 +328,7 @@ const ClienteHome = () => {
                   {isDesmontagem && order.status === "desmontagem_confirmada" && (
                     <div className="border-t border-border pt-3 space-y-2">
                       <p className="text-xs text-muted-foreground">
-                        Desmontagem confirmada! 40% liberado. Confirme a montagem para liberar os 60% restantes.
+                        Desmontagem confirmada! Confirme a montagem para liberar os 60% restantes (sujeito à auditoria).
                       </p>
                       <Button size="sm" onClick={() => confirmConcluido(order.id)}>
                         ✅ Confirmar Montagem Concluída
