@@ -14,7 +14,145 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bids: {
+        Row: {
+          accepted: boolean | null
+          amount: number
+          created_at: string
+          id: string
+          message: string | null
+          montador_id: string
+          order_id: string
+        }
+        Insert: {
+          accepted?: boolean | null
+          amount: number
+          created_at?: string
+          id?: string
+          message?: string | null
+          montador_id: string
+          order_id: string
+        }
+        Update: {
+          accepted?: boolean | null
+          amount?: number
+          created_at?: string
+          id?: string
+          message?: string | null
+          montador_id?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bids_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_preset: boolean
+          message: string
+          order_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_preset?: boolean
+          message: string
+          order_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_preset?: boolean
+          message?: string
+          order_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address: string
+          brand: string | null
+          client_id: string
+          created_at: string
+          description: string
+          furniture_type: string
+          id: string
+          photo_url: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          address: string
+          brand?: string | null
+          client_id: string
+          created_at?: string
+          description: string
+          furniture_type: string
+          id?: string
+          photo_url?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          address?: string
+          brand?: string | null
+          client_id?: string
+          created_at?: string
+          description?: string
+          furniture_type?: string
+          id?: string
+          photo_url?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name: string
+          id?: string
+          phone?: string | null
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

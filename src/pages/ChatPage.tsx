@@ -1,12 +1,10 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
-import ClienteHome from "./ClienteHome";
-import DashboardMontador from "./DashboardMontador";
-import Auth from "./Auth";
+import Chat from "./Chat";
 
-const Index = () => {
-  const { user, profile, loading } = useAuth();
+const ChatPage = () => {
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -16,13 +14,13 @@ const Index = () => {
     );
   }
 
-  if (!user) return <Auth />;
+  if (!user) return <Navigate to="/" />;
 
   return (
     <AppLayout>
-      {profile?.role === "montador" ? <DashboardMontador /> : <ClienteHome />}
+      <Chat />
     </AppLayout>
   );
 };
 
-export default Index;
+export default ChatPage;
