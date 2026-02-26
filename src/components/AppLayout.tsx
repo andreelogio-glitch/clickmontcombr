@@ -2,7 +2,7 @@ import { ReactNode, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Wallet, Info, Wrench } from "lucide-react";
+import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Wallet, Info, Wrench, HelpCircle } from "lucide-react";
 import { NotificationBell, PushPermissionBanner, useNotifications } from "@/components/Notifications";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
@@ -52,6 +52,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 <Link to="/carteira">
                   <Button variant={isActive("/carteira") ? "default" : "ghost"} size="sm">
                     <Wallet className="h-4 w-4 mr-1" /> Carteira
+                  </Button>
+                </Link>
+                <Link to="/suporte-montador">
+                  <Button variant={isActive("/suporte-montador") ? "default" : "ghost"} size="sm">
+                    <HelpCircle className="h-4 w-4 mr-1" /> Suporte
                   </Button>
                 </Link>
               </>
