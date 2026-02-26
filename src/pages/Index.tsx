@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Navigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import ClienteHome from "./ClienteHome";
@@ -7,8 +8,9 @@ import Auth from "./Auth";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
 
-  if (loading) {
+  if (loading || adminLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -17,6 +19,9 @@ const Index = () => {
   }
 
   if (!user) return <Auth />;
+
+  // Admin auto-redirect: when admin logs in, go straight to admin panel
+  if (isAdmin) return <Navigate to="/admin" replace />;
 
   return (
     <AppLayout>

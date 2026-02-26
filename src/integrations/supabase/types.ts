@@ -143,6 +143,7 @@ export type Database = {
           description: string
           furniture_type: string
           id: string
+          is_urgent: boolean
           photo_url: string | null
           service_type: string
           status: string
@@ -156,6 +157,7 @@ export type Database = {
           description: string
           furniture_type: string
           id?: string
+          is_urgent?: boolean
           photo_url?: string | null
           service_type?: string
           status?: string
@@ -169,6 +171,7 @@ export type Database = {
           description?: string
           furniture_type?: string
           id?: string
+          is_urgent?: boolean
           photo_url?: string | null
           service_type?: string
           status?: string

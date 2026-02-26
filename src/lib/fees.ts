@@ -8,12 +8,21 @@ export const PLATFORM_MONTADOR_FEE = 0.10; // 10% deducted from montador
 export const DESMONTAGEM_FIRST_SPLIT = 0.40;
 export const DESMONTAGEM_SECOND_SPLIT = 0.60;
 
+// Same-day completion bonus
+export const SAME_DAY_BONUS = 0.10; // 10% bonus
+
 export const calcClientTotal = (bidAmount: number): number => {
   return Math.round(bidAmount * (1 + PLATFORM_CLIENT_FEE) * 100) / 100;
 };
 
-export const calcMontadorReceives = (bidAmount: number): number => {
+export const calcMontadorReceives = (bidAmount: number, isUrgent: boolean = false): number => {
+  // Urgent orders: no platform fee deduction (montador gets 100%)
+  if (isUrgent) return Math.round(bidAmount * 100) / 100;
   return Math.round(bidAmount * (1 - PLATFORM_MONTADOR_FEE) * 100) / 100;
+};
+
+export const calcSameDayBonus = (montadorAmount: number): number => {
+  return Math.round(montadorAmount * SAME_DAY_BONUS * 100) / 100;
 };
 
 export const calcDesmontagemFirst = (montadorAmount: number): number => {

@@ -80,7 +80,8 @@ const PedirMontagem = () => {
         address: form.address,
         service_type: dbServiceType,
         photo_url,
-      });
+        is_urgent: form.is_urgent,
+      } as any);
       if (error) throw error;
       toast.success("Pedido criado com sucesso! Montadores da região serão notificados.");
       navigate("/");
