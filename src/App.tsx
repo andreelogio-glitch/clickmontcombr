@@ -17,6 +17,7 @@ import QuemSomos from "./pages/QuemSomos";
 import SouMontador from "./pages/SouMontador";
 import CadastroMontador from "./pages/CadastroMontador";
 import TermosPrivacidade from "./pages/TermosPrivacidade";
+import SuporteMontador from "./pages/SuporteMontador";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/sou-montador" element={<SouMontador />} />
             <Route path="/cadastro-montador" element={<CadastroMontador />} />
             <Route path="/termos-e-privacidade" element={<TermosPrivacidade />} />
+            <Route path="/suporte-montador" element={<SuporteMontador />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
