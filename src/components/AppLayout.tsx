@@ -2,8 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Shield, Wallet, Info, DollarSign } from "lucide-react";
-import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Wallet, Info, Wrench } from "lucide-react";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
 interface AppLayoutProps {
@@ -12,7 +11,6 @@ interface AppLayoutProps {
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   const { profile, signOut } = useAuth();
-  const { isAdmin } = useIsAdmin();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -60,15 +58,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 <AlertTriangle className="h-4 w-4 mr-1" /> Ajuda
               </Button>
             </Link>
-            {isAdmin && (
-              <>
-                <Link to="/admin">
-                  <Button variant={isActive("/admin") ? "default" : "ghost"} size="sm">
-                    <Shield className="h-4 w-4 mr-1" /> Admin
-                  </Button>
-                </Link>
-              </>
-            )}
+            <Link to="/sou-montador">
+              <Button variant={isActive("/sou-montador") ? "default" : "ghost"} size="sm">
+                <Wrench className="h-4 w-4 mr-1" /> Sou Montador
+              </Button>
+            </Link>
             <Link to="/quem-somos">
               <Button variant={isActive("/quem-somos") ? "default" : "ghost"} size="sm">
                 <Info className="h-4 w-4 mr-1" /> Sobre
@@ -96,9 +90,25 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         </svg>
       </a>
 
-      {/* Footer */}
+      {/* Footer with Montador banner */}
       <footer className="border-t border-border py-6">
-        <div className="container space-y-3">
+        <div className="container space-y-4">
+          {/* Montador recruitment banner */}
+          <div className="rounded-xl gradient-primary p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3 text-primary-foreground">
+              <Wrench className="h-6 w-6 shrink-0" />
+              <div>
+                <p className="font-bold text-sm">É montador profissional?</p>
+                <p className="text-xs opacity-90">Cadastre-se e ganhe dinheiro com montagens e mudanças!</p>
+              </div>
+            </div>
+            <Link to="/sou-montador">
+              <Button variant="secondary" size="sm" className="shrink-0">
+                Sou Montador →
+              </Button>
+            </Link>
+          </div>
+
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
             <img src={logoClickmont} alt="Clickmont" className="h-5 w-5" />
             <span>© {new Date().getFullYear()} Clickmont</span>

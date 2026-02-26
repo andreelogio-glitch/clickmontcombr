@@ -10,7 +10,7 @@ import { PlusCircle, Package, DollarSign, Check, MessageSquare, ExternalLink, He
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { calcClientTotal, calcMontadorReceives, calcDesmontagemFirst, calcDesmontagemSecond } from "@/lib/fees";
+import { calcClientTotal, calcMontadorReceives, calcSameDayBonus, calcDesmontagemFirst, calcDesmontagemSecond } from "@/lib/fees";
 
 interface Order {
   id: string;
@@ -19,6 +19,7 @@ interface Order {
   status: string;
   service_type: string;
   created_at: string;
+  is_urgent?: boolean;
 }
 
 interface Bid {
@@ -150,20 +151,20 @@ const ClienteHome = () => {
     const acceptedBid = orderBids.find((b) => b.accepted);
     if (!acceptedBid) return;
 
-    const montadorAmount = calcMontadorReceives(acceptedBid.amount);
+    const order = orders.find((o) => o.id === orderId);
+    const isUrgent = !!(order as any)?.is_urgent;
+    const montadorAmount = calcMontadorReceives(acceptedBid.amount, isUrgent);
     const first40 = calcDesmontagemFirst(montadorAmount);
 
-    // Update order status
     await supabase.from("orders").update({ status: "desmontagem_confirmada" }).eq("id", orderId);
 
-    // Create wallet transaction with auditoria status
     await supabase.from("wallet_transactions").insert({
       montador_id: acceptedBid.montador_id,
       order_id: orderId,
       type: "credit",
       status: "auditoria",
       amount: first40,
-      description: `Desmontagem 40% - Pedido confirmado pelo cliente`,
+      description: `Desmontagem 40%${isUrgent ? " (Urgente - Taxa Zero)" : ""} - Pedido confirmado pelo cliente`,
     });
 
     toast.success("Obrigado! O pagamento de 40% foi enviado para análise da plataforma e será liberado ao montador em breve.");
@@ -177,22 +178,40 @@ const ClienteHome = () => {
 
     const order = orders.find((o) => o.id === orderId);
     const isDesmontagem = order?.service_type === "desmontagem";
-    const montadorAmount = calcMontadorReceives(acceptedBid.amount);
+    const isUrgent = !!(order as any)?.is_urgent;
+    const montadorAmount = calcMontadorReceives(acceptedBid.amount, isUrgent);
     const releaseAmount = isDesmontagem ? calcDesmontagemSecond(montadorAmount) : montadorAmount;
     const label = isDesmontagem ? "Montagem 60%" : "Serviço completo";
 
-    // Set order to aguardando_liberacao
+    // Check same-day bonus: if accepted today and concluded today
+    const acceptedBidDate = new Date(acceptedBid.created_at).toDateString();
+    const todayDate = new Date().toDateString();
+    const isSameDay = acceptedBidDate === todayDate;
+    const bonus = isSameDay ? calcSameDayBonus(releaseAmount) : 0;
+
     await supabase.from("orders").update({ status: "aguardando_liberacao" }).eq("id", orderId);
 
-    // Create wallet transaction with auditoria status
+    // Main payment
     await supabase.from("wallet_transactions").insert({
       montador_id: acceptedBid.montador_id,
       order_id: orderId,
       type: "credit",
       status: "auditoria",
       amount: releaseAmount,
-      description: `${label} - Pedido confirmado pelo cliente`,
+      description: `${label}${isUrgent ? " (Urgente - Taxa Zero)" : ""} - Pedido confirmado pelo cliente`,
     });
+
+    // Same-day bonus as separate transaction
+    if (bonus > 0) {
+      await supabase.from("wallet_transactions").insert({
+        montador_id: acceptedBid.montador_id,
+        order_id: orderId,
+        type: "credit",
+        status: "auditoria",
+        amount: bonus,
+        description: `Bônus de Produtividade (+10%) - Conclusão no mesmo dia`,
+      });
+    }
 
     toast.success("Obrigado! O pagamento foi enviado para análise da plataforma e será liberado ao montador em breve.");
     fetchData();
