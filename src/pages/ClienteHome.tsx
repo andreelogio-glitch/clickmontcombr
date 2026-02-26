@@ -268,7 +268,8 @@ const ClienteHome = () => {
           {orders.map((order) => {
             const orderBids = bids[order.id] || [];
             const acceptedBid = orderBids.find((b) => b.accepted);
-            const isDesmontagem = order.service_type === "desmontagem";
+            const isMudanca = order.service_type === "desmontagem"; // mudança mapped to desmontagem in DB
+            const isDesmontagem = isMudanca; // kept for backward compat
 
             return (
               <Card key={order.id}>
@@ -278,7 +279,7 @@ const ClienteHome = () => {
                       <CardTitle className="text-lg">{order.title}</CardTitle>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className="text-xs">
-                          {isDesmontagem ? "📦 Desmontagem" : "🔧 Montagem"}
+                          {isDesmontagem ? "🚚 Mudança (Des+Mont)" : "🔧 Montagem"}
                         </Badge>
                       </div>
                     </div>
@@ -352,6 +353,30 @@ const ClienteHome = () => {
                       <p className="text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1">
                         <Lock className="h-3 w-3" /> Pagamento processado com segurança pelo Mercado Pago
                       </p>
+
+                      {/* Guarantee card below payment button */}
+                      <div className="rounded-xl bg-[hsl(210,50%,96%)] border border-[hsl(210,50%,88%)] p-4 space-y-3 mt-2">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="h-6 w-6 text-primary" />
+                          <p className="text-sm font-bold text-foreground">🛡️ Garantia Clickmont & Mercado Pago</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Sua segurança é total. Ao realizar o pagamento, o Mercado Pago retém o valor de forma segura. A Clickmont só libera o pagamento ao montador após você confirmar que o serviço foi concluído com sucesso.
+                        </p>
+                        <div className="space-y-1.5">
+                          <p className="text-xs text-foreground flex items-start gap-1.5">
+                            <span className="shrink-0">✅</span>
+                            <span><strong>Dinheiro Protegido:</strong> Se o montador não comparecer, o valor pago vira crédito imediato para um novo profissional ou estorno.</span>
+                          </p>
+                          <p className="text-xs text-foreground flex items-start gap-1.5">
+                            <span className="shrink-0">✅</span>
+                            <span><strong>Pagamento Fracionado:</strong> O montador só recebe as etapas conforme você dá o "OK" no aplicativo.</span>
+                          </p>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground flex items-center gap-1 pt-1 border-t border-[hsl(210,50%,88%)]">
+                          <Lock className="h-3 w-3" /> Ambiente criptografado e monitorado
+                        </p>
+                      </div>
                     </div>
                   )}
 
