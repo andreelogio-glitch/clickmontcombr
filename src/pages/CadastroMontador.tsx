@@ -72,6 +72,11 @@ const CadastroMontador = () => {
           document_url: docUrl,
           experience_proof_url: expUrl,
         } as any).eq("user_id", userId);
+
+        // Notify admins about new montador registration
+        await supabase.functions.invoke("notify-new-montador", {
+          body: { montador_name: fullName },
+        });
       }
       toast.success("Conta de montador criada! Verifique seu e-mail para confirmar.");
       navigate("/");

@@ -8,6 +8,7 @@ export interface Profile {
   full_name: string;
   phone: string | null;
   role: "cliente" | "montador";
+  is_approved?: boolean;
 }
 
 interface AuthContextType {

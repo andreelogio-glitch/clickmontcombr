@@ -5,6 +5,7 @@ import AppLayout from "@/components/AppLayout";
 import ClienteHome from "./ClienteHome";
 import DashboardMontador from "./DashboardMontador";
 import LandingPage from "./LandingPage";
+import MontadorPendingApproval from "@/components/MontadorPendingApproval";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
@@ -29,6 +30,15 @@ const Index = () => {
   }
 
   if (isAdmin) return <Navigate to="/admin" replace />;
+
+  // Block unapproved montadores
+  if (profile?.role === "montador" && !(profile as any).is_approved) {
+    return (
+      <AppLayout>
+        <MontadorPendingApproval />
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
