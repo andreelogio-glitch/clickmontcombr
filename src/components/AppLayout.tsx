@@ -95,10 +95,15 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       </a>
 
       {/* Footer */}
-      <footer className="border-t border-border py-4">
-        <div className="container flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <img src={logoClickmont} alt="Clickmont" className="h-5 w-5" />
-          <span>© {new Date().getFullYear()} Clickmont</span>
+      <footer className="border-t border-border py-6">
+        <div className="container space-y-3">
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <img src={logoClickmont} alt="Clickmont" className="h-5 w-5" />
+            <span>© {new Date().getFullYear()} Clickmont</span>
+          </div>
+          <p className="text-center text-[11px] text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            🔒 Sua segurança é nossa prioridade. Todos os pagamentos na Clickmont são realizados através do Mercado Pago, garantindo proteção total dos seus dados e a custódia do seu dinheiro até a conclusão do serviço.
+          </p>
         </div>
       </footer>
     </div>

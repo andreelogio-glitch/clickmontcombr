@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { PlusCircle, Package, DollarSign, Check, MessageSquare, ExternalLink, HelpCircle } from "lucide-react";
+import { PlusCircle, Package, DollarSign, Check, MessageSquare, ExternalLink, HelpCircle, Lock, ShieldCheck, CreditCard } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -290,7 +290,7 @@ const ClienteHome = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {orderBids.length > 0 && order.status === "com_lance" && (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <p className="text-sm font-medium">Lances recebidos:</p>
                       {orderBids.map((bid) => {
                         const clientTotal = calcClientTotal(bid.amount);
@@ -309,6 +309,16 @@ const ClienteHome = () => {
                           </div>
                         );
                       })}
+                      {/* Security trust badge */}
+                      <div className="rounded-lg bg-[hsl(210,60%,96%)] border border-[hsl(210,60%,85%)] p-3 flex items-start gap-3">
+                        <Lock className="h-5 w-5 text-[hsl(210,70%,50%)] shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-semibold text-[hsl(210,70%,35%)]">Pagamento Seguro via Mercado Pago</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Seu dinheiro fica protegido em custódia até que você confirme a conclusão da montagem.
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -317,10 +327,31 @@ const ClienteHome = () => {
                       <p className="text-sm">
                         Total a pagar: <strong className="text-primary text-lg">R$ {calcClientTotal(acceptedBid.amount).toFixed(2)}</strong>
                       </p>
-                      <p className="text-xs text-muted-foreground">Aceita PIX, Cartão de Crédito/Débito e Boleto via Mercado Pago</p>
+
+                      {/* Guarantee seal */}
+                      <div className="rounded-lg bg-[hsl(40,90%,95%)] border border-[hsl(40,80%,70%)] p-3 flex items-start gap-3">
+                        <ShieldCheck className="h-6 w-6 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">Garantia Clickmont + Mercado Pago</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Sua montagem protegida: O Mercado Pago segura o seu pagamento e a Clickmont só libera o valor ao montador após você confirmar que o móvel está pronto e aprovado.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Payment methods */}
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <CreditCard className="h-4 w-4" />
+                        <span>PIX · Cartão de Crédito/Débito · Boleto</span>
+                      </div>
+
                       <Button className="w-full bg-[hsl(200,80%,50%)] hover:bg-[hsl(200,80%,40%)] text-primary-foreground" onClick={() => handlePayment(order.id)}>
                         <ExternalLink className="h-4 w-4 mr-2" /> Pagar Montagem
                       </Button>
+
+                      <p className="text-center text-[11px] text-muted-foreground flex items-center justify-center gap-1">
+                        <Lock className="h-3 w-3" /> Pagamento processado com segurança pelo Mercado Pago
+                      </p>
                     </div>
                   )}
 
