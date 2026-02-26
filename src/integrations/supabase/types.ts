@@ -219,6 +219,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          city: string | null
           created_at: string
           document_url: string | null
           experience_proof_url: string | null
@@ -233,6 +234,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          city?: string | null
           created_at?: string
           document_url?: string | null
           experience_proof_url?: string | null
@@ -247,6 +249,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          city?: string | null
           created_at?: string
           document_url?: string | null
           experience_proof_url?: string | null
