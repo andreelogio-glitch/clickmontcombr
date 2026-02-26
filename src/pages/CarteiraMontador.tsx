@@ -44,6 +44,8 @@ const CarteiraMontador = () => {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [editingPix, setEditingPix] = useState(false);
+  const [newPixKey, setNewPixKey] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -146,11 +148,37 @@ const CarteiraMontador = () => {
             <div className="rounded-full bg-muted p-3">
               <ShieldCheck className="h-6 w-6 text-muted-foreground" />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">PIX cadastrado</p>
-              <p className="text-sm font-medium truncate max-w-[140px]">
-                {(profile as any)?.pix_key || "Não informado"}
-              </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-muted-foreground">Chave PIX</p>
+              {editingPix ? (
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    value={newPixKey}
+                    onChange={(e) => setNewPixKey(e.target.value)}
+                    placeholder="CPF, email, telefone ou chave aleatória"
+                    className="h-8 text-sm"
+                  />
+                  <Button
+                    size="sm"
+                    className="h-8"
+                    onClick={async () => {
+                      if (!newPixKey.trim()) return;
+                      await supabase.from("profiles").update({ pix_key: newPixKey.trim() }).eq("user_id", user!.id);
+                      toast.success("Chave PIX salva!");
+                      setEditingPix(false);
+                    }}
+                  >Salvar</Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium truncate max-w-[140px]">
+                    {(profile as any)?.pix_key || "Não informado"}
+                  </p>
+                  <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => { setNewPixKey((profile as any)?.pix_key || ""); setEditingPix(true); }}>
+                    Editar
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
