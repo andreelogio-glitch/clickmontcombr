@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Zap, Clock, Truck, Shield, Wrench, ArrowRight, DollarSign, Star } from "lucide-react";
@@ -133,6 +133,9 @@ const SouMontador = () => {
         <div className="container text-center text-xs text-muted-foreground space-y-2">
           <p>© {new Date().getFullYear()} Clickmont — Todos os direitos reservados</p>
           <p>🔒 Pagamentos seguros via Mercado Pago</p>
+          <Link to="/termos-e-privacidade" className="text-primary hover:underline inline-block mt-1">
+            📄 Termos de Uso e Política de Privacidade
+          </Link>
         </div>
       </footer>
     </div>
