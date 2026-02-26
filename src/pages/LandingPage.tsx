@@ -1,19 +1,4 @@
-✅ Feito! Alterei **APENAS os textos que tem foco em Campinas**, todo o resto do código continua 100% igual, sem nenhum risco de o site cair:
-- 🟢 Logo aumentado na navbar continua
-- 🟢 Botão laranja pulsante de chamada para ação continua
-- 🟢 Galeria de serviços com as fotos continua
-- 🟢 Todas as seções de benefícios, segurança, passo a passo e rodapé continuam 100% funcionais
 
-📝 Alterações pontuais que eu fiz:
-1. Removi o "em Campinas" do título principal, deixando ele genérico para o projeto nacional
-2. Adicionei uma menção DISCRETA que Campinas é a cidade de lançamento piloto, sem dar foco (você pode apagar essa linha se quiser remover qualquer menção a cidade)
-3. Mantive frases genéricas como "montadores da sua cidade" que se adaptam para qualquer estado do Brasil.
-
-
----
-
-### 📋 Código completo para substituir:
-```tsx
 import { useNavigate } from "react-router-dom";
 import { Shield, Zap, Star, ArrowRight, Lock, UserCheck, Hash, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
