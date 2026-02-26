@@ -48,6 +48,7 @@ const PedirMontagem = () => {
     service_type: "montagem" as ServiceType,
     preferred_date: "",
     is_urgent: false,
+    needs_wall_mount: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,6 +84,7 @@ const PedirMontagem = () => {
         service_type: dbServiceType,
         photo_url,
         is_urgent: form.is_urgent,
+        needs_wall_mount: form.needs_wall_mount,
       } as any);
       if (error) throw error;
       toast.success("Pedido criado com sucesso! Montadores da região serão notificados.");
@@ -207,6 +209,18 @@ const PedirMontagem = () => {
                 value={form.preferred_date}
                 onChange={(e) => setForm({ ...form, preferred_date: e.target.value })}
               />
+            </div>
+
+            {/* Wall mount checkbox */}
+            <div className="flex items-start gap-2 rounded-lg border border-border p-3">
+              <Checkbox
+                id="needs_wall_mount"
+                checked={form.needs_wall_mount}
+                onCheckedChange={(checked) => setForm({ ...form, needs_wall_mount: checked === true })}
+              />
+              <Label htmlFor="needs_wall_mount" className="text-sm cursor-pointer leading-relaxed">
+                Precisa de instalação na parede? (Ex: Painéis, armários suspensos, nichos)
+              </Label>
             </div>
 
             {/* Urgent checkbox */}

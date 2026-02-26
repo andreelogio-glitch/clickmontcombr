@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Package, MapPin, DollarSign, Send, MessageSquare, Info, Flame, Rocket, Globe, MapPinCheck } from "lucide-react";
+import { Package, MapPin, DollarSign, Send, MessageSquare, Info, Flame, Rocket, Globe, MapPinCheck, AlertTriangle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useNavigate } from "react-router-dom";
 import { calcMontadorReceives, calcClientTotal } from "@/lib/fees";
 import MontadorOnboarding from "@/components/MontadorOnboarding";
@@ -25,6 +27,7 @@ interface Order {
   created_at: string;
   client_id: string;
   is_urgent?: boolean;
+  needs_wall_mount?: boolean;
 }
 
 const statusLabels: Record<string, string> = {
@@ -57,6 +60,7 @@ const DashboardMontador = () => {
   const [bidMessages, setBidMessages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState<string | null>(null);
+  const [wallMountAccepted, setWallMountAccepted] = useState<Record<string, boolean>>({});
   const [arrivingAt, setArrivingAt] = useState<string | null>(null);
   const [montadorCity, setMontadorCity] = useState<string | null>(null);
   const [showAllRegion, setShowAllRegion] = useState(false);
@@ -85,10 +89,14 @@ const DashboardMontador = () => {
     setLoading(false);
   };
 
-  const handleBid = async (orderId: string) => {
+  const handleBid = async (orderId: string, needsWallMount?: boolean) => {
     if (!user) return;
     const amount = parseFloat(bidAmounts[orderId] || "0");
     if (amount <= 0) { toast.error("Informe um valor válido"); return; }
+    if (needsWallMount && !wallMountAccepted[orderId]) {
+      toast.error("Você precisa aceitar o termo de instalação em parede para enviar o lance.");
+      return;
+    }
     setSubmitting(orderId);
     try {
       const { error } = await supabase.from("bids").insert({
@@ -209,6 +217,7 @@ const DashboardMontador = () => {
             const isDesmontagem = order.service_type === "desmontagem";
             const isPaid = ["pago", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(order.status);
             const isUrgent = !!(order as any).is_urgent;
+            const needsWallMount = !!(order as any).needs_wall_mount;
 
             return (
               <Card key={order.id} className={`overflow-hidden ${isUrgent ? "border-destructive/60 shadow-lg shadow-destructive/10" : ""}`}>
@@ -243,6 +252,17 @@ const DashboardMontador = () => {
                     <MapPin className="h-3.5 w-3.5" /> {isPaid ? order.address : order.address.split(",")[0] + " (endereço completo após pagamento)"}
                   </p>
 
+                  {/* Wall mount alert */}
+                  {needsWallMount && (
+                    <Alert className="border-warning/50 bg-warning/10">
+                      <AlertTriangle className="h-5 w-5 text-warning" />
+                      <AlertTitle className="text-warning font-bold">⚠️ ATENÇÃO: Este serviço requer furação de parede.</AlertTitle>
+                      <AlertDescription className="text-sm text-muted-foreground">
+                        O cliente solicitou instalação em parede (painéis, armários suspensos, nichos). Certifique-se de possuir furadeira e brocas adequadas.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   {/* Urgent incentive banner */}
                   {isUrgent && order.status === "pendente" && (
                     <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3 flex items-start gap-2">
@@ -263,11 +283,24 @@ const DashboardMontador = () => {
                           <Input type="number" placeholder="Seu valor R$" value={bidAmounts[order.id] || ""} onChange={(e) => setBidAmounts({ ...bidAmounts, [order.id]: e.target.value })} />
                         </div>
                         <Input placeholder="Mensagem (opcional)" className="flex-1" value={bidMessages[order.id] || ""} onChange={(e) => setBidMessages({ ...bidMessages, [order.id]: e.target.value })} />
-                        <Button className="gradient-primary text-primary-foreground" disabled={submitting === order.id} onClick={() => handleBid(order.id)}>
+                        <Button className="gradient-primary text-primary-foreground" disabled={submitting === order.id || (needsWallMount && !wallMountAccepted[order.id])} onClick={() => handleBid(order.id, needsWallMount)}>
                           <Send className="h-4 w-4 mr-1" />
                           {submitting === order.id ? "..." : "Enviar"}
                         </Button>
                       </div>
+                      {/* Wall mount acceptance checkbox */}
+                      {needsWallMount && (
+                        <div className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/5 p-3">
+                          <Checkbox
+                            id={`wall-mount-${order.id}`}
+                            checked={wallMountAccepted[order.id] || false}
+                            onCheckedChange={(checked) => setWallMountAccepted({ ...wallMountAccepted, [order.id]: checked === true })}
+                          />
+                          <label htmlFor={`wall-mount-${order.id}`} className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
+                            Estou ciente de que este serviço exige instalação em parede e confirmo que possuo as ferramentas necessárias (furadeira e brocas) para a execução.
+                          </label>
+                        </div>
+                      )}
                       {bidVal > 0 && (
                         <div className="flex items-start gap-1.5 text-xs text-muted-foreground rounded-lg bg-muted p-2">
                           <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />

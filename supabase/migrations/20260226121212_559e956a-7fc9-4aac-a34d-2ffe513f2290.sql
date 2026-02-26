@@ -1,0 +1,1 @@
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS needs_wall_mount boolean NOT NULL DEFAULT false;

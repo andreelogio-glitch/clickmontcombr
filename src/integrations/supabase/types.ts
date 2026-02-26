@@ -185,6 +185,7 @@ export type Database = {
           id: string
           is_urgent: boolean
           montador_arrived: boolean | null
+          needs_wall_mount: boolean
           photo_url: string | null
           service_type: string
           started_at: string | null
@@ -204,6 +205,7 @@ export type Database = {
           id?: string
           is_urgent?: boolean
           montador_arrived?: boolean | null
+          needs_wall_mount?: boolean
           photo_url?: string | null
           service_type?: string
           started_at?: string | null
@@ -223,6 +225,7 @@ export type Database = {
           id?: string
           is_urgent?: boolean
           montador_arrived?: boolean | null
+          needs_wall_mount?: boolean
           photo_url?: string | null
           service_type?: string
           started_at?: string | null
