@@ -355,7 +355,7 @@ const LandingPage = () => {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 20, delay: 1 }}
-        href="https://wa.me/551151280116"
+        href="https://api.whatsapp.com/send?phone=551151280116"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-success text-success-foreground shadow-lg transition-transform hover:scale-110"
