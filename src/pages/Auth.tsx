@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import logoClickmont from "@/assets/logo-clickmont.png";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,6 +30,14 @@ const Auth = () => {
   const selfieRef = useRef<HTMLInputElement>(null);
   const documentRef = useRef<HTMLInputElement>(null);
   const experienceRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const roleParam = searchParams.get("role");
+    if (roleParam === "cliente" || roleParam === "montador") {
+      setRole(roleParam);
+      setIsLogin(false);
+    }
+  }, [searchParams]);
 
   const uploadFile = async (file: File, userId: string, folder: string): Promise<string | null> => {
     const ext = file.name.split(".").pop();
