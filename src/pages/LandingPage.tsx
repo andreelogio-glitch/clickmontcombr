@@ -44,7 +44,7 @@ const LandingPage = () => {
 
       {/* Hero */}
       <section className="relative overflow-hidden px-4 py-24 md:py-36 bg-cover bg-center"
-        style={{ backgroundImage: `url(https://images.unsplash.com/photo-1581244276891-83393a67d251?q=80&w=2000)` }}
+        style={{ backgroundImage: `url(https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=2070)` }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-orange-900/70 via-background/80 to-background/95" />
         

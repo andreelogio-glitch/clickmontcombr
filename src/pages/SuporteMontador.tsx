@@ -56,7 +56,7 @@ const faqs = [
 ];
 
 const SuporteMontador = () => {
-  const whatsappUrl = "https://api.whatsapp.com/send?phone=551151280116&text=" +
+  const whatsappUrl = "https://wa.me/551151280116?text=" +
     encodeURIComponent("Olá! Sou montador na Clickmont e preciso de ajuda.");
 
   return (

@@ -1,16 +1,29 @@
 import { useEffect } from "react";
 
+declare global {
+  interface Window {
+    Tawk_API?: any;
+    Tawk_LoadStart?: Date;
+  }
+}
+
 /**
- * Hook para carregar o widget do Tawk.to.
- * Substitua PROPERTY_ID e WIDGET_ID pelos valores reais do seu painel Tawk.to.
- * Exemplo: useTawkTo("1abc123/default") 
+ * Hook para carregar o widget do Tawk.to em português.
  */
 const useTawkTo = (tawkId?: string) => {
   useEffect(() => {
     if (!tawkId) return;
-
-    // Evita carregar duas vezes
     if (document.getElementById("tawk-script")) return;
+
+    // Configurar API antes do carregamento
+    window.Tawk_API = window.Tawk_API || {};
+    window.Tawk_LoadStart = new Date();
+
+    window.Tawk_API.onLoad = function () {
+      window.Tawk_API.setAttributes({ language: "pt" }, function (error: any) {
+        if (error) console.warn("Tawk.to setAttributes error:", error);
+      });
+    };
 
     const script = document.createElement("script");
     script.id = "tawk-script";
