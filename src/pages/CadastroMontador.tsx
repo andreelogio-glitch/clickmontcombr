@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -149,7 +149,11 @@ const CadastroMontador = () => {
             <div className="flex items-start gap-2 rounded-lg border border-border p-3">
               <Checkbox id="lgpd" checked={lgpdAccepted} onCheckedChange={(v) => setLgpdAccepted(v === true)} />
               <label htmlFor="lgpd" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                Li e aceito a <span className="text-primary underline">Política de Privacidade</span> e os <span className="text-primary underline">Termos de Uso</span> da Clickmont (LGPD).
+                Li e aceito os{" "}
+                <Link to="/termos-e-privacidade" target="_blank" className="text-primary underline hover:text-primary/80">
+                  Termos de Uso e Política de Privacidade
+                </Link>{" "}
+                da Clickmont (LGPD).
               </label>
             </div>
 
