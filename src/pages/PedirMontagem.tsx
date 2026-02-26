@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -224,8 +224,11 @@ const PedirMontagem = () => {
             O seu dinheiro fica retido com segurança. A Clickmont só liberta o pagamento ao montador após a sua confirmação de cada etapa do serviço.
           </p>
           <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-            <Lock className="h-3 w-3" /> Ambiente criptografado e monitorado
+           <Lock className="h-3 w-3" /> Ambiente criptografado e monitorado
           </p>
+          <Link to="/termos-e-privacidade" className="text-[10px] text-primary hover:underline inline-flex items-center gap-1 mt-1">
+            📄 Termos de Uso e Política de Privacidade
+          </Link>
         </CardContent>
       </Card>
     </div>
