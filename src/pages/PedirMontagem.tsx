@@ -44,6 +44,7 @@ const PedirMontagem = () => {
     furniture_type: "",
     brand: "",
     address: "",
+    city: "",
     service_type: "montagem" as ServiceType,
     preferred_date: "",
     is_urgent: false,
@@ -78,6 +79,7 @@ const PedirMontagem = () => {
         furniture_type: form.furniture_type,
         brand: form.brand || null,
         address: form.address,
+        city: form.city,
         service_type: dbServiceType,
         photo_url,
         is_urgent: form.is_urgent,
@@ -177,9 +179,22 @@ const PedirMontagem = () => {
               {photoFile && <p className="text-xs text-muted-foreground mt-1">📷 {photoFile.name}</p>}
             </div>
 
+            {/* Cidade */}
             <div>
-              <Label htmlFor="address"><MapPin className="h-4 w-4 inline mr-1" />Endereço (Bairro e Cidade)</Label>
-              <Input id="address" placeholder="Bairro, Cidade - Estado" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
+              <Label><MapPin className="h-4 w-4 inline mr-1" />Cidade</Label>
+              <Select value={form.city} onValueChange={(v) => setForm({ ...form, city: v })} required>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione a cidade" /></SelectTrigger>
+                <SelectContent>
+                  {["Campinas", "Sumaré", "Hortolândia", "Valinhos", "Vinhedo", "Paulínia"].map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="address"><MapPin className="h-4 w-4 inline mr-1" />Endereço (Bairro e complemento)</Label>
+              <Input id="address" placeholder="Bairro, Rua, Número" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
               <p className="text-[10px] text-muted-foreground mt-1">O endereço completo só será visível ao montador após o pagamento.</p>
             </div>
 

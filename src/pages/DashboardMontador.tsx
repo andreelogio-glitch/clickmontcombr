@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Package, MapPin, DollarSign, Send, MessageSquare, Info, Flame, Rocket } from "lucide-react";
+import { Package, MapPin, DollarSign, Send, MessageSquare, Info, Flame, Rocket, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { calcMontadorReceives, calcClientTotal } from "@/lib/fees";
 import MontadorOnboarding from "@/components/MontadorOnboarding";
@@ -19,6 +19,7 @@ interface Order {
   furniture_type: string;
   brand: string | null;
   address: string;
+  city: string | null;
   status: string;
   service_type: string;
   created_at: string;
@@ -54,17 +55,26 @@ const DashboardMontador = () => {
   const [bidMessages, setBidMessages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState<string | null>(null);
+  const [montadorCity, setMontadorCity] = useState<string | null>(null);
+  const [showAllRegion, setShowAllRegion] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem("montador-onboarding-done");
   });
 
   useEffect(() => {
     if (user) {
+      fetchProfile();
       fetchOrders();
     } else {
       setLoading(false);
     }
   }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("profiles").select("city").eq("user_id", user.id).single();
+    if (data?.city) setMontadorCity(data.city);
+  };
 
   const fetchOrders = async () => {
     const { data, error } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
@@ -109,24 +119,47 @@ const DashboardMontador = () => {
         <MontadorOnboarding onComplete={() => setShowOnboarding(false)} />
       )}
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center gap-3">
-        <img src={logoClickmont} alt="Clickmont" className="h-8 w-8" />
-        <div>
-          <h1 className="text-2xl font-bold">Pedidos Disponíveis</h1>
-          <p className="text-muted-foreground">Veja os pedidos e envie seu lance</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <img src={logoClickmont} alt="Clickmont" className="h-8 w-8" />
+          <div>
+            <h1 className="text-2xl font-bold">Pedidos Disponíveis</h1>
+            <p className="text-muted-foreground">
+              {montadorCity && !showAllRegion
+                ? `Mostrando pedidos em ${montadorCity}`
+                : "Mostrando todos os pedidos da região"}
+            </p>
+          </div>
         </div>
+        {montadorCity && (
+          <Button
+            variant={showAllRegion ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowAllRegion(!showAllRegion)}
+          >
+            <Globe className="h-4 w-4 mr-1" />
+            {showAllRegion ? "Só minha cidade" : "Ver toda região"}
+          </Button>
+        )}
       </div>
 
-      {orders.length === 0 ? (
+      {(() => {
+        const filteredOrders = montadorCity && !showAllRegion
+          ? orders.filter((o) => (o as any).city === montadorCity)
+          : orders;
+
+        return filteredOrders.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             <Package className="h-12 w-12 mx-auto mb-3 opacity-40" />
-            Nenhum pedido disponível no momento.
+            {montadorCity && !showAllRegion
+              ? `Nenhum pedido disponível em ${montadorCity}. Tente "Ver toda região".`
+              : "Nenhum pedido disponível no momento."}
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4">
-          {orders.map((order) => {
+          {filteredOrders.map((order) => {
             const bidVal = parseFloat(bidAmounts[order.id] || "0");
             const isDesmontagem = order.service_type === "desmontagem";
             const isPaid = ["pago", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(order.status);
@@ -213,7 +246,8 @@ const DashboardMontador = () => {
             );
           })}
         </div>
-      )}
+      );
+      })()}
     </div>
     </>
   );
