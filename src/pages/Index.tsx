@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import ClienteHome from "./ClienteHome";
 import DashboardMontador from "./DashboardMontador";
-import Auth from "./Auth";
+import LandingPage from "./LandingPage";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
@@ -18,9 +18,8 @@ const Index = () => {
     );
   }
 
-  if (!user) return <Auth />;
+  if (!user) return <LandingPage />;
 
-  // Wait for admin check only when user exists
   if (adminLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
