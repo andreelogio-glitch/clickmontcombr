@@ -152,7 +152,7 @@ const TermosPrivacidade = () => {
         <div className="pt-6 border-t border-border space-y-4">
           <div className="rounded-lg border border-border bg-muted/30 p-4">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <strong className="text-foreground">Cláusula de Natureza Jurídica:</strong> A Clickmont é uma ferramenta tecnológica de autogestão. O pagamento processado via plataforma constitui um <strong>mandato de pagamento</strong>, onde a plataforma recebe do cliente e repassa ao profissional, agindo exclusivamente como <strong>agente de cobrança e custódia temporária</strong> dos valores, nos termos do art. 653 e seguintes do Código Civil Brasileiro. A Clickmont não mantém vínculo empregatício com os montadores cadastrados, tampouco se configura como instituição financeira ou de pagamento, atuando apenas como intermediária tecnológica na facilitação das transações entre as partes.
+            <strong className="text-foreground">Cláusula Legal:</strong> A Clickmont é uma ferramenta tecnológica de autogestão. O pagamento processado via plataforma é um mandato de pagamento, onde a plataforma recebe do cliente e repassa ao profissional, agindo apenas como agente de cobrança e custódia temporária.
             </p>
           </div>
 
