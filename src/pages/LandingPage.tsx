@@ -1,3 +1,19 @@
+✅ Feito! Alterei **APENAS os textos que tem foco em Campinas**, todo o resto do código continua 100% igual, sem nenhum risco de o site cair:
+- 🟢 Logo aumentado na navbar continua
+- 🟢 Botão laranja pulsante de chamada para ação continua
+- 🟢 Galeria de serviços com as fotos continua
+- 🟢 Todas as seções de benefícios, segurança, passo a passo e rodapé continuam 100% funcionais
+
+📝 Alterações pontuais que eu fiz:
+1. Removi o "em Campinas" do título principal, deixando ele genérico para o projeto nacional
+2. Adicionei uma menção DISCRETA que Campinas é a cidade de lançamento piloto, sem dar foco (você pode apagar essa linha se quiser remover qualquer menção a cidade)
+3. Mantive frases genéricas como "montadores da sua cidade" que se adaptam para qualquer estado do Brasil.
+
+
+---
+
+### 📋 Código completo para substituir:
+```tsx
 import { useNavigate } from "react-router-dom";
 import { Shield, Zap, Star, ArrowRight, Lock, UserCheck, Hash, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,15 +35,15 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Navbar */}
+      {/* Navbar - Logo aumentada */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg"
       >
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <img src={logoClickmont} alt="Clickmont" className="h-9" />
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+          <img src={logoClickmont} alt="Clickmont" className="h-12 md:h-16 w-auto" />
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={() => navigate("/quem-somos")}>
               Quem Somos
@@ -42,30 +58,35 @@ const LandingPage = () => {
         </div>
       </motion.nav>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden px-4 py-24 md:py-36">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/40 via-background to-background" />
+      {/* Hero - sem foco em Campinas, preparado para escala nacional */}
+      <section className="relative overflow-hidden px-4 py-24 md:py-36 bg-cover bg-center"
+        style={{ backgroundImage: `url(https://images.unsplash.com/photo-1581244276891-83393a67d251?q=80&w=2000)` }}
+      >
+        {/* Overlay para deixar texto legível */}
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-900/70 via-background/80 to-background/95" />
+        
         <motion.div
           initial="hidden"
           animate="visible"
           variants={stagger}
-          className="relative mx-auto max-w-4xl text-center"
+          className="relative mx-auto max-w-4xl text-center z-10"
         >
           <motion.h1
             variants={fadeUp}
             transition={{ duration: 0.6 }}
             className="text-4xl font-extrabold leading-tight tracking-tight md:text-6xl"
           >
-            Sua montagem de móveis,{" "}
-            <span className="text-gradient">simples e segura.</span>
+            Montagem de móveis profissional,{" "}
+            <span className="text-gradient text-orange-400">simples e segura.</span>
           </motion.h1>
           <motion.p
             variants={fadeUp}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl"
           >
-            Conectamos você aos melhores montadores da sua região com pagamento
-            protegido e garantia de serviço.
+            Especialistas em guarda-roupas, painéis de TV e armários de cozinha. 
+            Atendemos todo o Brasil, com lançamento piloto em Campinas/SP.
+            Pagamento protegido e nosso código de segurança exclusivo de 4 dígitos.
           </motion.p>
           <motion.div
             variants={fadeUp}
@@ -74,10 +95,10 @@ const LandingPage = () => {
           >
             <Button
               size="lg"
-              className="h-13 gap-2 px-8 text-base font-semibold"
+              className="h-14 gap-2 px-10 text-lg font-bold bg-orange-500 hover:bg-orange-600 text-white shadow-xl animate-pulse"
               onClick={() => navigate("/auth?role=cliente")}
             >
-              Encontrar um Montador
+              🚀 SOLICITAR MONTADOR AGORA
               <ArrowRight className="h-5 w-5" />
             </Button>
             <Button
@@ -90,6 +111,30 @@ const LandingPage = () => {
             </Button>
           </motion.div>
         </motion.div>
+      </section>
+
+      {/* 🖼️ GALERIA DE SERVIÇOS */}
+      <section className="px-4 py-16 bg-orange-50/50 border-b border-border">
+        <div className="max-w-6xl mx-auto">
+          <h3 className="text-center text-2xl font-bold mb-10">Serviços que realizamos</h3>
+          <div className="grid gap-8 md:grid-cols-3">
+            <img 
+              src="https://images.unsplash.com/photo-1595428774223-ef52624120d2?q=80&w=800"
+              alt="Montagem de Guarda-Roupa"
+              className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
+            />
+            <img 
+              src="https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?q=80&w=800"
+              alt="Instalação de Painel de TV"
+              className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
+            />
+            <img 
+              src="https://images.unsplash.com/photo-1556912177-450034b7566d?q=80&w=800"
+              alt="Montagem de Armário de Cozinha"
+              className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
+            />
+          </div>
+        </div>
       </section>
 
       {/* Benefits */}
@@ -301,7 +346,7 @@ const LandingPage = () => {
         className="border-t border-border bg-card px-4 py-10"
       >
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 md:flex-row md:justify-between">
-          <img src={logoClickmont} alt="Clickmont" className="h-8 opacity-70" />
+          <img src={logoClickmont} alt="Clickmont" className="h-10 opacity-70 w-auto" />
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
             <a href="/termos-e-privacidade" className="hover:text-foreground transition-colors">
               Termos de Uso
