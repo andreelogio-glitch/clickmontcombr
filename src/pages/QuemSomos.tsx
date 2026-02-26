@@ -1,6 +1,6 @@
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { Shield, Eye, Target, Heart } from "lucide-react";
+import { Shield, Eye, Target, Heart, Lock, ShieldCheck } from "lucide-react";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
 const values = [
@@ -66,6 +66,33 @@ const QuemSomos = () => {
               </Card>
             ))}
           </div>
+        </div>
+
+        {/* Security & Payment Partners */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-center">Segurança & Parceiros de Tecnologia</h2>
+          <Card className="border-[hsl(210,60%,85%)] bg-[hsl(210,60%,97%)]">
+            <CardContent className="pt-6 space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="rounded-full bg-[hsl(210,70%,50%)]/10 p-3 shrink-0">
+                  <Lock className="h-6 w-6 text-[hsl(210,70%,50%)]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-primary" /> Garantia Clickmont + Mercado Pago
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                    Sua montagem protegida: O Mercado Pago segura o seu pagamento e a Clickmont só libera o valor ao montador após você confirmar que o móvel está pronto e aprovado.
+                  </p>
+                </div>
+              </div>
+              <div className="border-t border-[hsl(210,60%,85%)] pt-3 text-center">
+                <p className="text-xs text-muted-foreground">
+                  🔒 Todos os pagamentos são processados com segurança pelo <strong className="text-foreground">Mercado Pago</strong> — aceitamos PIX, Cartão de Crédito/Débito e Boleto.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </AppLayout>
