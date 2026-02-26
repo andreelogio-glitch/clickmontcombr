@@ -27,6 +27,7 @@ interface Order {
   verification_code: string | null;
   code_validated: boolean;
   service_type: string;
+  montador_arrived: boolean;
 }
 
 interface MontadorProfile {
@@ -68,7 +69,7 @@ const Chat = () => {
   const selfieInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const isPaid = order?.status === "pago" || order?.status === "desmontagem_confirmada" || order?.status === "aguardando_liberacao" || order?.status === "concluido";
+  const isPaid = order?.status === "pago" || order?.status === "em_andamento" || order?.status === "desmontagem_confirmada" || order?.status === "aguardando_liberacao" || order?.status === "concluido";
   const isClient = user?.id === order?.client_id;
   const isMontador = profile?.role === "montador";
 
@@ -77,6 +78,17 @@ const Chat = () => {
       fetchOrder();
       fetchMessages();
       subscribeToMessages();
+      const orderChannel = supabase
+        .channel(`order-${orderId}`)
+        .on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${orderId}` },
+          (payload) => {
+            setOrder((prev) => prev ? { ...prev, ...payload.new } as any : prev);
+          }
+        )
+        .subscribe();
+      return () => { supabase.removeChannel(orderChannel); };
     }
   }, [orderId]);
 
@@ -93,7 +105,7 @@ const Chat = () => {
     if (data) {
       setOrder(data as any);
       // Fetch client profile for phone reveal
-      if (["pago", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(data.status)) {
+      if (["pago", "em_andamento", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(data.status)) {
         const { data: cp } = await supabase
           .from("profiles")
           .select("phone, full_name")
@@ -170,9 +182,13 @@ const Chat = () => {
     if (!order || !codeInput.trim()) return;
     setValidatingCode(true);
     if (codeInput.trim() === order.verification_code) {
-      await supabase.from("orders").update({ code_validated: true } as any).eq("id", order.id);
-      setOrder({ ...order, code_validated: true });
-      toast.success("Código validado! Serviço liberado para início.");
+      await supabase.from("orders").update({
+        code_validated: true,
+        status: "em_andamento",
+        started_at: new Date().toISOString(),
+      } as any).eq("id", order.id);
+      setOrder({ ...order, code_validated: true, status: "em_andamento" });
+      toast.success("Código validado! Serviço iniciado — horário registrado.");
     } else {
       toast.error("Código incorreto. Peça ao cliente o código correto.");
     }
@@ -255,21 +271,28 @@ const Chat = () => {
 
       {/* Security Code Card - Client View */}
       {isPaid && isClient && order?.verification_code && (
-        <Card className="border-primary/30">
+        <Card className={`border-primary/30 ${(order as any).montador_arrived && !order.code_validated ? "ring-2 ring-primary animate-pulse" : ""}`}>
           <CardContent className="py-4">
             <div className="flex items-center gap-2 mb-2">
               <KeyRound className="h-5 w-5 text-primary" />
               <h3 className="font-bold text-foreground">Senha de Segurança</h3>
+              {(order as any).montador_arrived && !order.code_validated && (
+                <Badge className="bg-warning text-warning-foreground text-xs animate-bounce">
+                  🔔 Montador chegou!
+                </Badge>
+              )}
             </div>
             <div className="text-center py-3">
-              <span className="text-4xl font-mono font-bold tracking-[0.3em] text-primary">
+              <span className={`text-4xl font-mono font-bold tracking-[0.3em] text-primary ${(order as any).montador_arrived && !order.code_validated ? "animate-pulse" : ""}`}>
                 #{order.verification_code}
               </span>
             </div>
             <p className="text-xs text-muted-foreground text-center">
-              Passe este código ao montador <strong>apenas quando ele chegar</strong> no local.
+              {(order as any).montador_arrived && !order.code_validated
+                ? "⚡ O montador está na porta! Informe este código a ele agora."
+                : "Passe este código ao montador apenas quando ele chegar no local."}
             </p>
-            {(order as any).code_validated && (
+            {order.code_validated && (
               <Badge className="bg-success text-success-foreground mt-2 mx-auto flex w-fit">
                 <ShieldCheck className="h-3 w-3 mr-1" /> Código validado ✓
               </Badge>

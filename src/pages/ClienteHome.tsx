@@ -37,6 +37,7 @@ const statusLabels: Record<string, string> = {
   com_lance: "Lance recebido!",
   aceito: "Aguardando pagamento",
   pago: "Pago ✓",
+  em_andamento: "Em andamento 🔧",
   desmontagem_confirmada: "Desmontagem confirmada",
   aguardando_liberacao: "Aguardando liberação",
   concluido: "Concluído",
@@ -47,6 +48,7 @@ const statusColors: Record<string, string> = {
   com_lance: "bg-warning text-warning-foreground",
   aceito: "bg-primary text-primary-foreground",
   pago: "bg-success text-success-foreground",
+  em_andamento: "bg-primary text-primary-foreground",
   desmontagem_confirmada: "bg-accent text-accent-foreground",
   aguardando_liberacao: "bg-primary/80 text-primary-foreground",
   concluido: "bg-secondary text-secondary-foreground",
@@ -405,24 +407,32 @@ const ClienteHome = () => {
                   )}
 
                   {/* Verification code display */}
-                  {["pago", "desmontagem_confirmada"].includes(order.status) && (order as any).verification_code && (
+                  {["pago", "em_andamento", "desmontagem_confirmada"].includes(order.status) && (order as any).verification_code && (
                     <div className="border-t border-border pt-3">
-                      <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-center">
+                      <div className={`rounded-lg bg-primary/5 border border-primary/20 p-3 text-center ${(order as any).montador_arrived && !(order as any).code_validated ? "ring-2 ring-primary animate-pulse" : ""}`}>
                         <div className="flex items-center justify-center gap-2 mb-1">
                           <KeyRound className="h-4 w-4 text-primary" />
                           <span className="text-sm font-semibold">Senha de Segurança</span>
+                          {(order as any).montador_arrived && !(order as any).code_validated && (
+                            <Badge className="bg-warning text-warning-foreground text-xs animate-bounce">🔔 Montador chegou!</Badge>
+                          )}
                         </div>
-                        <span className="text-2xl font-mono font-bold tracking-[0.3em] text-primary">
+                        <span className={`text-2xl font-mono font-bold tracking-[0.3em] text-primary ${(order as any).montador_arrived && !(order as any).code_validated ? "animate-pulse" : ""}`}>
                           #{(order as any).verification_code}
                         </span>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Passe este código ao montador apenas quando ele chegar.
+                          {(order as any).montador_arrived && !(order as any).code_validated
+                            ? "⚡ O montador está na porta! Informe este código agora."
+                            : "Passe este código ao montador apenas quando ele chegar."}
                         </p>
+                        {(order as any).code_validated && (
+                          <Badge className="bg-success text-success-foreground text-xs mt-2">✅ Código validado</Badge>
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {isDesmontagem && order.status === "pago" && (
+                  {isDesmontagem && ["pago", "em_andamento"].includes(order.status) && (order as any).code_validated && (
                     <div className="border-t border-border pt-3 space-y-2">
                       <p className="text-xs text-muted-foreground">
                         Ao confirmar a desmontagem, o pagamento de 40% será enviado para auditoria da plataforma.
@@ -440,7 +450,7 @@ const ClienteHome = () => {
                     </div>
                   )}
 
-                  {!isDesmontagem && order.status === "pago" && (
+                  {!isDesmontagem && ["pago", "em_andamento"].includes(order.status) && (order as any).code_validated && (
                     <div className="border-t border-border pt-3">
                       <Button size="sm" onClick={() => confirmConcluido(order.id)}>✅ Confirmar Serviço Concluído</Button>
                     </div>
@@ -460,7 +470,7 @@ const ClienteHome = () => {
                   )}
 
                   <div className="flex gap-2 flex-wrap">
-                    {["com_lance", "aceito", "pago", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(order.status) && (
+                    {["com_lance", "aceito", "pago", "em_andamento", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(order.status) && (
                       <Button variant="outline" size="sm" onClick={() => navigate(`/chat/${order.id}`)}>
                         <MessageSquare className="h-4 w-4 mr-1" /> Abrir Chat
                       </Button>

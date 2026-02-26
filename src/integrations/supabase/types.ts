@@ -184,8 +184,10 @@ export type Database = {
           furniture_type: string
           id: string
           is_urgent: boolean
+          montador_arrived: boolean | null
           photo_url: string | null
           service_type: string
+          started_at: string | null
           status: string
           title: string
           verification_code: string | null
@@ -201,8 +203,10 @@ export type Database = {
           furniture_type: string
           id?: string
           is_urgent?: boolean
+          montador_arrived?: boolean | null
           photo_url?: string | null
           service_type?: string
+          started_at?: string | null
           status?: string
           title: string
           verification_code?: string | null
@@ -218,8 +222,10 @@ export type Database = {
           furniture_type?: string
           id?: string
           is_urgent?: boolean
+          montador_arrived?: boolean | null
           photo_url?: string | null
           service_type?: string
+          started_at?: string | null
           status?: string
           title?: string
           verification_code?: string | null

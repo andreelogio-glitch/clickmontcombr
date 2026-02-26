@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Package, MapPin, DollarSign, Send, MessageSquare, Info, Flame, Rocket, Globe } from "lucide-react";
+import { Package, MapPin, DollarSign, Send, MessageSquare, Info, Flame, Rocket, Globe, MapPinCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { calcMontadorReceives, calcClientTotal } from "@/lib/fees";
 import MontadorOnboarding from "@/components/MontadorOnboarding";
@@ -32,6 +32,7 @@ const statusLabels: Record<string, string> = {
   com_lance: "Lance enviado",
   aceito: "Aceito",
   pago: "Pago",
+  em_andamento: "Em andamento",
   desmontagem_confirmada: "Desmontagem OK",
   aguardando_liberacao: "Aguardando liberação",
   concluido: "Concluído",
@@ -42,6 +43,7 @@ const statusColors: Record<string, string> = {
   com_lance: "bg-primary text-primary-foreground",
   aceito: "bg-accent text-accent-foreground",
   pago: "bg-success text-success-foreground",
+  em_andamento: "bg-primary text-primary-foreground",
   desmontagem_confirmada: "bg-accent text-accent-foreground",
   aguardando_liberacao: "bg-primary/80 text-primary-foreground",
   concluido: "bg-muted text-muted-foreground",
@@ -55,6 +57,7 @@ const DashboardMontador = () => {
   const [bidMessages, setBidMessages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState<string | null>(null);
+  const [arrivingAt, setArrivingAt] = useState<string | null>(null);
   const [montadorCity, setMontadorCity] = useState<string | null>(null);
   const [showAllRegion, setShowAllRegion] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -102,6 +105,48 @@ const DashboardMontador = () => {
       toast.error("Erro: " + error.message);
     } finally {
       setSubmitting(null);
+    }
+  };
+
+  const handleArrival = async (orderId: string, orderTitle: string, clientId: string) => {
+    if (!user) return;
+    setArrivingAt(orderId);
+    try {
+      // Mark as arrived
+      await supabase.from("orders").update({ montador_arrived: true } as any).eq("id", orderId);
+
+      // Get montador name
+      const { data: mp } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).single();
+      const montadorName = mp?.full_name || "Montador";
+
+      // Get verification code
+      const { data: orderData } = await supabase.from("orders").select("verification_code").eq("id", orderId).single();
+      const code = (orderData as any)?.verification_code || "****";
+
+      // Send push to client
+      await supabase.functions.invoke("send-push", {
+        body: {
+          user_id: clientId,
+          title: "🔔 Seu montador chegou!",
+          message: `${montadorName} acabou de chegar! Tenha em mãos o seu código de segurança: #${code}`,
+          order_id: orderId,
+        },
+      });
+
+      // Auto-message in chat
+      await supabase.from("chat_messages").insert({
+        order_id: orderId,
+        sender_id: user.id,
+        message: "Olá! Acabei de chegar ao local. Quando puder, por favor, me informe o código de 4 dígitos que aparece no seu aplicativo para eu iniciar o serviço.",
+        is_preset: false,
+      });
+
+      toast.success("Cliente notificado da sua chegada!");
+      fetchOrders();
+    } catch (err: any) {
+      toast.error("Erro: " + err.message);
+    } finally {
+      setArrivingAt(null);
     }
   };
 
@@ -236,7 +281,26 @@ const DashboardMontador = () => {
                     </div>
                   )}
 
-                  {["com_lance", "aceito", "pago", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(order.status) && (
+                  {/* "Cheguei no Local" button for paid orders */}
+                  {order.status === "pago" && !(order as any).montador_arrived && (
+                    <Button
+                      size="sm"
+                      className="gradient-primary text-primary-foreground"
+                      disabled={arrivingAt === order.id}
+                      onClick={() => handleArrival(order.id, order.title, order.client_id)}
+                    >
+                      <MapPinCheck className="h-4 w-4 mr-1" />
+                      {arrivingAt === order.id ? "Notificando..." : "Cheguei no Local"}
+                    </Button>
+                  )}
+
+                  {(order as any).montador_arrived && order.status === "pago" && (
+                    <Badge className="bg-success/20 text-success border border-success/30">
+                      <MapPinCheck className="h-3 w-3 mr-1" /> Chegada confirmada
+                    </Badge>
+                  )}
+
+                  {["com_lance", "aceito", "pago", "em_andamento", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(order.status) && (
                     <Button variant="outline" size="sm" onClick={() => navigate(`/chat/${order.id}`)}>
                       <MessageSquare className="h-4 w-4 mr-1" /> Abrir Chat
                     </Button>
