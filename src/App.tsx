@@ -19,6 +19,7 @@ import SouMontador from "./pages/SouMontador";
 import CadastroMontador from "./pages/CadastroMontador";
 import TermosPrivacidade from "./pages/TermosPrivacidade";
 import SuporteMontador from "./pages/SuporteMontador";
+import AdminApproval from "./pages/AdminApproval";
 import useTawkTo from "./hooks/useTawkTo";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ const App = () => {
             <Route path="/cadastro-montador" element={<CadastroMontador />} />
             <Route path="/termos-e-privacidade" element={<TermosPrivacidade />} />
             <Route path="/suporte-montador" element={<SuporteMontador />} />
+            <Route path="/admin-approval" element={<AdminApproval />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>

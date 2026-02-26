@@ -243,6 +243,7 @@ export type Database = {
           experience_proof_url: string | null
           full_name: string
           id: string
+          is_approved: boolean
           is_verified: boolean
           lgpd_accepted_at: string | null
           phone: string | null
@@ -258,6 +259,7 @@ export type Database = {
           experience_proof_url?: string | null
           full_name: string
           id?: string
+          is_approved?: boolean
           is_verified?: boolean
           lgpd_accepted_at?: string | null
           phone?: string | null
@@ -273,6 +275,7 @@ export type Database = {
           experience_proof_url?: string | null
           full_name?: string
           id?: string
+          is_approved?: boolean
           is_verified?: boolean
           lgpd_accepted_at?: string | null
           phone?: string | null
