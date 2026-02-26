@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Package, MapPin, FileText } from "lucide-react";
+import { Wrench, Package, Truck, MapPin, FileText, Lock, ShieldCheck, Upload, CalendarDays, AlertTriangle } from "lucide-react";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
 const FURNITURE_TYPES = [
@@ -24,17 +25,28 @@ const FURNITURE_TYPES = [
   "Outro",
 ];
 
+type ServiceType = "montagem" | "desmontagem" | "mudanca";
+
+const SERVICE_OPTIONS: { value: ServiceType; label: string; icon: typeof Wrench; desc: string }[] = [
+  { value: "montagem", label: "Apenas Montagem", icon: Wrench, desc: "Pagamento 100% após conclusão" },
+  { value: "desmontagem", label: "Apenas Desmontagem", icon: Package, desc: "Pagamento 100% após conclusão" },
+  { value: "mudanca", label: "Mudança (Des + Mont)", icon: Truck, desc: "Pagamento fracionado 40/60" },
+];
+
 const PedirMontagem = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     title: "",
     description: "",
     furniture_type: "",
     brand: "",
     address: "",
-    service_type: "montagem" as "montagem" | "desmontagem",
+    service_type: "montagem" as ServiceType,
+    preferred_date: "",
+    is_urgent: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,17 +55,34 @@ const PedirMontagem = () => {
     setLoading(true);
 
     try {
+      let photo_url: string | null = null;
+
+      if (photoFile) {
+        const fileExt = photoFile.name.split(".").pop();
+        const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from("user-documents")
+          .upload(filePath, photoFile);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage.from("user-documents").getPublicUrl(filePath);
+        photo_url = urlData.publicUrl;
+      }
+
+      // Map mudanca to desmontagem for DB (fractioned logic handled by service_type)
+      const dbServiceType = form.service_type === "mudanca" ? "desmontagem" : form.service_type;
+
       const { error } = await supabase.from("orders").insert({
         client_id: user.id,
         title: form.title,
-        description: form.description,
+        description: `${form.description}${form.preferred_date ? `\n📅 Data preferencial: ${form.preferred_date}` : ""}${form.is_urgent ? "\n⚠️ URGENTE" : ""}`,
         furniture_type: form.furniture_type,
         brand: form.brand || null,
         address: form.address,
-        service_type: form.service_type,
+        service_type: dbServiceType,
+        photo_url,
       });
       if (error) throw error;
-      toast.success("Pedido criado com sucesso!");
+      toast.success("Pedido criado com sucesso! Montadores da região serão notificados.");
       navigate("/");
     } catch (error: any) {
       toast.error("Erro ao criar pedido: " + error.message);
@@ -63,7 +92,7 @@ const PedirMontagem = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto animate-fade-in">
+    <div className="max-w-2xl mx-auto animate-fade-in space-y-4">
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
@@ -73,40 +102,44 @@ const PedirMontagem = () => {
                 <Package className="h-5 w-5 text-primary" />
                 Solicitar Serviço
               </CardTitle>
-              <CardDescription>Descreva o móvel e o tipo de serviço</CardDescription>
+              <CardDescription>Descreva o móvel e o tipo de serviço desejado</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Service type */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Service type selector */}
             <div>
               <Label>Tipo de serviço</Label>
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setForm({ ...form, service_type: "montagem" })}
-                  className={`rounded-lg border-2 p-3 text-sm font-medium transition-all ${
-                    form.service_type === "montagem" ? "border-primary bg-accent text-accent-foreground" : "border-border text-muted-foreground hover:border-muted-foreground"
-                  }`}
-                >
-                  🔧 Montagem
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setForm({ ...form, service_type: "desmontagem" })}
-                  className={`rounded-lg border-2 p-3 text-sm font-medium transition-all ${
-                    form.service_type === "desmontagem" ? "border-primary bg-accent text-accent-foreground" : "border-border text-muted-foreground hover:border-muted-foreground"
-                  }`}
-                >
-                  📦 Desmontagem
-                </button>
+              <div className="grid grid-cols-3 gap-3 mt-2">
+                {SERVICE_OPTIONS.map(({ value, label, icon: Icon, desc }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setForm({ ...form, service_type: value })}
+                    className={`rounded-lg border-2 p-3 text-center text-sm font-medium transition-all ${
+                      form.service_type === value
+                        ? "border-primary bg-accent text-accent-foreground"
+                        : "border-border text-muted-foreground hover:border-muted-foreground"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5 mx-auto mb-1" />
+                    <span className="block text-xs font-semibold">{label}</span>
+                    <span className="block text-[10px] text-muted-foreground mt-0.5">{desc}</span>
+                  </button>
+                ))}
               </div>
             </div>
 
             <div>
               <Label htmlFor="title">Título do pedido</Label>
-              <Input id="title" placeholder={`Ex: ${form.service_type === "desmontagem" ? "Desmontagem" : "Montagem"} guarda-roupa casal`} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+              <Input
+                id="title"
+                placeholder={`Ex: ${form.service_type === "desmontagem" ? "Desmontagem" : form.service_type === "mudanca" ? "Mudança" : "Montagem"} guarda-roupa casal`}
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                required
+              />
             </div>
 
             <div>
@@ -127,19 +160,71 @@ const PedirMontagem = () => {
             </div>
 
             <div>
-              <Label htmlFor="description"><FileText className="h-4 w-4 inline mr-1" />Descrição</Label>
-              <Textarea id="description" placeholder="Descreva detalhes: quantidade de peças, observações..." value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required rows={4} />
+              <Label htmlFor="description"><FileText className="h-4 w-4 inline mr-1" />Descrição detalhada</Label>
+              <Textarea id="description" placeholder="Descreva detalhes: quantidade de peças, observações, andares..." value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required rows={4} />
+            </div>
+
+            {/* Photo upload */}
+            <div>
+              <Label><Upload className="h-4 w-4 inline mr-1" />Foto do móvel (opcional)</Label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+                className="mt-1"
+              />
+              {photoFile && <p className="text-xs text-muted-foreground mt-1">📷 {photoFile.name}</p>}
             </div>
 
             <div>
-              <Label htmlFor="address"><MapPin className="h-4 w-4 inline mr-1" />Endereço</Label>
-              <Input id="address" placeholder="Rua, número, bairro, cidade" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
+              <Label htmlFor="address"><MapPin className="h-4 w-4 inline mr-1" />Endereço (Bairro e Cidade)</Label>
+              <Input id="address" placeholder="Bairro, Cidade - Estado" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
+              <p className="text-[10px] text-muted-foreground mt-1">O endereço completo só será visível ao montador após o pagamento.</p>
+            </div>
+
+            {/* Preferred date */}
+            <div>
+              <Label htmlFor="preferred_date"><CalendarDays className="h-4 w-4 inline mr-1" />Data preferencial (opcional)</Label>
+              <Input
+                id="preferred_date"
+                type="date"
+                value={form.preferred_date}
+                onChange={(e) => setForm({ ...form, preferred_date: e.target.value })}
+              />
+            </div>
+
+            {/* Urgent checkbox */}
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="is_urgent"
+                checked={form.is_urgent}
+                onCheckedChange={(checked) => setForm({ ...form, is_urgent: checked === true })}
+              />
+              <Label htmlFor="is_urgent" className="flex items-center gap-1 text-sm cursor-pointer">
+                <AlertTriangle className="h-4 w-4 text-warning" /> É Urgente?
+              </Label>
             </div>
 
             <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
-              {loading ? "Enviando..." : "Enviar Pedido"}
+              {loading ? "Enviando..." : "Publicar Pedido"}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Trust & Guarantee Card */}
+      <Card className="border-[hsl(210,60%,85%)] bg-[hsl(210,60%,97%)]">
+        <CardContent className="pt-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            <p className="text-sm font-semibold text-foreground">Pagamento Seguro via Mercado Pago</p>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            O seu dinheiro fica retido com segurança. A Clickmont só liberta o pagamento ao montador após a sua confirmação de cada etapa do serviço.
+          </p>
+          <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+            <Lock className="h-3 w-3" /> Ambiente criptografado e monitorado
+          </p>
         </CardContent>
       </Card>
     </div>
