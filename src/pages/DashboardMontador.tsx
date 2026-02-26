@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Package, MapPin, DollarSign, Send, MessageSquare, Info, Flame, Rocket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { calcMontadorReceives, calcClientTotal } from "@/lib/fees";
+import MontadorOnboarding from "@/components/MontadorOnboarding";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
 interface Order {
@@ -53,6 +54,9 @@ const DashboardMontador = () => {
   const [bidMessages, setBidMessages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem("montador-onboarding-done");
+  });
 
   useEffect(() => {
     if (user) {
@@ -100,6 +104,10 @@ const DashboardMontador = () => {
   }
 
   return (
+    <>
+      {showOnboarding && (
+        <MontadorOnboarding onComplete={() => setShowOnboarding(false)} />
+      )}
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-3">
         <img src={logoClickmont} alt="Clickmont" className="h-8 w-8" />
@@ -207,6 +215,7 @@ const DashboardMontador = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 
