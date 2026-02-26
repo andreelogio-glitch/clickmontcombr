@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.97.0";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
@@ -9,11 +11,57 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Validate JWT
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseAuth = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const callerUserId = claimsData.claims.sub;
+
     const { order_id, title, amount } = await req.json();
 
-    if (!order_id || !title || !amount) {
-      return new Response(JSON.stringify({ error: 'Missing fields' }), {
+    // Input validation
+    if (!order_id || typeof order_id !== 'string' || !title || typeof title !== 'string' || !amount || typeof amount !== 'number' || amount <= 0 || amount > 100000) {
+      return new Response(JSON.stringify({ error: 'Invalid input' }), {
         status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Verify order belongs to caller
+    const { data: order } = await supabase
+      .from('orders')
+      .select('client_id, status')
+      .eq('id', order_id)
+      .single();
+
+    if (!order || order.client_id !== callerUserId) {
+      return new Response(JSON.stringify({ error: 'Forbidden: not your order' }), {
+        status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -32,7 +80,7 @@ Deno.serve(async (req) => {
     const preference = {
       items: [
         {
-          title: `Clickmont - ${title}`,
+          title: `Clickmont - ${title.slice(0, 200)}`,
           quantity: 1,
           unit_price: Number(amount),
           currency_id: 'BRL',
@@ -61,7 +109,7 @@ Deno.serve(async (req) => {
 
     if (!mpResponse.ok) {
       console.error('MP error:', mpData);
-      return new Response(JSON.stringify({ error: 'Erro ao criar preferência', details: mpData }), {
+      return new Response(JSON.stringify({ error: 'Erro ao criar preferência' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

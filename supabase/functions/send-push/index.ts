@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.97.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,22 +13,15 @@ async function sendPushNotification(
   vapidPrivateKey: string
 ) {
   const webpush = await import("npm:web-push@3.6.7");
-
   webpush.setVapidDetails(
     "mailto:contato@clickmont.com.br",
     vapidPublicKey,
     vapidPrivateKey
   );
-
-  const pushSubscription = {
-    endpoint: subscription.endpoint,
-    keys: {
-      p256dh: subscription.p256dh,
-      auth: subscription.auth,
-    },
-  };
-
-  await webpush.sendNotification(pushSubscription, payload);
+  await webpush.sendNotification(
+    { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
+    payload
+  );
 }
 
 Deno.serve(async (req) => {
@@ -37,13 +30,41 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { user_id, title, message, order_id, city } = await req.json();
-
-    if (!user_id || !title || !message) {
-      return new Response(JSON.stringify({ error: "Missing fields" }), {
-        status: 400,
+    // Validate JWT
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { user_id, title, message, order_id, city } = await req.json();
+
+    // Input validation
+    if (!user_id || typeof user_id !== "string") {
+      return new Response(JSON.stringify({ error: "Missing user_id" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (!title || typeof title !== "string" || title.length > 200) {
+      return new Response(JSON.stringify({ error: "Invalid title" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (!message || typeof message !== "string" || message.length > 1000) {
+      return new Response(JSON.stringify({ error: "Invalid message" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const supabase = createClient(
@@ -51,93 +72,63 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // 1. Insert in-app notification
+    // Insert in-app notification
     await supabase.from("notifications").insert({
       user_id,
-      title,
-      message,
+      title: title.slice(0, 200),
+      message: message.slice(0, 1000),
       order_id: order_id || null,
     });
 
-    // 2. Send push notifications filtered by city
+    // Send push notifications
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
 
     if (vapidPublicKey && vapidPrivateKey) {
-      let subsQuery = supabase
-        .from("push_subscriptions")
-        .select("*, profiles!inner(city, role)")
-        .eq("profiles.role", "montador");
+      const payload = JSON.stringify({
+        title: title.slice(0, 100),
+        body: message.slice(0, 500),
+        icon: "/pwa-192x192.png",
+        badge: "/pwa-192x192.png",
+        data: { url: order_id ? `/chat/${order_id}` : "/" },
+      });
 
-      // If city is provided, filter montadores by city
-      if (city) {
-        subsQuery = subsQuery.eq("profiles.city", city);
-      }
-
-      // If user_id is specific (not broadcast), filter to that user only
-      // For broadcast notifications to montadores in a city, user_id = "broadcast"
       if (user_id !== "broadcast") {
         const { data: subs } = await supabase
           .from("push_subscriptions")
           .select("*")
           .eq("user_id", user_id);
 
-        const payload = JSON.stringify({
-          title,
-          body: message,
-          icon: "/pwa-192x192.png",
-          badge: "/pwa-192x192.png",
-          data: { url: order_id ? `/chat/${order_id}` : "/" },
-        });
-
         const results = await Promise.allSettled(
           (subs || []).map((sub) =>
             sendPushNotification(
               { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
-              payload,
-              vapidPublicKey,
-              vapidPrivateKey
+              payload, vapidPublicKey, vapidPrivateKey
             )
           )
         );
 
-        const sent = results.filter((r) => r.status === "fulfilled").length;
-        const failed = results.filter((r) => r.status === "rejected").length;
-        console.log(`Push: ${sent} sent, ${failed} failed for user ${user_id}`);
-
-        // Clean up invalid subscriptions
         for (let i = 0; i < results.length; i++) {
           if (results[i].status === "rejected") {
-            const sub = subs![i];
-            await supabase.from("push_subscriptions").delete().eq("id", sub.id);
+            await supabase.from("push_subscriptions").delete().eq("id", subs![i].id);
           }
         }
       } else {
-        // Broadcast to all montadores in the city
+        let subsQuery = supabase
+          .from("push_subscriptions")
+          .select("*, profiles!inner(city, role)")
+          .eq("profiles.role", "montador");
+        if (city) subsQuery = subsQuery.eq("profiles.city", city);
+
         const { data: subs } = await subsQuery;
-
-        const payload = JSON.stringify({
-          title,
-          body: message,
-          icon: "/pwa-192x192.png",
-          badge: "/pwa-192x192.png",
-          data: { url: order_id ? `/chat/${order_id}` : "/" },
-        });
-
         const results = await Promise.allSettled(
           (subs || []).map((sub: any) =>
             sendPushNotification(
               { endpoint: sub.endpoint, p256dh: sub.p256dh, auth: sub.auth },
-              payload,
-              vapidPublicKey,
-              vapidPrivateKey
+              payload, vapidPublicKey, vapidPrivateKey
             )
           )
         );
-
-        const sent = results.filter((r) => r.status === "fulfilled").length;
-        const failed = results.filter((r) => r.status === "rejected").length;
-        console.log(`Push broadcast (${city || "all"}): ${sent} sent, ${failed} failed`);
 
         for (let i = 0; i < results.length; i++) {
           if (results[i].status === "rejected") {

@@ -2,7 +2,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.97.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 Deno.serve(async (req) => {
@@ -11,7 +12,34 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { montador_name } = await req.json();
+    // Validate JWT - any authenticated user can trigger (called on signup)
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseAuth = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = await req.json();
+    const montadorName = typeof body?.montador_name === "string" 
+      ? body.montador_name.slice(0, 100) 
+      : "Montador";
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -28,7 +56,7 @@ Deno.serve(async (req) => {
       const notifications = adminRoles.map((r: any) => ({
         user_id: r.user_id,
         title: "⚠️ Novo Montador Aguardando Aprovação - Clickmont",
-        message: `Um novo montador (${montador_name}) acabou de se registar no sistema. Aceda ao painel de administração para rever os dados e aprovar ou rejeitar o perfil.`,
+        message: `Um novo montador (${montadorName}) acabou de se registar no sistema. Aceda ao painel de administração para rever os dados e aprovar ou rejeitar o perfil.`,
       }));
 
       await supabase.from("notifications").insert(notifications);
