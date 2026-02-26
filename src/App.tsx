@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -25,7 +25,7 @@ const queryClient = new QueryClient();
 
 // Para ativar o Tawk.to, substitua undefined pelo seu ID:
 // Exemplo: "PROPERTY_ID/WIDGET_ID"
-const TAWK_TO_ID: string | undefined = undefined;
+const TAWK_TO_ID: string | undefined = "69a03c2bab89b81c35a2a324/1jicum2lf";
 
 const App = () => {
   useTawkTo(TAWK_TO_ID);
@@ -37,7 +37,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <PWAInstallPrompt />
-        <BrowserRouter>
+        <HashRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -54,7 +54,7 @@ const App = () => {
             <Route path="/suporte-montador" element={<SuporteMontador />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
+        </HashRouter>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
