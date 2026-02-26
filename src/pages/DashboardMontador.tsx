@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Package, MapPin, DollarSign, Send, MessageSquare, Info } from "lucide-react";
+import { Package, MapPin, DollarSign, Send, MessageSquare, Info, Flame, Rocket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { calcMontadorReceives, calcClientTotal } from "@/lib/fees";
 import logoClickmont from "@/assets/logo-clickmont.png";
@@ -22,6 +22,7 @@ interface Order {
   service_type: string;
   created_at: string;
   client_id: string;
+  is_urgent?: boolean;
 }
 
 const statusLabels: Record<string, string> = {
@@ -117,13 +118,21 @@ const DashboardMontador = () => {
             const bidVal = parseFloat(bidAmounts[order.id] || "0");
             const isDesmontagem = order.service_type === "desmontagem";
             const isPaid = ["pago", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(order.status);
+            const isUrgent = !!(order as any).is_urgent;
 
             return (
-              <Card key={order.id} className="overflow-hidden">
+              <Card key={order.id} className={`overflow-hidden ${isUrgent ? "border-destructive/60 shadow-lg shadow-destructive/10" : ""}`}>
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-lg">{order.title}</CardTitle>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        {order.title}
+                        {isUrgent && (
+                          <Badge className="bg-destructive text-destructive-foreground text-xs animate-pulse">
+                            <Flame className="h-3 w-3 mr-1" /> URGENTE
+                          </Badge>
+                        )}
+                      </CardTitle>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className="text-xs">
                           {isDesmontagem ? "🚚 Mudança (Des+Mont)" : "🔧 Montagem"}
@@ -144,6 +153,19 @@ const DashboardMontador = () => {
                     <MapPin className="h-3.5 w-3.5" /> {isPaid ? order.address : order.address.split(",")[0] + " (endereço completo após pagamento)"}
                   </p>
 
+                  {/* Urgent incentive banner */}
+                  {isUrgent && order.status === "pendente" && (
+                    <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3 flex items-start gap-2">
+                      <Rocket className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-destructive">🚀 Oportunidade: Este pedido é urgente!</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Taxa zero para o montador — você recebe o valor total do seu lance.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {order.status === "pendente" && (
                     <div className="space-y-2 pt-2 border-t border-border">
                       <div className="flex gap-2">
@@ -160,7 +182,8 @@ const DashboardMontador = () => {
                         <div className="flex items-start gap-1.5 text-xs text-muted-foreground rounded-lg bg-muted p-2">
                           <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                           <span>
-                            Seu lance: R$ {bidVal.toFixed(2)} → Cliente paga: R$ {calcClientTotal(bidVal).toFixed(2)} → Você recebe: <strong className="text-success">R$ {calcMontadorReceives(bidVal).toFixed(2)}</strong> (taxa 10%)
+                            Seu lance: R$ {bidVal.toFixed(2)} → Cliente paga: R$ {calcClientTotal(bidVal).toFixed(2)} → Você recebe: <strong className={isUrgent ? "text-destructive" : "text-success"}>R$ {calcMontadorReceives(bidVal, isUrgent).toFixed(2)}</strong>
+                            {isUrgent ? " (🔥 Taxa Zero!)" : " (taxa 10%)"}
                             {isDesmontagem && " · Desmontagem: 40% liberado após desmontagem, 60% após montagem"}
                           </span>
                         </div>
