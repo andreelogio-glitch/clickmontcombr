@@ -145,7 +145,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
       {/* WhatsApp floating button */}
       <a
-        href="https://api.whatsapp.com/send?phone=551151280116"
+        href="https://wa.me/551151280116"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[hsl(142,70%,45%)] shadow-lg hover:bg-[hsl(142,70%,38%)] transition-colors"
