@@ -8,9 +8,9 @@ import Auth from "./Auth";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
-  const { isAdmin, loading: adminLoading } = useIsAdmin();
+  const { isAdmin, loading: adminLoading } = useIsAdmin(user);
 
-  if (loading || adminLoading) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -20,7 +20,15 @@ const Index = () => {
 
   if (!user) return <Auth />;
 
-  // Admin auto-redirect: when admin logs in, go straight to admin panel
+  // Wait for admin check only when user exists
+  if (adminLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   if (isAdmin) return <Navigate to="/admin" replace />;
 
   return (

@@ -48,8 +48,8 @@ const ticketStatusColors: Record<string, string> = {
 };
 
 const AdminDashboard = () => {
-  const { isAdmin, loading: adminLoading } = useIsAdmin();
   const { user } = useAuth();
+  const { isAdmin, loading: adminLoading } = useIsAdmin(user);
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
