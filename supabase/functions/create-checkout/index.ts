@@ -26,6 +26,9 @@ Deno.serve(async (req) => {
       });
     }
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const webhookUrl = `${supabaseUrl}/functions/v1/mp-webhook`;
+
     const preference = {
       items: [
         {
@@ -36,10 +39,11 @@ Deno.serve(async (req) => {
         },
       ],
       external_reference: order_id,
+      notification_url: webhookUrl,
       back_urls: {
-        success: `${req.headers.get('origin') || 'https://clickmont.com'}/?payment=success&order=${order_id}`,
-        failure: `${req.headers.get('origin') || 'https://clickmont.com'}/?payment=failure&order=${order_id}`,
-        pending: `${req.headers.get('origin') || 'https://clickmont.com'}/?payment=pending&order=${order_id}`,
+        success: `${req.headers.get('origin') || 'https://clickmont.com.br'}/?payment=success&order=${order_id}`,
+        failure: `${req.headers.get('origin') || 'https://clickmont.com.br'}/?payment=failure&order=${order_id}`,
+        pending: `${req.headers.get('origin') || 'https://clickmont.com.br'}/?payment=pending&order=${order_id}`,
       },
       auto_return: 'approved',
     };
