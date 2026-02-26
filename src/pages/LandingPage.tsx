@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Shield, Zap, Star, ArrowRight, Lock, UserCheck, Hash, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
