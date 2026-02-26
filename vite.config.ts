@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt"],
       workbox: {
+        importScripts: ["/sw-push.js"],
         navigateFallbackDenylist: [/^\/~oauth/],
         runtimeCaching: [
           {

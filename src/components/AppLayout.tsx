@@ -1,8 +1,9 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Wallet, Info, Wrench } from "lucide-react";
+import { NotificationBell, PushPermissionBanner, useNotifications } from "@/components/Notifications";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
 interface AppLayoutProps {
@@ -12,6 +13,8 @@ interface AppLayoutProps {
 const AppLayout = ({ children }: AppLayoutProps) => {
   const { profile, signOut } = useAuth();
   const location = useLocation();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const [showNotifs, setShowNotifs] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -68,14 +71,47 @@ const AppLayout = ({ children }: AppLayoutProps) => {
                 <Info className="h-4 w-4 mr-1" /> Sobre
               </Button>
             </Link>
+            <NotificationBell unreadCount={unreadCount} onClick={() => setShowNotifs(!showNotifs)} />
             <Button variant="ghost" size="sm" onClick={signOut}>
               <LogOut className="h-4 w-4 mr-1" /> Sair
             </Button>
           </nav>
+
+          {/* Notification dropdown */}
+          {showNotifs && (
+            <div className="absolute right-4 top-16 z-50 w-80 max-h-96 overflow-y-auto rounded-xl border bg-card shadow-xl animate-in slide-in-from-top-2">
+              <div className="flex items-center justify-between p-3 border-b">
+                <p className="text-sm font-semibold">Notificações</p>
+                {unreadCount > 0 && (
+                  <button onClick={markAllAsRead} className="text-xs text-primary hover:underline">
+                    Marcar todas como lidas
+                  </button>
+                )}
+              </div>
+              {notifications.length === 0 ? (
+                <p className="p-4 text-center text-sm text-muted-foreground">Nenhuma notificação</p>
+              ) : (
+                notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    className={`p-3 border-b last:border-0 cursor-pointer hover:bg-accent/50 transition-colors ${!n.read ? "bg-accent/20" : ""}`}
+                    onClick={() => { markAsRead(n.id); setShowNotifs(false); }}
+                  >
+                    <p className="text-xs font-semibold text-foreground">{n.title}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{n.message}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {new Date(n.created_at).toLocaleString("pt-BR")}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
       </header>
 
-      <main className="container py-6">{children}</main>
+      <PushPermissionBanner />
+      <main className="container py-6" onClick={() => showNotifs && setShowNotifs(false)}>{children}</main>
 
       {/* WhatsApp floating button */}
       <a

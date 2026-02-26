@@ -83,20 +83,49 @@ Deno.serve(async (req) => {
 
     if (payment.status === "approved") {
       // Update order status to "pago"
-      const { error: updateError } = await supabase
+      const { error: updateError, data: updatedOrder } = await supabase
         .from("orders")
         .update({ status: "pago" })
         .eq("id", orderId)
-        .eq("status", "aceito"); // Only update if currently "aceito" (prevents double processing)
+        .eq("status", "aceito")
+        .select("title")
+        .maybeSingle();
 
       if (updateError) {
         console.error("Error updating order:", updateError);
-      } else {
+      } else if (updatedOrder) {
         console.log(`Order ${orderId} marked as paid`);
+
+        // Find the accepted bid's montador to notify
+        const { data: acceptedBid } = await supabase
+          .from("bids")
+          .select("montador_id")
+          .eq("order_id", orderId)
+          .eq("accepted", true)
+          .maybeSingle();
+
+        if (acceptedBid) {
+          // Send push notification to montador
+          const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+          const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+          await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${serviceKey}`,
+            },
+            body: JSON.stringify({
+              user_id: acceptedBid.montador_id,
+              title: "💰 Pagamento confirmado!",
+              message: `O pagamento do serviço "${updatedOrder.title}" foi aprovado. Acesse o chat para combinar os detalhes.`,
+              order_id: orderId,
+            }),
+          }).catch((e) => console.error("Push notification error:", e));
+        }
       }
     } else if (payment.status === "rejected" || payment.status === "cancelled") {
       console.log(`Payment ${paymentId} was ${payment.status} for order ${orderId}`);
-      // Optionally revert order status
     }
 
     return new Response(JSON.stringify({ received: true, status: payment.status }), {
