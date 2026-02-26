@@ -79,7 +79,11 @@ const ClienteHome = () => {
   }, [searchParams, user]);
 
   useEffect(() => {
-    if (user) fetchData();
+    if (user) {
+      fetchData();
+    } else {
+      setLoading(false);
+    }
   }, [user]);
 
   const fetchData = async () => {
