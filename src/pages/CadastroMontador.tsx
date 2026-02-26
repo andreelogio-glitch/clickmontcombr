@@ -147,14 +147,14 @@ const CadastroMontador = () => {
             </div>
 
             <div className="flex items-start gap-2 rounded-lg border border-border p-3">
-              <Checkbox id="lgpd" checked={lgpdAccepted} onCheckedChange={(v) => setLgpdAccepted(v === true)} />
-              <label htmlFor="lgpd" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                Li e aceito os{" "}
-                <Link to="/termos-e-privacidade" target="_blank" className="text-primary underline hover:text-primary/80">
+              <Checkbox id="lgpd" checked={lgpdAccepted} onCheckedChange={(v) => setLgpdAccepted(v === true)} className="mt-0.5" />
+              <div className="text-xs text-muted-foreground leading-relaxed">
+                <label htmlFor="lgpd" className="cursor-pointer">Li e aceito os </label>
+                <Link to="/termos-e-privacidade" target="_blank" className="text-primary underline hover:text-primary/80" onClick={(e) => e.stopPropagation()}>
                   Termos de Uso e Política de Privacidade
-                </Link>{" "}
-                da Clickmont (LGPD).
-              </label>
+                </Link>
+                <label htmlFor="lgpd" className="cursor-pointer"> da Clickmont (LGPD).</label>
+              </div>
             </div>
 
             <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
