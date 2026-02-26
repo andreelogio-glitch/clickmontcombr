@@ -2,7 +2,17 @@ import { useNavigate } from "react-router-dom";
 import { Shield, Zap, Star, ArrowRight, Lock, UserCheck, Hash, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
 import logoClickmont from "@/assets/logo-clickmont.png";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0 },
+};
+
+const stagger = {
+  visible: { transition: { staggerChildren: 0.15 } },
+};
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -10,7 +20,12 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
+      <motion.nav
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg"
+      >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <img src={logoClickmont} alt="Clickmont" className="h-9" />
           <div className="flex items-center gap-3">
@@ -25,21 +40,38 @@ const LandingPage = () => {
             </Button>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* Hero */}
       <section className="relative overflow-hidden px-4 py-24 md:py-36">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/40 via-background to-background" />
-        <div className="relative mx-auto max-w-4xl text-center">
-          <h1 className="text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+          className="relative mx-auto max-w-4xl text-center"
+        >
+          <motion.h1
+            variants={fadeUp}
+            transition={{ duration: 0.6 }}
+            className="text-4xl font-extrabold leading-tight tracking-tight md:text-6xl"
+          >
             Sua montagem de móveis,{" "}
             <span className="text-gradient">simples e segura.</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
+          </motion.h1>
+          <motion.p
+            variants={fadeUp}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl"
+          >
             Conectamos você aos melhores montadores da sua região com pagamento
             protegido e garantia de serviço.
-          </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          </motion.p>
+          <motion.div
+            variants={fadeUp}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+          >
             <Button
               size="lg"
               className="h-13 gap-2 px-8 text-base font-semibold"
@@ -56,21 +88,34 @@ const LandingPage = () => {
             >
               Quero ser Parceiro
             </Button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* Benefits */}
       <section className="border-t border-border bg-card px-4 py-20 md:py-28">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-center text-3xl font-bold md:text-4xl">
-            Por que escolher a Clickmont?
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
-            Tecnologia a favor da sua tranquilidade
-          </p>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={stagger}
+          >
+            <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="text-center text-3xl font-bold md:text-4xl">
+              Por que escolher a Clickmont?
+            </motion.h2>
+            <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
+              Tecnologia a favor da sua tranquilidade
+            </motion.p>
+          </motion.div>
 
-          <div className="mt-14 grid gap-8 md:grid-cols-3">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={stagger}
+            className="mt-14 grid gap-8 md:grid-cols-3"
+          >
             {[
               {
                 icon: Shield,
@@ -94,34 +139,46 @@ const LandingPage = () => {
                 bg: "bg-success/10",
               },
             ].map((b) => (
-              <Card
-                key={b.title}
-                className="border-border bg-background transition-shadow hover:shadow-lg"
-              >
-                <CardContent className="flex flex-col items-start gap-4 p-8">
-                  <div className={`rounded-xl p-3 ${b.bg}`}>
-                    <b.icon className={`h-7 w-7 ${b.color}`} />
-                  </div>
-                  <h3 className="text-xl font-bold">{b.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{b.desc}</p>
-                </CardContent>
-              </Card>
+              <motion.div key={b.title} variants={fadeUp} transition={{ duration: 0.5 }}>
+                <Card className="border-border bg-background transition-shadow hover:shadow-lg h-full">
+                  <CardContent className="flex flex-col items-start gap-4 p-8">
+                    <div className={`rounded-xl p-3 ${b.bg}`}>
+                      <b.icon className={`h-7 w-7 ${b.color}`} />
+                    </div>
+                    <h3 className="text-xl font-bold">{b.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{b.desc}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* How it works */}
       <section className="px-4 py-20 md:py-28">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-3xl font-bold md:text-4xl">
-            Como Funciona
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
-            Três passos para uma montagem sem dor de cabeça
-          </p>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={stagger}
+          >
+            <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="text-center text-3xl font-bold md:text-4xl">
+              Como Funciona
+            </motion.h2>
+            <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
+              Três passos para uma montagem sem dor de cabeça
+            </motion.p>
+          </motion.div>
 
-          <div className="mt-14 grid gap-10 md:grid-cols-3">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={stagger}
+            className="mt-14 grid gap-10 md:grid-cols-3"
+          >
             {[
               {
                 step: "1",
@@ -139,22 +196,28 @@ const LandingPage = () => {
                 desc: "Confirme o serviço, receba o código de segurança e acompanhe tudo pelo chat em tempo real.",
               },
             ].map((s) => (
-              <div key={s.step} className="flex flex-col items-center text-center">
+              <motion.div key={s.step} variants={fadeUp} transition={{ duration: 0.5 }} className="flex flex-col items-center text-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl gradient-primary text-primary-foreground text-2xl font-black shadow-lg">
                   {s.step}
                 </div>
                 <h3 className="mt-5 text-xl font-bold">{s.title}</h3>
                 <p className="mt-2 text-muted-foreground leading-relaxed">{s.desc}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Security highlight */}
       <section className="border-t border-border bg-card px-4 py-20 md:py-28">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-12 md:flex-row">
-          <div className="flex-1 space-y-6">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={stagger}
+          className="mx-auto flex max-w-5xl flex-col items-center gap-12 md:flex-row"
+        >
+          <motion.div variants={fadeUp} transition={{ duration: 0.6 }} className="flex-1 space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
               <Lock className="h-4 w-4" />
               Protocolo de Identificação
@@ -167,8 +230,8 @@ const LandingPage = () => {
               confirma presença. O cliente então compartilha o código de 4
               dígitos exclusivo — só após a validação o serviço começa.
             </p>
-          </div>
-          <div className="flex flex-1 justify-center">
+          </motion.div>
+          <motion.div variants={fadeUp} transition={{ duration: 0.6, delay: 0.15 }} className="flex flex-1 justify-center">
             <div className="grid grid-cols-2 gap-4">
               {[
                 { icon: UserCheck, label: "Foto no perfil" },
@@ -176,22 +239,31 @@ const LandingPage = () => {
                 { icon: Shield, label: "Pagamento protegido" },
                 { icon: MessageCircle, label: "Chat em tempo real" },
               ].map((f) => (
-                <div
+                <motion.div
                   key={f.label}
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                   className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-background p-6 text-center shadow-sm"
                 >
                   <f.icon className="h-8 w-8 text-primary" />
                   <span className="text-sm font-medium">{f.label}</span>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* CTA final */}
       <section className="px-4 py-20 md:py-28">
-        <div className="mx-auto max-w-3xl rounded-3xl gradient-primary p-10 text-center text-primary-foreground shadow-2xl md:p-16">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.4 }}
+          variants={fadeUp}
+          transition={{ duration: 0.7 }}
+          className="mx-auto max-w-3xl rounded-3xl gradient-primary p-10 text-center text-primary-foreground shadow-2xl md:p-16"
+        >
           <h2 className="text-3xl font-bold md:text-4xl">
             Pronto para começar?
           </h2>
@@ -217,11 +289,17 @@ const LandingPage = () => {
               Sou Montador
             </Button>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card px-4 py-10">
+      <motion.footer
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="border-t border-border bg-card px-4 py-10"
+      >
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 md:flex-row md:justify-between">
           <img src={logoClickmont} alt="Clickmont" className="h-8 opacity-70" />
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
@@ -241,10 +319,13 @@ const LandingPage = () => {
             © {new Date().getFullYear()} Clickmont. Todos os direitos reservados.
           </p>
         </div>
-      </footer>
+      </motion.footer>
 
       {/* WhatsApp Float */}
-      <a
+      <motion.a
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20, delay: 1 }}
         href="https://wa.me/551151280116"
         target="_blank"
         rel="noopener noreferrer"
@@ -252,7 +333,7 @@ const LandingPage = () => {
         aria-label="Fale conosco no WhatsApp"
       >
         <MessageCircle className="h-7 w-7" />
-      </a>
+      </motion.a>
     </div>
   );
 };
