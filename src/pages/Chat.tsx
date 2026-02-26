@@ -55,7 +55,7 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const isPaid = order?.status === "pago" || order?.status === "concluido";
+  const isPaid = order?.status === "pago" || order?.status === "desmontagem_confirmada" || order?.status === "aguardando_liberacao" || order?.status === "concluido";
 
   useEffect(() => {
     if (orderId) {
@@ -78,7 +78,7 @@ const Chat = () => {
     if (data) {
       setOrder(data as Order);
       // Fetch client profile for phone reveal
-      if (data.status === "pago" || data.status === "concluido") {
+      if (["pago", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(data.status)) {
         const { data: cp } = await supabase
           .from("profiles")
           .select("phone, full_name")

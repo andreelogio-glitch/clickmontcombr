@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Shield, Wallet, Info } from "lucide-react";
+import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Shield, Wallet, Info, DollarSign } from "lucide-react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
@@ -61,11 +61,13 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               </Button>
             </Link>
             {isAdmin && (
-              <Link to="/admin">
-                <Button variant={isActive("/admin") ? "default" : "ghost"} size="sm">
-                  <Shield className="h-4 w-4 mr-1" /> Admin
-                </Button>
-              </Link>
+              <>
+                <Link to="/admin">
+                  <Button variant={isActive("/admin") ? "default" : "ghost"} size="sm">
+                    <Shield className="h-4 w-4 mr-1" /> Admin
+                  </Button>
+                </Link>
+              </>
             )}
             <Link to="/quem-somos">
               <Button variant={isActive("/quem-somos") ? "default" : "ghost"} size="sm">

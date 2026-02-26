@@ -116,6 +116,7 @@ const DashboardMontador = () => {
           {orders.map((order) => {
             const bidVal = parseFloat(bidAmounts[order.id] || "0");
             const isDesmontagem = order.service_type === "desmontagem";
+            const isPaid = ["pago", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(order.status);
 
             return (
               <Card key={order.id} className="overflow-hidden">
@@ -125,7 +126,7 @@ const DashboardMontador = () => {
                       <CardTitle className="text-lg">{order.title}</CardTitle>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className="text-xs">
-                          {isDesmontagem ? "📦 Desmontagem" : "🔧 Montagem"}
+                          {isDesmontagem ? "🚚 Mudança (Des+Mont)" : "🔧 Montagem"}
                         </Badge>
                         <span className="text-sm text-muted-foreground">
                           {order.furniture_type}{order.brand && ` · ${order.brand}`}
@@ -140,7 +141,7 @@ const DashboardMontador = () => {
                 <CardContent className="space-y-3">
                   <p className="text-sm">{order.description}</p>
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5" /> {order.address}
+                    <MapPin className="h-3.5 w-3.5" /> {isPaid ? order.address : order.address.split(",")[0] + " (endereço completo após pagamento)"}
                   </p>
 
                   {order.status === "pendente" && (
@@ -167,7 +168,7 @@ const DashboardMontador = () => {
                     </div>
                   )}
 
-                  {["com_lance", "aceito", "pago", "desmontagem_confirmada"].includes(order.status) && (
+                  {["com_lance", "aceito", "pago", "desmontagem_confirmada", "aguardando_liberacao", "concluido"].includes(order.status) && (
                     <Button variant="outline" size="sm" onClick={() => navigate(`/chat/${order.id}`)}>
                       <MessageSquare className="h-4 w-4 mr-1" /> Abrir Chat
                     </Button>
