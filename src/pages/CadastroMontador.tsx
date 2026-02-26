@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Wrench, Camera, FileText, Upload, DollarSign } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Wrench, Camera, FileText, Upload, DollarSign, MapPin } from "lucide-react";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
 const CadastroMontador = () => {
@@ -20,6 +21,7 @@ const CadastroMontador = () => {
   const [phone, setPhone] = useState("");
   const [pixKey, setPixKey] = useState("");
   const [bio, setBio] = useState("");
+  const [city, setCity] = useState("");
   const [lgpdAccepted, setLgpdAccepted] = useState(false);
 
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
@@ -40,6 +42,7 @@ const CadastroMontador = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!city) { toast.error("Selecione sua cidade de atuação."); return; }
     if (!lgpdAccepted) { toast.error("Aceite a Política de Privacidade para continuar."); return; }
     if (!selfieFile || !documentFile || !experienceFile) {
       toast.error("Envie selfie, documento e comprovação de experiência.");
@@ -63,11 +66,12 @@ const CadastroMontador = () => {
         await supabase.from("profiles").update({
           phone: phone || null,
           pix_key: pixKey || null,
+          city,
           lgpd_accepted_at: new Date().toISOString(),
           selfie_url: selfieUrl,
           document_url: docUrl,
           experience_proof_url: expUrl,
-        }).eq("user_id", userId);
+        } as any).eq("user_id", userId);
       }
       toast.success("Conta de montador criada! Verifique seu e-mail para confirmar.");
       navigate("/");
@@ -109,6 +113,18 @@ const CadastroMontador = () => {
 
             <div className="space-y-3 rounded-lg border border-border p-4">
               <p className="text-sm font-semibold">Verificação obrigatória</p>
+
+              <div>
+                <Label className="text-xs flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> Cidade de Atuação</Label>
+                <Select value={city} onValueChange={setCity}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione sua cidade" /></SelectTrigger>
+                  <SelectContent>
+                    {["Campinas", "Sumaré", "Hortolândia", "Valinhos", "Vinhedo", "Paulínia"].map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div>
                 <Label className="text-xs flex items-center gap-1"><DollarSign className="h-3.5 w-3.5" /> Chave PIX</Label>
