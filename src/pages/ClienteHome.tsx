@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { PlusCircle, Package, DollarSign, Check, MessageSquare, ExternalLink, HelpCircle, Lock, ShieldCheck, CreditCard } from "lucide-react";
+import { PlusCircle, Package, DollarSign, Check, MessageSquare, ExternalLink, HelpCircle, Lock, ShieldCheck, CreditCard, KeyRound } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -145,7 +145,8 @@ const ClienteHome = () => {
   };
 
   const markAsPaid = async (orderId: string) => {
-    await supabase.from("orders").update({ status: "pago" }).eq("id", orderId);
+    const verificationCode = String(Math.floor(1000 + Math.random() * 9000));
+    await supabase.from("orders").update({ status: "pago", verification_code: verificationCode } as any).eq("id", orderId);
     toast.success("Pagamento confirmado! Chat liberado.");
     fetchData();
   };
@@ -398,6 +399,24 @@ const ClienteHome = () => {
                         </div>
                         <p className="text-[10px] text-muted-foreground flex items-center gap-1 pt-1 border-t border-[hsl(210,50%,88%)]">
                           <Lock className="h-3 w-3" /> Ambiente criptografado e monitorado
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Verification code display */}
+                  {["pago", "desmontagem_confirmada"].includes(order.status) && (order as any).verification_code && (
+                    <div className="border-t border-border pt-3">
+                      <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-center">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <KeyRound className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-semibold">Senha de Segurança</span>
+                        </div>
+                        <span className="text-2xl font-mono font-bold tracking-[0.3em] text-primary">
+                          #{(order as any).verification_code}
+                        </span>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Passe este código ao montador apenas quando ele chegar.
                         </p>
                       </div>
                     </div>

@@ -82,10 +82,13 @@ Deno.serve(async (req) => {
     );
 
     if (payment.status === "approved") {
-      // Update order status to "pago"
+      // Generate 4-digit verification code
+      const verificationCode = String(Math.floor(1000 + Math.random() * 9000));
+
+      // Update order status to "pago" and set verification code
       const { error: updateError, data: updatedOrder } = await supabase
         .from("orders")
-        .update({ status: "pago" })
+        .update({ status: "pago", verification_code: verificationCode })
         .eq("id", orderId)
         .eq("status", "aceito")
         .select("title")

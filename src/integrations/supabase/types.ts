@@ -178,6 +178,7 @@ export type Database = {
           brand: string | null
           city: string | null
           client_id: string
+          code_validated: boolean | null
           created_at: string
           description: string
           furniture_type: string
@@ -187,12 +188,14 @@ export type Database = {
           service_type: string
           status: string
           title: string
+          verification_code: string | null
         }
         Insert: {
           address: string
           brand?: string | null
           city?: string | null
           client_id: string
+          code_validated?: boolean | null
           created_at?: string
           description: string
           furniture_type: string
@@ -202,12 +205,14 @@ export type Database = {
           service_type?: string
           status?: string
           title: string
+          verification_code?: string | null
         }
         Update: {
           address?: string
           brand?: string | null
           city?: string | null
           client_id?: string
+          code_validated?: boolean | null
           created_at?: string
           description?: string
           furniture_type?: string
@@ -217,6 +222,7 @@ export type Database = {
           service_type?: string
           status?: string
           title?: string
+          verification_code?: string | null
         }
         Relationships: []
       }
