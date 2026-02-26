@@ -19,10 +19,18 @@ import SouMontador from "./pages/SouMontador";
 import CadastroMontador from "./pages/CadastroMontador";
 import TermosPrivacidade from "./pages/TermosPrivacidade";
 import SuporteMontador from "./pages/SuporteMontador";
+import useTawkTo from "./hooks/useTawkTo";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+// Para ativar o Tawk.to, substitua undefined pelo seu ID:
+// Exemplo: "PROPERTY_ID/WIDGET_ID"
+const TAWK_TO_ID: string | undefined = undefined;
+
+const App = () => {
+  useTawkTo(TAWK_TO_ID);
+  
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
@@ -50,6 +58,7 @@ const App = () => (
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
