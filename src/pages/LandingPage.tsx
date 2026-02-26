@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Shield, Zap, Star, ArrowRight, Lock, UserCheck, Hash, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Navbar - LOGO AUMENTADA como você pediu */}
+      {/* Navbar - Logo aumentada */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -27,7 +28,7 @@ const LandingPage = () => {
         className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg"
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <img src={logoClickmont} alt="Clickmont" className="h-14 md:h-20 w-auto" />
+          <img src={logoClickmont} alt="Clickmont" className="h-12 md:h-16 w-auto" />
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={() => navigate("/quem-somos")}>
               Quem Somos
@@ -42,10 +43,11 @@ const LandingPage = () => {
         </div>
       </motion.nav>
 
-      {/* Hero */}
+      {/* Hero - sem foco em Campinas, preparado para escala nacional */}
       <section className="relative overflow-hidden px-4 py-24 md:py-36 bg-cover bg-center"
         style={{ backgroundImage: `url(https://images.unsplash.com/photo-1581244276891-83393a67d251?q=80&w=2000)` }}
       >
+        {/* Overlay para deixar texto legível */}
         <div className="absolute inset-0 bg-gradient-to-br from-orange-900/70 via-background/80 to-background/95" />
         
         <motion.div
@@ -68,7 +70,7 @@ const LandingPage = () => {
             className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl"
           >
             Especialistas em guarda-roupas, painéis de TV e armários de cozinha. 
-            Atendemos todo o Brasil.
+            Atendemos todo o Brasil, com lançamento piloto em Campinas/SP.
             Pagamento protegido e nosso código de segurança exclusivo de 4 dígitos.
           </motion.p>
           <motion.div
@@ -96,7 +98,7 @@ const LandingPage = () => {
         </motion.div>
       </section>
 
-      {/* GALERIA DE SERVIÇOS */}
+      {/* 🖼️ GALERIA DE SERVIÇOS */}
       <section className="px-4 py-16 bg-orange-50/50 border-b border-border">
         <div className="max-w-6xl mx-auto">
           <h3 className="text-center text-2xl font-bold mb-10">Serviços que realizamos</h3>
@@ -320,7 +322,7 @@ const LandingPage = () => {
         </motion.div>
       </section>
 
-      {/* Footer - Logo do rodapé também aumentada */}
+      {/* Footer */}
       <motion.footer
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -329,7 +331,7 @@ const LandingPage = () => {
         className="border-t border-border bg-card px-4 py-10"
       >
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 md:flex-row md:justify-between">
-          <img src={logoClickmont} alt="Clickmont" className="h-12 md:h-14 opacity-70 w-auto" />
+          <img src={logoClickmont} alt="Clickmont" className="h-10 opacity-70 w-auto" />
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
             <a href="/termos-e-privacidade" className="hover:text-foreground transition-colors">
               Termos de Uso
