@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CheckCircle, MessageCircle, User, Phone, MapPin, ShieldCheck } from "lucide-react";
+import { CheckCircle, XCircle, MessageCircle, User, Phone, MapPin, ShieldCheck } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 interface PendingMontador {
   id: string;
@@ -26,7 +27,8 @@ const AdminApproval = () => {
   const { isAdmin, loading: adminLoading } = useIsAdmin(user);
   const [montadores, setMontadores] = useState<PendingMontador[]>([]);
   const [loading, setLoading] = useState(true);
-  const [approving, setApproving] = useState<string | null>(null);
+  const [processing, setProcessing] = useState<string | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<PendingMontador | null>(null);
 
   useEffect(() => {
     if (isAdmin) fetchPending();
@@ -44,7 +46,7 @@ const AdminApproval = () => {
   };
 
   const handleApprove = async (montador: PendingMontador) => {
-    setApproving(montador.user_id);
+    setProcessing(montador.user_id);
     try {
       const { error } = await supabase
         .from("profiles")
@@ -52,7 +54,6 @@ const AdminApproval = () => {
         .eq("user_id", montador.user_id);
       if (error) throw error;
 
-      // Trigger welcome email
       await supabase.functions.invoke("notify-montador-approved", {
         body: { user_id: montador.user_id, name: montador.full_name },
       });
@@ -62,7 +63,27 @@ const AdminApproval = () => {
     } catch (err: any) {
       toast.error("Erro ao aprovar: " + err.message);
     } finally {
-      setApproving(null);
+      setProcessing(null);
+    }
+  };
+
+  const handleReject = async (montador: PendingMontador) => {
+    setProcessing(montador.user_id);
+    try {
+      // Change role back to cliente effectively rejecting the montador
+      const { error } = await supabase
+        .from("profiles")
+        .update({ role: "cliente", is_approved: false } as any)
+        .eq("user_id", montador.user_id);
+      if (error) throw error;
+
+      toast.success(`${montador.full_name} recusado.`);
+      setRejectTarget(null);
+      fetchPending();
+    } catch (err: any) {
+      toast.error("Erro ao recusar: " + err.message);
+    } finally {
+      setProcessing(null);
     }
   };
 
@@ -133,19 +154,13 @@ const AdminApproval = () => {
 
                 <div className="flex flex-wrap gap-2 text-xs">
                   {m.selfie_url && (
-                    <a href={m.selfie_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                      Ver Selfie
-                    </a>
+                    <a href={m.selfie_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Selfie</a>
                   )}
                   {m.document_url && (
-                    <a href={m.document_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                      Ver Documento
-                    </a>
+                    <a href={m.document_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Documento</a>
                   )}
                   {m.experience_proof_url && (
-                    <a href={m.experience_proof_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
-                      Ver Experiência
-                    </a>
+                    <a href={m.experience_proof_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Experiência</a>
                   )}
                 </div>
 
@@ -156,11 +171,20 @@ const AdminApproval = () => {
                 <div className="flex gap-2 pt-2">
                   <Button
                     size="sm"
-                    disabled={approving === m.user_id}
+                    disabled={processing === m.user_id}
                     onClick={() => handleApprove(m)}
                   >
                     <CheckCircle className="h-4 w-4 mr-1" />
-                    {approving === m.user_id ? "Aprovando..." : "Aprovar"}
+                    {processing === m.user_id ? "Aprovando..." : "Aprovar"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    disabled={processing === m.user_id}
+                    onClick={() => setRejectTarget(m)}
+                  >
+                    <XCircle className="h-4 w-4 mr-1" />
+                    Recusar
                   </Button>
                   <Button
                     size="sm"
@@ -168,7 +192,7 @@ const AdminApproval = () => {
                     onClick={() => openWhatsApp(m.phone, m.full_name)}
                   >
                     <MessageCircle className="h-4 w-4 mr-1" />
-                    Chamar no WhatsApp
+                    WhatsApp
                   </Button>
                 </div>
               </CardContent>
@@ -176,6 +200,24 @@ const AdminApproval = () => {
           ))}
         </div>
       )}
+
+      {/* Reject confirmation */}
+      <Dialog open={!!rejectTarget} onOpenChange={(open) => !open && setRejectTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Recusar Montador</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja recusar o cadastro de <strong>{rejectTarget?.full_name}</strong>? O perfil será revertido para cliente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setRejectTarget(null)}>Cancelar</Button>
+            <Button variant="destructive" disabled={!!processing} onClick={() => rejectTarget && handleReject(rejectTarget)}>
+              Sim, Recusar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

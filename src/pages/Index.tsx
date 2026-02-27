@@ -31,8 +31,17 @@ const Index = () => {
 
   if (isAdmin) return <Navigate to="/admin" replace />;
 
+  // Wait for profile to load before deciding which view to show
+  if (!profile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   // Block unapproved montadores
-  if (profile?.role === "montador" && !(profile as any).is_approved) {
+  if (profile.role === "montador" && !profile.is_approved) {
     return (
       <AppLayout>
         <MontadorPendingApproval />
@@ -42,7 +51,7 @@ const Index = () => {
 
   return (
     <AppLayout>
-      {profile?.role === "montador" ? <DashboardMontador /> : <ClienteHome />}
+      {profile.role === "montador" ? <DashboardMontador /> : <ClienteHome />}
     </AppLayout>
   );
 };

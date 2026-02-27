@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Shield, Package, AlertTriangle, Eye, DollarSign, CheckCircle, XCircle, Landmark, Loader2 } from "lucide-react";
+import { Shield, Package, AlertTriangle, Eye, DollarSign, CheckCircle, XCircle, Landmark, Loader2, Users, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 interface Order {
@@ -22,7 +22,8 @@ interface Ticket {
 }
 interface Profile {
   user_id: string; full_name: string; role: string;
-  phone: string | null; pix_key: string | null;
+  phone: string | null; pix_key: string | null; is_approved: boolean;
+  city: string | null; created_at: string;
 }
 interface WalletTx {
   id: string; montador_id: string; order_id: string | null;
@@ -53,12 +54,12 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [walletTxs, setWalletTxs] = useState<WalletTx[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
 
-  // Confirmation modal state
   const [confirmAction, setConfirmAction] = useState<{
     type: "authorize" | "block" | "withdraw";
     tx: WalletTx;
@@ -70,36 +71,26 @@ const AdminDashboard = () => {
   }, [isAdmin]);
 
   const fetchAll = async () => {
-    const [ordersRes, ticketsRes, walletRes] = await Promise.all([
+    const [ordersRes, ticketsRes, walletRes, profilesRes] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("support_tickets").select("*").order("created_at", { ascending: false }),
       supabase.from("wallet_transactions").select("*").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("*").order("created_at", { ascending: false }),
     ]);
 
     const allOrders = (ordersRes.data || []) as Order[];
     const allTickets = (ticketsRes.data || []) as Ticket[];
     const allWallet = (walletRes.data || []) as WalletTx[];
+    const allProfilesList = (profilesRes.data || []) as Profile[];
 
     setOrders(allOrders);
     setTickets(allTickets);
     setWalletTxs(allWallet);
+    setAllProfiles(allProfilesList);
 
-    const userIds = [
-      ...new Set([
-        ...allOrders.map((o) => o.client_id),
-        ...allTickets.map((t) => t.opened_by),
-        ...allWallet.map((w) => w.montador_id),
-      ]),
-    ];
-    if (userIds.length > 0) {
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, role, phone, pix_key")
-        .in("user_id", userIds);
-      const map: Record<string, Profile> = {};
-      (profilesData || []).forEach((p: any) => { map[p.user_id] = p; });
-      setProfiles(map);
-    }
+    const map: Record<string, Profile> = {};
+    allProfilesList.forEach((p) => { map[p.user_id] = p; });
+    setProfiles(map);
     setLoading(false);
   };
 
@@ -111,8 +102,6 @@ const AdminDashboard = () => {
         .update({ status: "disponivel" })
         .eq("id", tx.id);
       if (error) throw error;
-
-      // Also update the order to concluido if it's aguardando_liberacao
       if (tx.order_id) {
         await supabase
           .from("orders")
@@ -120,7 +109,6 @@ const AdminDashboard = () => {
           .eq("id", tx.order_id)
           .eq("status", "aguardando_liberacao");
       }
-
       toast.success("Pagamento autorizado! Saldo liberado para o montador.");
       setConfirmAction(null);
       fetchAll();
@@ -191,36 +179,97 @@ const AdminDashboard = () => {
   const openTickets = tickets.filter((t) => t.status === "aberto" || t.status === "em_analise");
   const auditTxs = walletTxs.filter((t) => t.type === "credit" && t.status === "auditoria");
   const pendingWithdrawals = walletTxs.filter((t) => t.type === "debit" && t.status === "pendente");
+  const pendingMontadores = allProfiles.filter((p) => p.role === "montador" && !p.is_approved);
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Shield className="h-6 w-6 text-primary" /> Painel Administrativo
-        </h1>
-        <p className="text-muted-foreground">Centro de comando de pagamentos e gestão</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Shield className="h-6 w-6 text-primary" /> Painel Administrativo
+          </h1>
+          <p className="text-muted-foreground">Centro de comando de pagamentos e gestão</p>
+        </div>
+        <Button onClick={() => navigate("/admin-approval")} variant="outline" className="gap-2">
+          <ShieldCheck className="h-4 w-4" />
+          Aprovação de Montadores
+          {pendingMontadores.length > 0 && (
+            <Badge variant="destructive" className="ml-1">{pendingMontadores.length}</Badge>
+          )}
+        </Button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold">{orders.length}</p><p className="text-xs text-muted-foreground">Pedidos</p></CardContent></Card>
-        <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold">{orders.filter((o) => o.status === "pendente").length}</p><p className="text-xs text-muted-foreground">Pendentes</p></CardContent></Card>
+        <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold">{allProfiles.length}</p><p className="text-xs text-muted-foreground">Usuários</p></CardContent></Card>
         <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold text-warning">{openTickets.length}</p><p className="text-xs text-muted-foreground">Tickets</p></CardContent></Card>
         <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold text-primary">{auditTxs.length}</p><p className="text-xs text-muted-foreground">Em Auditoria</p></CardContent></Card>
-        <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold text-gold">{pendingWithdrawals.length}</p><p className="text-xs text-muted-foreground">Saques</p></CardContent></Card>
+        <Card><CardContent className="py-4 text-center"><p className="text-2xl font-bold text-destructive">{pendingMontadores.length}</p><p className="text-xs text-muted-foreground">Pendentes</p></CardContent></Card>
       </div>
 
-      <Tabs defaultValue="financeiro">
+      <Tabs defaultValue="orders">
         <TabsList className="flex-wrap">
-          <TabsTrigger value="financeiro" className="gap-1"><DollarSign className="h-4 w-4" /> Financeiro ({auditTxs.length + pendingWithdrawals.length})</TabsTrigger>
           <TabsTrigger value="orders" className="gap-1"><Package className="h-4 w-4" /> Pedidos ({orders.length})</TabsTrigger>
+          <TabsTrigger value="users" className="gap-1"><Users className="h-4 w-4" /> Usuários ({allProfiles.length})</TabsTrigger>
+          <TabsTrigger value="financeiro" className="gap-1"><DollarSign className="h-4 w-4" /> Financeiro ({auditTxs.length + pendingWithdrawals.length})</TabsTrigger>
           <TabsTrigger value="tickets" className="gap-1"><AlertTriangle className="h-4 w-4" /> Tickets ({tickets.length})</TabsTrigger>
         </TabsList>
 
-        {/* Financeiro Tab - Two columns */}
+        {/* Orders Tab */}
+        <TabsContent value="orders" className="mt-4 space-y-3">
+          {orders.length === 0 ? (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhum pedido encontrado.</CardContent></Card>
+          ) : orders.map((order) => {
+            const client = profiles[order.client_id];
+            return (
+              <Card key={order.id}>
+                <CardContent className="flex items-center justify-between py-4">
+                  <div className="space-y-1">
+                    <p className="font-medium">{order.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Cliente: {client?.full_name || "?"} • {order.furniture_type} • {order.service_type === "desmontagem" ? "📦" : "🔧"} {order.service_type}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{order.address}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString("pt-BR")}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className={orderStatusColors[order.status]}>{orderStatusLabels[order.status] || order.status}</Badge>
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/chat/${order.id}`)}><Eye className="h-3.5 w-3.5" /></Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </TabsContent>
+
+        {/* Users Tab */}
+        <TabsContent value="users" className="mt-4 space-y-3">
+          {allProfiles.map((p) => (
+            <Card key={p.user_id}>
+              <CardContent className="flex items-center justify-between py-4">
+                <div className="space-y-1">
+                  <p className="font-medium">{p.full_name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {p.phone || "Sem telefone"} • {p.city || "Sem cidade"} • Cadastrado em {new Date(p.created_at).toLocaleDateString("pt-BR")}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant={p.role === "montador" ? "default" : "secondary"}>{p.role}</Badge>
+                  {p.role === "montador" && (
+                    <Badge variant={p.is_approved ? "default" : "destructive"} className={p.is_approved ? "bg-success text-success-foreground" : ""}>
+                      {p.is_approved ? "Aprovado" : "Pendente"}
+                    </Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </TabsContent>
+
+        {/* Financeiro Tab */}
         <TabsContent value="financeiro" className="mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Column A: Liberação de Serviços */}
             <div className="space-y-3">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-primary" /> Liberação de Serviços
@@ -237,37 +286,18 @@ const AdminDashboard = () => {
                         <div className="flex items-start justify-between">
                           <div className="space-y-1">
                             <p className="font-medium">{tx.description}</p>
-                            <p className="text-sm text-muted-foreground">
-                              Montador: <strong>{montador?.full_name || "?"}</strong>
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              PIX: <strong>{montador?.pix_key || "N/A"}</strong>
-                            </p>
-                            {order && (
-                              <p className="text-xs text-muted-foreground">
-                                Pedido: {order.title} · {order.service_type === "desmontagem" ? "📦" : "🔧"} {order.service_type}
-                              </p>
-                            )}
-                            {order?.photo_url && (
-                              <img src={order.photo_url} alt="Foto" className="h-16 w-16 rounded-md object-cover mt-1" />
-                            )}
+                            <p className="text-sm text-muted-foreground">Montador: <strong>{montador?.full_name || "?"}</strong></p>
+                            <p className="text-sm text-muted-foreground">PIX: <strong>{montador?.pix_key || "N/A"}</strong></p>
+                            {order && <p className="text-xs text-muted-foreground">Pedido: {order.title} · {order.service_type === "desmontagem" ? "📦" : "🔧"} {order.service_type}</p>}
                             <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleString("pt-BR")}</p>
                           </div>
                           <p className="text-xl font-bold text-primary">R$ {tx.amount.toFixed(2)}</p>
                         </div>
                         <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            className="bg-success hover:bg-success/80 text-success-foreground"
-                            onClick={() => setConfirmAction({ type: "authorize", tx, montadorName: montador?.full_name || "Montador" })}
-                          >
+                          <Button size="sm" className="bg-success hover:bg-success/80 text-success-foreground" onClick={() => setConfirmAction({ type: "authorize", tx, montadorName: montador?.full_name || "Montador" })}>
                             <CheckCircle className="h-4 w-4 mr-1" /> Autorizar
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => setConfirmAction({ type: "block", tx, montadorName: montador?.full_name || "Montador" })}
-                          >
+                          <Button size="sm" variant="destructive" onClick={() => setConfirmAction({ type: "block", tx, montadorName: montador?.full_name || "Montador" })}>
                             <XCircle className="h-4 w-4 mr-1" /> Bloquear
                           </Button>
                         </div>
@@ -277,11 +307,9 @@ const AdminDashboard = () => {
                 })
               )}
             </div>
-
-            {/* Column B: Pedidos de Saque */}
             <div className="space-y-3">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Landmark className="h-5 w-5 text-gold" /> Pedidos de Saque
+                <Landmark className="h-5 w-5 text-destructive" /> Pedidos de Saque
               </h2>
               {pendingWithdrawals.length === 0 ? (
                 <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhum saque pendente.</CardContent></Card>
@@ -289,7 +317,7 @@ const AdminDashboard = () => {
                 pendingWithdrawals.map((tx) => {
                   const montador = profiles[tx.montador_id];
                   return (
-                    <Card key={tx.id} className="border-gold/30">
+                    <Card key={tx.id} className="border-destructive/30">
                       <CardContent className="py-4 space-y-2">
                         <div className="flex items-start justify-between">
                           <div className="space-y-1">
@@ -300,11 +328,7 @@ const AdminDashboard = () => {
                           </div>
                           <p className="text-lg font-bold text-destructive">R$ {Math.abs(tx.amount).toFixed(2)}</p>
                         </div>
-                        <Button
-                          size="sm"
-                          className="bg-success hover:bg-success/80 text-success-foreground"
-                          onClick={() => setConfirmAction({ type: "withdraw", tx, montadorName: montador?.full_name || "Montador" })}
-                        >
+                        <Button size="sm" className="bg-success hover:bg-success/80 text-success-foreground" onClick={() => setConfirmAction({ type: "withdraw", tx, montadorName: montador?.full_name || "Montador" })}>
                           <CheckCircle className="h-4 w-4 mr-1" /> Confirmar Transferência
                         </Button>
                       </CardContent>
@@ -314,30 +338,6 @@ const AdminDashboard = () => {
               )}
             </div>
           </div>
-        </TabsContent>
-
-        {/* Orders Tab */}
-        <TabsContent value="orders" className="mt-4 space-y-3">
-          {orders.map((order) => {
-            const client = profiles[order.client_id];
-            return (
-              <Card key={order.id}>
-                <CardContent className="flex items-center justify-between py-4">
-                  <div className="space-y-1">
-                    <p className="font-medium">{order.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Cliente: {client?.full_name || "?"} • {order.furniture_type} • {order.service_type === "desmontagem" ? "📦" : "🔧"} {order.service_type}
-                    </p>
-                    <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString("pt-BR")}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className={orderStatusColors[order.status]}>{orderStatusLabels[order.status] || order.status}</Badge>
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/chat/${order.id}`)}><Eye className="h-3.5 w-3.5" /></Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
         </TabsContent>
 
         {/* Tickets Tab */}
@@ -372,10 +372,10 @@ const AdminDashboard = () => {
             </DialogTitle>
             <DialogDescription>
               {confirmAction?.type === "authorize" && (
-                <>Deseja realmente autorizar o pagamento de <strong className="text-success">R$ {confirmAction.tx.amount.toFixed(2)}</strong> para o montador <strong>{confirmAction.montadorName}</strong>? O valor será creditado no saldo disponível.</>
+                <>Deseja realmente autorizar o pagamento de <strong className="text-success">R$ {confirmAction.tx.amount.toFixed(2)}</strong> para o montador <strong>{confirmAction.montadorName}</strong>?</>
               )}
               {confirmAction?.type === "block" && (
-                <>Deseja bloquear o pagamento de <strong className="text-destructive">R$ {confirmAction.tx.amount.toFixed(2)}</strong> para <strong>{confirmAction.montadorName}</strong>? O valor ficará retido para análise.</>
+                <>Deseja bloquear o pagamento de <strong className="text-destructive">R$ {confirmAction.tx.amount.toFixed(2)}</strong> para <strong>{confirmAction.montadorName}</strong>?</>
               )}
               {confirmAction?.type === "withdraw" && (
                 <>Confirma que a transferência PIX de <strong className="text-destructive">R$ {Math.abs(confirmAction.tx.amount).toFixed(2)}</strong> para <strong>{confirmAction.montadorName}</strong> foi realizada?</>
@@ -383,9 +383,7 @@ const AdminDashboard = () => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setConfirmAction(null)} disabled={!!processing}>
-              Cancelar
-            </Button>
+            <Button variant="outline" onClick={() => setConfirmAction(null)} disabled={!!processing}>Cancelar</Button>
             <Button
               className={confirmAction?.type === "block" ? "bg-destructive hover:bg-destructive/80 text-destructive-foreground" : "bg-success hover:bg-success/80 text-success-foreground"}
               disabled={!!processing}

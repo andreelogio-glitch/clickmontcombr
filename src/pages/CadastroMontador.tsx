@@ -64,9 +64,11 @@ const CadastroMontador = () => {
           uploadFile(experienceFile, userId, "experiencia"),
         ]);
         await supabase.from("profiles").update({
+          role: "montador",
           phone: phone || null,
           pix_key: pixKey || null,
           city,
+          is_approved: false,
           lgpd_accepted_at: new Date().toISOString(),
           selfie_url: selfieUrl,
           document_url: docUrl,
