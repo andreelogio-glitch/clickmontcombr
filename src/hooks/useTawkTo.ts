@@ -19,8 +19,9 @@ const useTawkTo = (tawkId?: string) => {
     window.Tawk_API = window.Tawk_API || {};
     window.Tawk_LoadStart = new Date();
 
+    window.Tawk_API.language = "pt-br";
     window.Tawk_API.onLoad = function () {
-      window.Tawk_API.setAttributes({ language: "pt" }, function (error: any) {
+      window.Tawk_API.setAttributes({ language: "pt-br" }, function (error: any) {
         if (error) console.warn("Tawk.to setAttributes error:", error);
       });
     };

@@ -7,6 +7,7 @@
     <meta name="description" content="Plataforma para solicitar montagem e desmontagem de móveis com profissionais verificados." />
     <meta name="author" content="Clickmont" />
     <meta name="theme-color" content="#FF6B00" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 
     <!-- iOS PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -32,8 +33,10 @@
     <!--Start of Tawk.to Script EM PORTUGUÊS BRASIL-->
     <script type="text/javascript">
     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    // Força o carregamento do chat em Português do Brasil
-    Tawk_API.setLanguage('pt-BR');
+    Tawk_API.language = 'pt-br';
+    Tawk_API.onLoad = function(){
+      Tawk_API.setAttributes({language:'pt-br'},function(){});
+    };
     (function(){
     var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
     s1.async=true;

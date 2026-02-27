@@ -236,7 +236,7 @@ const PedirMontagem = () => {
             </div>
 
             <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
-              {loading ? "Enviando..." : "Publicar Pedido"}
+              {loading ? "Enviando..." : "Solicitar Serviço"}
             </Button>
           </form>
         </CardContent>

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { User, Wrench, Camera, FileText, Upload, DollarSign } from "lucide-react";
+import { User, Wrench, Camera, FileText, Upload, DollarSign, LogOut } from "lucide-react";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
 const Auth = () => {
@@ -119,7 +119,14 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex flex-col bg-background p-4">
+      {/* Top bar with logout */}
+      <div className="flex justify-end mb-4">
+        <Button variant="ghost" size="sm" onClick={async () => { await supabase.auth.signOut(); navigate("/"); }} className="text-muted-foreground">
+          <LogOut className="h-4 w-4 mr-1" /> Sair
+        </Button>
+      </div>
+      <div className="flex-1 flex items-center justify-center">
       <Card className="w-full max-w-md animate-fade-in">
         <CardHeader className="text-center">
           <img src={logoClickmont} alt="Clickmont" className="mx-auto mb-3 h-16 w-16 object-contain" />
@@ -248,6 +255,7 @@ const Auth = () => {
           </div>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 };
