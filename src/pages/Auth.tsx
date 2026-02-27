@@ -85,12 +85,14 @@ const Auth = () => {
         if (userId) {
           // Update profile with phone and LGPD
           const updates: Record<string, any> = {
+            role,
             phone: phone || null,
             lgpd_accepted_at: new Date().toISOString(),
           };
 
           if (role === "montador") {
             updates.pix_key = pixKey || null;
+            updates.is_approved = false;
           }
 
           if (role === "montador" && selfieFile && documentFile && experienceFile) {
