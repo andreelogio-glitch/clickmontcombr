@@ -1,10 +1,45 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { encode as hexEncode } from "https://deno.land/std@0.224.0/encoding/hex.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+async function verifyMPSignature(
+  xSignature: string,
+  xRequestId: string,
+  dataId: string,
+  secret: string
+): Promise<boolean> {
+  // Parse x-signature header: "ts=...,v1=..."
+  const parts: Record<string, string> = {};
+  for (const part of xSignature.split(",")) {
+    const [key, ...val] = part.split("=");
+    parts[key.trim()] = val.join("=").trim();
+  }
+
+  const ts = parts["ts"];
+  const v1 = parts["v1"];
+  if (!ts || !v1) return false;
+
+  // Build manifest string per MP docs
+  const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(manifest));
+  const hex = new TextDecoder().decode(hexEncode(new Uint8Array(signature)));
+
+  return hex === v1;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -15,37 +50,56 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const topic = url.searchParams.get("topic") || url.searchParams.get("type");
 
-    // MP sends different notification types; we only care about payments
     let paymentId: string | null = null;
+    let bodyText = "";
 
     if (req.method === "POST") {
-      const body = await req.json();
+      bodyText = await req.text();
+      const body = JSON.parse(bodyText);
       console.log("Webhook received:", JSON.stringify(body));
 
-      // IPN format: topic=payment, id in query
+      // Signature verification
+      const xSignature = req.headers.get("x-signature");
+      const xRequestId = req.headers.get("x-request-id");
+      const webhookSecret = Deno.env.get("MP_WEBHOOK_SECRET");
+
+      if (webhookSecret && xSignature && xRequestId) {
+        const dataId = body.data?.id ? String(body.data.id) : url.searchParams.get("id") || "";
+        const valid = await verifyMPSignature(xSignature, xRequestId, dataId, webhookSecret);
+        if (!valid) {
+          console.error("Invalid MP webhook signature");
+          return new Response(JSON.stringify({ error: "Invalid signature" }), {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        console.log("MP signature verified ✓");
+      } else if (webhookSecret) {
+        // Secret configured but headers missing - log warning but allow (IPN format)
+        console.warn("MP webhook secret configured but signature headers missing, falling back to API verification");
+      }
+
+      // IPN format
       if (topic === "payment") {
         paymentId = url.searchParams.get("id");
       }
 
-      // Webhooks v2 format: type=payment, data.id in body
+      // Webhooks v2 format
       if (body.type === "payment" && body.data?.id) {
         paymentId = String(body.data.id);
       }
 
-      // Also handle action "payment.updated" or "payment.created"
       if (body.action?.startsWith("payment.") && body.data?.id) {
         paymentId = String(body.data.id);
       }
     }
 
     if (!paymentId) {
-      // Not a payment notification, acknowledge anyway
       return new Response(JSON.stringify({ received: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Fetch payment details from Mercado Pago
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
     if (!accessToken) {
       console.error("MERCADOPAGO_ACCESS_TOKEN not set");
@@ -57,12 +111,10 @@ Deno.serve(async (req) => {
 
     const mpRes = await fetch(
       `https://api.mercadopago.com/v1/payments/${paymentId}`,
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     );
     const payment = await mpRes.json();
-    await mpRes.text().catch(() => {}); // ensure body consumed
+    await mpRes.text().catch(() => {});
 
     console.log(
       `Payment ${paymentId}: status=${payment.status}, external_reference=${payment.external_reference}`
@@ -75,17 +127,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Initialize Supabase with service role to bypass RLS
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
     if (payment.status === "approved") {
-      // Generate 4-digit verification code
       const verificationCode = String(Math.floor(1000 + Math.random() * 9000));
 
-      // Update order status to "pago" and set verification code
       const { error: updateError, data: updatedOrder } = await supabase
         .from("orders")
         .update({ status: "pago", verification_code: verificationCode })
@@ -99,7 +148,6 @@ Deno.serve(async (req) => {
       } else if (updatedOrder) {
         console.log(`Order ${orderId} marked as paid`);
 
-        // Find the accepted bid's montador to notify
         const { data: acceptedBid } = await supabase
           .from("bids")
           .select("montador_id")
@@ -108,7 +156,6 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (acceptedBid) {
-          // Send push notification to montador
           const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
           const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -136,7 +183,6 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("Webhook error:", err);
-    // Always return 200 to MP so it doesn't retry endlessly
     return new Response(JSON.stringify({ error: err.message }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

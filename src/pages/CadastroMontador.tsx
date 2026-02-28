@@ -39,8 +39,8 @@ const CadastroMontador = () => {
     const path = `${userId}/${folder}.${ext}`;
     const { error } = await supabase.storage.from("user-documents").upload(path, file, { upsert: true });
     if (error) { console.error("Upload error:", error); return null; }
-    const { data } = supabase.storage.from("user-documents").getPublicUrl(path);
-    return data.publicUrl;
+    // Store the path reference, not the public URL (bucket is now private)
+    return path;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
