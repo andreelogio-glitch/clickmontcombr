@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Shield, Zap, Star, ArrowRight, Lock, UserCheck, Hash, MessageCircle } from "lucide-react";
+import { Shield, Zap, Star, ArrowRight, Lock, UserCheck, Hash, MessageCircle, Users, Wrench, CreditCard, CheckCircle, Scale, AlertTriangle, Building2, Target, DollarSign, FileText, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -19,7 +19,7 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Navbar - LOGO AUMENTADA */}
+      {/* Navbar */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -27,17 +27,12 @@ const LandingPage = () => {
         className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg"
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <img src={logoClickmont} alt="Clickmont" className="h-14 md:h-20 w-auto" />
+          <img src={logoClickmont} alt="ClickMont" className="h-14 md:h-20 w-auto" />
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/quem-somos")}>
-              Quem Somos
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/sou-montador")}>
-              Sou Montador
-            </Button>
-            <Button size="sm" onClick={() => navigate("/auth")}>
-              Entrar
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/quem-somos")}>Quem Somos</Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/institucional")}>Institucional</Button>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/sou-montador")}>Sou Montador</Button>
+            <Button size="sm" onClick={() => navigate("/auth")}>Entrar</Button>
           </div>
         </div>
       </motion.nav>
@@ -47,75 +42,50 @@ const LandingPage = () => {
         style={{ backgroundImage: `url(https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=2070)` }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-orange-900/70 via-background/80 to-background/95" />
-        
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={stagger}
-          className="relative mx-auto max-w-4xl text-center z-10"
-        >
-          <motion.h1
-            variants={fadeUp}
-            transition={{ duration: 0.6 }}
-            className="text-4xl font-extrabold leading-tight tracking-tight md:text-6xl"
-          >
+        <motion.div initial="hidden" animate="visible" variants={stagger} className="relative mx-auto max-w-4xl text-center z-10">
+          <motion.h1 variants={fadeUp} transition={{ duration: 0.6 }} className="text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
             Montagem de móveis profissional,{" "}
             <span className="text-gradient text-orange-400">simples e segura.</span>
           </motion.h1>
-          <motion.p
-            variants={fadeUp}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl"
-          >
-            Especialistas em guarda-roupas, painéis de TV e armários de cozinha. 
-            Atendemos todo o Brasil.
-            Pagamento protegido e nosso código de segurança exclusivo de 4 dígitos.
+          <motion.p variants={fadeUp} transition={{ duration: 0.6, delay: 0.1 }} className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
+            Plataforma digital de intermediação que conecta clientes a montadores profissionais independentes.
+            Pagamento protegido e código de segurança exclusivo de 4 dígitos.
           </motion.p>
-          <motion.div
-            variants={fadeUp}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-          >
-            <Button
-              size="lg"
-              className="h-14 gap-2 px-10 text-lg font-bold bg-orange-500 hover:bg-orange-600 text-white shadow-xl animate-pulse"
-              onClick={() => navigate("/auth?role=cliente")}
-            >
-              🚀 SOLICITAR MONTADOR AGORA
-              <ArrowRight className="h-5 w-5" />
+          <motion.div variants={fadeUp} transition={{ duration: 0.6, delay: 0.2 }} className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Button size="lg" className="h-14 gap-2 px-10 text-lg font-bold bg-orange-500 hover:bg-orange-600 text-white shadow-xl animate-pulse" onClick={() => navigate("/auth?role=cliente")}>
+              🚀 SOLICITAR MONTADOR AGORA <ArrowRight className="h-5 w-5" />
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-13 gap-2 px-8 text-base font-semibold"
-              onClick={() => navigate("/sou-montador")}
-            >
+            <Button size="lg" variant="outline" className="h-13 gap-2 px-8 text-base font-semibold" onClick={() => navigate("/sou-montador")}>
               Quero ser Parceiro
             </Button>
           </motion.div>
         </motion.div>
       </section>
 
-      {/* 🖼️ GALERIA DE SERVIÇOS - com a nova imagem */}
+      {/* O que é o ClickMont */}
+      <section className="px-4 py-20 md:py-28">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={stagger} className="mx-auto max-w-4xl text-center">
+          <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="text-3xl font-bold md:text-4xl">O que é o ClickMont</motion.h2>
+          <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="mx-auto mt-6 max-w-3xl text-lg text-muted-foreground leading-relaxed">
+            O ClickMont é uma <strong className="text-foreground">plataforma digital brasileira de intermediação de serviços</strong> que conecta
+            clientes que precisam de montagem de móveis a montadores profissionais independentes. Atuamos como uma ponte segura entre as duas partes,
+            facilitando a contratação com transparência e proteção para todos os envolvidos.
+          </motion.p>
+          <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+            A plataforma não oferece empregos, não garante renda e não atua como prestador direto do serviço —
+            funcionando exclusivamente como <strong className="text-foreground">intermediador tecnológico</strong>.
+          </motion.p>
+        </motion.div>
+      </section>
+
+      {/* Galeria de Serviços */}
       <section className="px-4 py-16 bg-orange-50/50 border-b border-border">
         <div className="max-w-6xl mx-auto">
           <h3 className="text-center text-2xl font-bold mb-10">Serviços que realizamos</h3>
           <div className="grid gap-8 md:grid-cols-3">
-            <img 
-              src="https://images.unsplash.com/photo-1595428774223-ef52624120d2?q=80&w=800"
-              alt="Montagem de Guarda-Roupa"
-              className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
-            />
-            <img 
-              src="https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?q=80&w=800"
-              alt="Instalação de Painel de TV"
-              className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
-            />
-            <img 
-              src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=1200"
-              alt="Sala e Cozinha conjugada com painel de TV e armários de cozinha instalados"
-              className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
-            />
+            <img src="https://images.unsplash.com/photo-1595428774223-ef52624120d2?q=80&w=800" alt="Montagem de Guarda-Roupa" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
+            <img src="https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?q=80&w=800" alt="Instalação de Painel de TV" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
+            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?q=80&w=800" alt="Quarto planejado com guarda-roupa e montagem profissional" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
           </div>
         </div>
       </section>
@@ -123,56 +93,20 @@ const LandingPage = () => {
       {/* Benefits */}
       <section className="border-t border-border bg-card px-4 py-20 md:py-28">
         <div className="mx-auto max-w-6xl">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={stagger}
-          >
-            <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="text-center text-3xl font-bold md:text-4xl">
-              Por que escolher a Clickmont?
-            </motion.h2>
-            <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
-              Tecnologia a favor da sua tranquilidade
-            </motion.p>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={stagger}>
+            <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="text-center text-3xl font-bold md:text-4xl">Por que escolher a ClickMont?</motion.h2>
+            <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">Tecnologia a favor da sua tranquilidade</motion.p>
           </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={stagger}
-            className="mt-14 grid gap-8 md:grid-cols-3"
-          >
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="mt-14 grid gap-8 md:grid-cols-3">
             {[
-              {
-                icon: Shield,
-                title: "Segurança Total",
-                desc: "Pagamento garantido e sistema de código de segurança para autorizar o início do serviço.",
-                color: "text-primary",
-                bg: "bg-primary/10",
-              },
-              {
-                icon: Zap,
-                title: "Agilidade",
-                desc: "Receba lances de profissionais verificados em poucos minutos.",
-                color: "text-warning",
-                bg: "bg-warning/10",
-              },
-              {
-                icon: Star,
-                title: "Qualidade",
-                desc: "Montadores avaliados pela comunidade e histórico de serviços transparente.",
-                color: "text-success",
-                bg: "bg-success/10",
-              },
+              { icon: Shield, title: "Segurança Total", desc: "Pagamento garantido e sistema de código de segurança para autorizar o início do serviço.", color: "text-primary", bg: "bg-primary/10" },
+              { icon: Zap, title: "Agilidade", desc: "Receba lances de profissionais verificados em poucos minutos.", color: "text-warning", bg: "bg-warning/10" },
+              { icon: Star, title: "Qualidade", desc: "Montadores avaliados pela comunidade e histórico de serviços transparente.", color: "text-success", bg: "bg-success/10" },
             ].map((b) => (
               <motion.div key={b.title} variants={fadeUp} transition={{ duration: 0.5 }}>
                 <Card className="border-border bg-background transition-shadow hover:shadow-lg h-full">
                   <CardContent className="flex flex-col items-start gap-4 p-8">
-                    <div className={`rounded-xl p-3 ${b.bg}`}>
-                      <b.icon className={`h-7 w-7 ${b.color}`} />
-                    </div>
+                    <div className={`rounded-xl p-3 ${b.bg}`}><b.icon className={`h-7 w-7 ${b.color}`} /></div>
                     <h3 className="text-xl font-bold">{b.title}</h3>
                     <p className="text-muted-foreground leading-relaxed">{b.desc}</p>
                   </CardContent>
@@ -183,96 +117,60 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* Como Funciona */}
       <section className="px-4 py-20 md:py-28">
         <div className="mx-auto max-w-5xl">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={stagger}
-          >
-            <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="text-center text-3xl font-bold md:text-4xl">
-              Como Funciona
-            </motion.h2>
-            <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
-              Três passos para uma montagem sem dor de cabeça
-            </motion.p>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={stagger}>
+            <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="text-center text-3xl font-bold md:text-4xl">Como Funciona</motion.h2>
+            <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">O fluxo completo de intermediação</motion.p>
           </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={stagger}
-            className="mt-14 grid gap-10 md:grid-cols-3"
-          >
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="mt-14 space-y-4">
             {[
-              {
-                step: "1",
-                title: "Solicite",
-                desc: "Descreva o serviço, envie fotos do móvel e receba lances de montadores da sua cidade.",
-              },
-              {
-                step: "2",
-                title: "Compare",
-                desc: "Avalie perfis, valores e mensagens dos profissionais. Escolha o melhor para você.",
-              },
-              {
-                step: "3",
-                title: "Agende",
-                desc: "Confirme o serviço, receba o código de segurança e acompanhe tudo pelo chat em tempo real.",
-              },
+              { icon: FileText, step: "1", title: "Cliente solicita o serviço", desc: "Descreva o móvel, envie fotos e indique cidade e data desejada." },
+              { icon: Users, step: "2", title: "Montador aceita a demanda", desc: "Profissionais verificados da região enviam propostas com valor e prazo." },
+              { icon: MessageCircle, step: "3", title: "Comunicação via chat interno", desc: "Toda a comunicação ocorre dentro da plataforma, sem exposição de dados pessoais." },
+              { icon: Eye, step: "4", title: "Plataforma acompanha o processo", desc: "A ClickMont monitora o andamento com código de segurança e confirmação de etapas." },
+              { icon: CreditCard, step: "5", title: "Pagamento no ambiente seguro", desc: "O valor fica custodiado até a confirmação da conclusão do serviço pelo cliente." },
+              { icon: DollarSign, step: "6", title: "Split automático", desc: "Montador recebe o valor líquido automaticamente. A plataforma retém a taxa operacional." },
             ].map((s) => (
-              <motion.div key={s.step} variants={fadeUp} transition={{ duration: 0.5 }} className="flex flex-col items-center text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl gradient-primary text-primary-foreground text-2xl font-black shadow-lg">
-                  {s.step}
-                </div>
-                <h3 className="mt-5 text-xl font-bold">{s.title}</h3>
-                <p className="mt-2 text-muted-foreground leading-relaxed">{s.desc}</p>
+              <motion.div key={s.step} variants={fadeUp} transition={{ duration: 0.4 }}>
+                <Card className="border-border hover:shadow-md transition-shadow">
+                  <CardContent className="flex items-start gap-4 p-5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-primary text-primary-foreground text-sm font-black shrink-0">{s.step}</div>
+                    <div>
+                      <h3 className="font-bold">{s.title}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">{s.desc}</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* Security highlight */}
+      {/* Security */}
       <section className="border-t border-border bg-card px-4 py-20 md:py-28">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={stagger}
-          className="mx-auto flex max-w-5xl flex-col items-center gap-12 md:flex-row"
-        >
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={stagger} className="mx-auto flex max-w-5xl flex-col items-center gap-12 md:flex-row">
           <motion.div variants={fadeUp} transition={{ duration: 0.6 }} className="flex-1 space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
-              <Lock className="h-4 w-4" />
-              Protocolo de Identificação
+              <Lock className="h-4 w-4" /> Protocolo de Segurança
             </div>
-            <h2 className="text-3xl font-bold md:text-4xl">
-              Segurança em cada etapa
-            </h2>
+            <h2 className="text-3xl font-bold md:text-4xl">Segurança em cada etapa</h2>
             <p className="text-muted-foreground leading-relaxed text-lg">
-              Antes de iniciar o serviço, o montador se identifica pelo app e
-              confirma presença. O cliente então compartilha o código de 4
-              dígitos exclusivo — só após a validação o serviço começa.
+              Chat interno protegido sem necessidade de compartilhar número pessoal. Pagamento custodiado no ambiente seguro.
+              Código de 4 dígitos exclusivo valida a identidade do montador antes do início do serviço.
             </p>
           </motion.div>
           <motion.div variants={fadeUp} transition={{ duration: 0.6, delay: 0.15 }} className="flex flex-1 justify-center">
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: UserCheck, label: "Foto no perfil" },
+                { icon: UserCheck, label: "Verificação de identidade" },
                 { icon: Hash, label: "Código de 4 dígitos" },
-                { icon: Shield, label: "Pagamento protegido" },
-                { icon: MessageCircle, label: "Chat em tempo real" },
+                { icon: Shield, label: "Pagamento custodiado" },
+                { icon: MessageCircle, label: "Chat interno protegido" },
               ].map((f) => (
-                <motion.div
-                  key={f.label}
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-background p-6 text-center shadow-sm"
-                >
+                <motion.div key={f.label} whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }} className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-background p-6 text-center shadow-sm">
                   <f.icon className="h-8 w-8 text-primary" />
                   <span className="text-sm font-medium">{f.label}</span>
                 </motion.div>
@@ -282,84 +180,149 @@ const LandingPage = () => {
         </motion.div>
       </section>
 
-      {/* CTA final */}
+      {/* Modelo Operacional */}
       <section className="px-4 py-20 md:py-28">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.4 }}
-          variants={fadeUp}
-          transition={{ duration: 0.7 }}
-          className="mx-auto max-w-3xl rounded-3xl gradient-primary p-10 text-center text-primary-foreground shadow-2xl md:p-16"
-        >
-          <h2 className="text-3xl font-bold md:text-4xl">
-            Pronto para começar?
-          </h2>
-          <p className="mx-auto mt-4 max-w-lg text-primary-foreground/80 text-lg">
-            Crie sua conta gratuita e solicite uma montagem em poucos minutos.
-          </p>
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={stagger} className="mx-auto max-w-3xl">
+          <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="text-center text-3xl font-bold md:text-4xl">Modelo Operacional</motion.h2>
+          <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="mt-8 space-y-6">
+            <p className="text-lg text-muted-foreground leading-relaxed text-center">
+              A plataforma aplica uma <strong className="text-foreground">taxa operacional entre 20% e 30%</strong> (padrão de 25%) sobre o valor do serviço.
+              Essa taxa cobre: tecnologia, intermediação, suporte, segurança da transação e manutenção da plataforma.
+            </p>
+            <Card className="border-primary/20">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center gap-2 text-primary">
+                  <DollarSign className="h-5 w-5" />
+                  <h3 className="font-bold">Exemplo de Split</h3>
+                </div>
+                <div className="bg-accent/30 rounded-xl p-4 space-y-2 text-sm">
+                  <p className="flex justify-between"><span>Valor do serviço:</span><strong className="text-foreground">R$ 100,00</strong></p>
+                  <p className="flex justify-between"><span>Taxa operacional (25%):</span><strong className="text-foreground">R$ 25,00</strong></p>
+                  <div className="border-t border-border pt-2">
+                    <p className="flex justify-between font-bold"><span>Montador recebe:</span><span className="text-primary">R$ 75,00</span></p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  A taxa é exibida de forma transparente antes da confirmação do pagamento.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Para Clientes / Para Montadores */}
+      <section className="border-t border-border bg-card px-4 py-20 md:py-28">
+        <div className="mx-auto max-w-5xl">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="grid gap-8 md:grid-cols-2">
+            <motion.div variants={fadeUp} transition={{ duration: 0.5 }}>
+              <Card className="h-full border-primary/20">
+                <CardContent className="p-8 space-y-4">
+                  <div className="rounded-xl bg-primary/10 p-3 w-fit"><Users className="h-7 w-7 text-primary" /></div>
+                  <h3 className="text-2xl font-bold">Para Clientes</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Encontre profissionais de montagem de forma rápida e segura. Descreva o serviço, receba propostas de montadores
+                    verificados da sua região e acompanhe todo o processo pelo ambiente protegido.
+                  </p>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Propostas de profissionais verificados</li>
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Pagamento custodiado até a aprovação</li>
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary shrink-0" /> Chat interno sem exposição de dados</li>
+                  </ul>
+                  <Button className="mt-2 gap-2" onClick={() => navigate("/auth?role=cliente")}>Solicitar Serviço <ArrowRight className="h-4 w-4" /></Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div variants={fadeUp} transition={{ duration: 0.5 }}>
+              <Card className="h-full border-border">
+                <CardContent className="p-8 space-y-4">
+                  <div className="rounded-xl bg-accent p-3 w-fit"><Wrench className="h-7 w-7 text-accent-foreground" /></div>
+                  <h3 className="text-2xl font-bold">Para Montadores</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    Acesse oportunidades de serviço na sua região sem vínculo empregatício. Cadastre-se, passe pelo processo de verificação
+                    e comece a receber demandas de clientes.
+                  </p>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-accent-foreground shrink-0" /> Sem vínculo empregatício</li>
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-accent-foreground shrink-0" /> Demandas da sua região</li>
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-accent-foreground shrink-0" /> Pagamento garantido pela plataforma</li>
+                  </ul>
+                  <Button variant="outline" className="mt-2 gap-2" onClick={() => navigate("/sou-montador")}>Quero ser Parceiro <ArrowRight className="h-4 w-4" /></Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Transparência */}
+      <section className="px-4 py-20 md:py-28">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={stagger} className="mx-auto max-w-3xl">
+          <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="text-center text-3xl font-bold md:text-4xl">Transparência</motion.h2>
+          <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="mt-8">
+            <Card className="border-warning/30">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center gap-2 text-warning">
+                  <AlertTriangle className="h-5 w-5" />
+                  <h3 className="font-bold">Informações Importantes</h3>
+                </div>
+                <ul className="space-y-3 text-muted-foreground leading-relaxed">
+                  <li className="flex items-start gap-3"><Scale className="h-5 w-5 shrink-0 mt-0.5" /><span>O ClickMont <strong className="text-foreground">não garante volume de serviços</strong> nem frequência de demandas para montadores.</span></li>
+                  <li className="flex items-start gap-3"><Scale className="h-5 w-5 shrink-0 mt-0.5" /><span>A plataforma <strong className="text-foreground">não promete renda</strong> e não constitui oferta de emprego.</span></li>
+                  <li className="flex items-start gap-3"><Scale className="h-5 w-5 shrink-0 mt-0.5" /><span>Não existe vínculo empregatício entre a plataforma e os montadores cadastrados.</span></li>
+                  <li className="flex items-start gap-3"><Scale className="h-5 w-5 shrink-0 mt-0.5" /><span>O ClickMont atua <strong className="text-foreground">exclusivamente como intermediador tecnológico</strong>.</span></li>
+                  <li className="flex items-start gap-3"><Scale className="h-5 w-5 shrink-0 mt-0.5" /><span>A taxa operacional (20% a 30%) é <strong className="text-foreground">sempre exibida antes da confirmação</strong> do pagamento.</span></li>
+                </ul>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* CTA final */}
+      <section className="border-t border-border bg-card px-4 py-20 md:py-28">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.4 }} variants={fadeUp} transition={{ duration: 0.7 }} className="mx-auto max-w-3xl rounded-3xl gradient-primary p-10 text-center text-primary-foreground shadow-2xl md:p-16">
+          <h2 className="text-3xl font-bold md:text-4xl">Pronto para começar?</h2>
+          <p className="mx-auto mt-4 max-w-lg text-primary-foreground/80 text-lg">Crie sua conta gratuita e solicite uma montagem em poucos minutos.</p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button
-              size="lg"
-              variant="secondary"
-              className="h-13 gap-2 px-8 text-base font-semibold"
-              onClick={() => navigate("/auth?role=cliente")}
-            >
-              Começar Agora
-              <ArrowRight className="h-5 w-5" />
-            </Button>
-            <Button
-              size="lg"
-              variant="ghost"
-              className="h-13 gap-2 px-8 text-base font-semibold text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-              onClick={() => navigate("/sou-montador")}
-            >
-              Sou Montador
-            </Button>
+            <Button size="lg" variant="secondary" className="h-13 gap-2 px-8 text-base font-semibold" onClick={() => navigate("/auth?role=cliente")}>Começar Agora <ArrowRight className="h-5 w-5" /></Button>
+            <Button size="lg" variant="ghost" className="h-13 gap-2 px-8 text-base font-semibold text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground" onClick={() => navigate("/sou-montador")}>Sou Montador</Button>
           </div>
         </motion.div>
       </section>
 
       {/* Footer */}
-      <motion.footer
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="border-t border-border bg-card px-4 py-10"
-      >
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 md:flex-row md:justify-between">
-          <img src={logoClickmont} alt="Clickmont" className="h-12 md:h-14 opacity-70 w-auto" />
-          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-            <a href="/termos-e-privacidade" className="hover:text-foreground transition-colors">
-              Termos de Uso
-            </a>
-            <span className="text-border">·</span>
-            <a href="/termos-e-privacidade" className="hover:text-foreground transition-colors">
-              Privacidade
-            </a>
-            <span className="text-border">·</span>
-            <a href="/quem-somos" className="hover:text-foreground transition-colors">
-              Quem Somos
-            </a>
+      <motion.footer initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="border-t border-border bg-card px-4 py-10">
+        <div className="mx-auto max-w-6xl space-y-6">
+          <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
+            <img src={logoClickmont} alt="ClickMont" className="h-12 md:h-14 opacity-70 w-auto" />
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+              <button onClick={() => navigate("/institucional")} className="hover:text-foreground transition-colors">Institucional</button>
+              <span className="text-border">·</span>
+              <button onClick={() => navigate("/termos-e-privacidade")} className="hover:text-foreground transition-colors">Termos de Uso</button>
+              <span className="text-border">·</span>
+              <button onClick={() => navigate("/termos-e-privacidade")} className="hover:text-foreground transition-colors">Privacidade</button>
+              <span className="text-border">·</span>
+              <button onClick={() => navigate("/quem-somos")} className="hover:text-foreground transition-colors">Quem Somos</button>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Clickmont. Todos os direitos reservados.
-          </p>
+          <div className="text-center space-y-1">
+            <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+              <Building2 className="h-3 w-3" /> Operado por <strong>André Ramos dos Santos</strong> · São Paulo – SP, Brasil
+            </p>
+            <p className="text-xs text-muted-foreground">
+              contato@clickmont.com.br · <a href="https://wa.me/551151280116" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">WhatsApp</a>
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Missão: Facilitar a conexão entre clientes e prestadores de serviços de montagem de móveis de forma segura, transparente e eficiente.
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">© {new Date().getFullYear()} ClickMont. Todos os direitos reservados.</p>
+          </div>
         </div>
       </motion.footer>
 
-      {/* WhatsApp Float - canto inferior ESQUERDO */}
-      <motion.a
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20, delay: 1 }}
-        href="https://wa.me/551151280116"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 left-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-success text-success-foreground shadow-lg transition-transform hover:scale-110"
-        aria-label="Fale conosco no WhatsApp"
-      >
+      {/* WhatsApp Float */}
+      <motion.a initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 260, damping: 20, delay: 1 }} href="https://wa.me/551151280116" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 left-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-success text-success-foreground shadow-lg transition-transform hover:scale-110" aria-label="Fale conosco no WhatsApp">
         <MessageCircle className="h-7 w-7" />
       </motion.a>
     </div>

@@ -24,6 +24,9 @@ const CadastroMontador = () => {
   const [city, setCity] = useState("");
   const [lgpdAccepted, setLgpdAccepted] = useState(false);
 
+  const [levaAjudante, setLevaAjudante] = useState(false);
+  const [qtdAjudantes, setQtdAjudantes] = useState("1");
+
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [experienceFile, setExperienceFile] = useState<File | null>(null);
@@ -166,6 +169,26 @@ const CadastroMontador = () => {
               <div>
                 <Label className="text-xs">Bio / experiência</Label>
                 <Textarea placeholder="Descreva brevemente sua experiência..." value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="mt-1" />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Checkbox id="ajudante" checked={levaAjudante} onCheckedChange={(v) => setLevaAjudante(v === true)} />
+                  <label htmlFor="ajudante" className="text-xs cursor-pointer">Levarei ajudante(s) nos serviços</label>
+                </div>
+                {levaAjudante && (
+                  <div>
+                    <Label className="text-xs">Quantidade de ajudantes</Label>
+                    <Select value={qtdAjudantes} onValueChange={setQtdAjudantes}>
+                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 ajudante</SelectItem>
+                        <SelectItem value="2">2 ajudantes</SelectItem>
+                        <SelectItem value="3">3 ajudantes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
             </div>
 
