@@ -85,7 +85,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto">
           <h3 className="text-center text-2xl font-bold mb-10">Serviços que realizamos</h3>
           <div className="grid gap-8 md:grid-cols-3">
-            <img src="https://images.unsplash.com/photo-1595428774223-ef52624120d2?q=80&w=800" alt="Montagem de Guarda-Roupa" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
+            <img alt="Montagem de Guarda-Roupa" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" src="/lovable-uploads/db9f1ef9-081b-4cd0-81f4-977e3f9d2eff.png" />
             <img alt="Instalação de Painel de TV" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" src="/lovable-uploads/b253cbb0-a685-4261-9ce5-a3f3c2d764d2.png" />
             <img src={galeriaQuarto} alt="Quarto planejado com guarda-roupa e montagem profissional" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
           </div>
