@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, MessageCircle, User, Phone, MapPin, ShieldCheck } from "lucide-react";
+import { CheckCircle, XCircle, MessageCircle, User, Phone, MapPin, ShieldCheck, LogOut } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 interface PendingMontador {
@@ -23,7 +23,7 @@ interface PendingMontador {
 }
 
 const AdminApproval = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { isAdmin, loading: adminLoading } = useIsAdmin(user);
   const [montadores, setMontadores] = useState<PendingMontador[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,18 +107,22 @@ const AdminApproval = () => {
 
   if (!isAdmin) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
         <p className="text-muted-foreground">Acesso restrito.</p>
+        <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4 mr-1" /> Sair</Button>
       </div>
     );
   }
 
   return (
     <div className="container py-8 space-y-6 max-w-4xl">
-      <div className="flex items-center gap-3">
-        <ShieldCheck className="h-7 w-7 text-primary" />
-        <h1 className="text-2xl font-bold">Aprovação de Montadores</h1>
-        <Badge variant="outline">{montadores.length} pendente(s)</Badge>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <ShieldCheck className="h-7 w-7 text-primary" />
+          <h1 className="text-2xl font-bold">Aprovação de Montadores</h1>
+          <Badge variant="outline">{montadores.length} pendente(s)</Badge>
+        </div>
+        <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4 mr-1" /> Sair</Button>
       </div>
 
       {montadores.length === 0 ? (
