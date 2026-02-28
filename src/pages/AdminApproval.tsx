@@ -156,15 +156,24 @@ const AdminApproval = () => {
                   {m.pix_key && <span>PIX: {m.pix_key}</span>}
                 </div>
 
-                <div className="flex flex-wrap gap-2 text-xs">
+              <div className="flex flex-wrap gap-2 text-xs">
                   {m.selfie_url && (
-                    <a href={m.selfie_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Selfie</a>
+                    <button className="text-primary underline" onClick={async () => {
+                      const { data } = await supabase.storage.from("user-documents").createSignedUrl(m.selfie_url!, 300);
+                      if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                    }}>Ver Selfie</button>
                   )}
                   {m.document_url && (
-                    <a href={m.document_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Documento</a>
+                    <button className="text-primary underline" onClick={async () => {
+                      const { data } = await supabase.storage.from("user-documents").createSignedUrl(m.document_url!, 300);
+                      if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                    }}>Ver Documento</button>
                   )}
                   {m.experience_proof_url && (
-                    <a href={m.experience_proof_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Experiência</a>
+                    <button className="text-primary underline" onClick={async () => {
+                      const { data } = await supabase.storage.from("user-documents").createSignedUrl(m.experience_proof_url!, 300);
+                      if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+                    }}>Ver Experiência</button>
                   )}
                 </div>
 
