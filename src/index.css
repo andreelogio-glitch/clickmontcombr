@@ -131,3 +131,16 @@
     border: 1px solid hsl(225 15% 18% / 0.6);
   }
 }
+
+/* White-label: hide any third-party badges */
+#lovable-badge,
+.lovable-badge,
+[data-lovable-tagger],
+iframe[src*='lovable'] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute;
+  left: -9999px;
+}
