@@ -308,7 +308,7 @@ const LandingPage = () => {
           </div>
           <div className="text-center space-y-1">
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-              <Building2 className="h-3 w-3" /> Operado por <strong>André Ramos dos Santos</strong> · São Paulo – SP, Brasil
+              <Building2 className="h-3 w-3" /> Operado por <strong>André Ramos dos Santos</strong> · CNPJ: 61.774.392/0001-30 · São Paulo – SP, Brasil
             </p>
             <p className="text-xs text-muted-foreground">
               contato@clickmont.com.br · <a href="https://wa.me/551151280116" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">WhatsApp</a>
