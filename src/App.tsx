@@ -20,6 +20,7 @@ import CadastroMontador from "./pages/CadastroMontador";
 import TermosPrivacidade from "./pages/TermosPrivacidade";
 import SuporteMontador from "./pages/SuporteMontador";
 import AdminApproval from "./pages/AdminApproval";
+import Institucional from "./pages/Institucional";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => {
             <Route path="/termos-e-privacidade" element={<TermosPrivacidade />} />
             <Route path="/suporte-montador" element={<SuporteMontador />} />
             <Route path="/admin-approval" element={<AdminApproval />} />
+            <Route path="/institucional" element={<Institucional />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>
