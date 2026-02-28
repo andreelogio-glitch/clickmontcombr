@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import logoClickmont from "@/assets/logo-clickmont.png";
 import heroQuarto from "@/assets/hero-quarto.jpg";
+import galeriaQuarto from "@/assets/galeria-quarto.jpg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -86,7 +87,7 @@ const LandingPage = () => {
           <div className="grid gap-8 md:grid-cols-3">
             <img src="https://images.unsplash.com/photo-1595428774223-ef52624120d2?q=80&w=800" alt="Montagem de Guarda-Roupa" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
             <img src="https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?q=80&w=800" alt="Instalação de Painel de TV" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
-            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85f82e?q=80&w=800" alt="Quarto planejado com guarda-roupa e montagem profissional" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
+            <img src={galeriaQuarto} alt="Quarto planejado com guarda-roupa e montagem profissional" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
           </div>
         </div>
       </section>
