@@ -9,11 +9,11 @@ import galeriaQuarto from "@/assets/galeria-quarto.jpg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0 },
+  visible: { opacity: 1, y: 0 }
 };
 
 const stagger = {
-  visible: { transition: { staggerChildren: 0.15 } },
+  visible: { transition: { staggerChildren: 0.15 } }
 };
 
 const LandingPage = () => {
@@ -26,8 +26,8 @@ const LandingPage = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg"
-      >
+        className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
+
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <img src={logoClickmont} alt="ClickMont" className="h-14 md:h-20 w-auto" />
           <div className="flex items-center gap-3">
@@ -41,8 +41,8 @@ const LandingPage = () => {
 
       {/* Hero */}
       <section className="relative overflow-hidden px-4 py-24 md:py-36 bg-cover bg-center"
-        style={{ backgroundImage: `url(${heroQuarto})` }}
-      >
+      style={{ backgroundImage: `url(${heroQuarto})` }}>
+
         <div className="absolute inset-0 bg-gradient-to-br from-orange-900/70 via-background/80 to-background/95" />
         <motion.div initial="hidden" animate="visible" variants={stagger} className="relative mx-auto max-w-4xl text-center z-10">
           <motion.h1 variants={fadeUp} transition={{ duration: 0.6 }} className="text-4xl font-extrabold leading-tight tracking-tight md:text-6xl">
@@ -86,7 +86,7 @@ const LandingPage = () => {
           <h3 className="text-center text-2xl font-bold mb-10">Serviços que realizamos</h3>
           <div className="grid gap-8 md:grid-cols-3">
             <img src="https://images.unsplash.com/photo-1595428774223-ef52624120d2?q=80&w=800" alt="Montagem de Guarda-Roupa" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
-            <img src="https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?q=80&w=800" alt="Instalação de Painel de TV" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
+            <img alt="Instalação de Painel de TV" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" src="/lovable-uploads/b253cbb0-a685-4261-9ce5-a3f3c2d764d2.png" />
             <img src={galeriaQuarto} alt="Quarto planejado com guarda-roupa e montagem profissional" className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full" />
           </div>
         </div>
@@ -101,11 +101,11 @@ const LandingPage = () => {
           </motion.div>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="mt-14 grid gap-8 md:grid-cols-3">
             {[
-              { icon: Shield, title: "Segurança Total", desc: "Pagamento garantido e sistema de código de segurança para autorizar o início do serviço.", color: "text-primary", bg: "bg-primary/10" },
-              { icon: Zap, title: "Agilidade", desc: "Receba lances de profissionais verificados em poucos minutos.", color: "text-warning", bg: "bg-warning/10" },
-              { icon: Star, title: "Qualidade", desc: "Montadores avaliados pela comunidade e histórico de serviços transparente.", color: "text-success", bg: "bg-success/10" },
-            ].map((b) => (
-              <motion.div key={b.title} variants={fadeUp} transition={{ duration: 0.5 }}>
+            { icon: Shield, title: "Segurança Total", desc: "Pagamento garantido e sistema de código de segurança para autorizar o início do serviço.", color: "text-primary", bg: "bg-primary/10" },
+            { icon: Zap, title: "Agilidade", desc: "Receba lances de profissionais verificados em poucos minutos.", color: "text-warning", bg: "bg-warning/10" },
+            { icon: Star, title: "Qualidade", desc: "Montadores avaliados pela comunidade e histórico de serviços transparente.", color: "text-success", bg: "bg-success/10" }].
+            map((b) =>
+            <motion.div key={b.title} variants={fadeUp} transition={{ duration: 0.5 }}>
                 <Card className="border-border bg-background transition-shadow hover:shadow-lg h-full">
                   <CardContent className="flex flex-col items-start gap-4 p-8">
                     <div className={`rounded-xl p-3 ${b.bg}`}><b.icon className={`h-7 w-7 ${b.color}`} /></div>
@@ -114,7 +114,7 @@ const LandingPage = () => {
                   </CardContent>
                 </Card>
               </motion.div>
-            ))}
+            )}
           </motion.div>
         </div>
       </section>
@@ -128,14 +128,14 @@ const LandingPage = () => {
           </motion.div>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="mt-14 space-y-4">
             {[
-              { icon: FileText, step: "1", title: "Cliente solicita o serviço", desc: "Descreva o móvel, envie fotos e indique cidade e data desejada." },
-              { icon: Users, step: "2", title: "Montador aceita a demanda", desc: "Profissionais verificados da região enviam propostas com valor e prazo." },
-              { icon: MessageCircle, step: "3", title: "Comunicação via chat interno", desc: "Toda a comunicação ocorre dentro da plataforma, sem exposição de dados pessoais." },
-              { icon: Eye, step: "4", title: "Plataforma acompanha o processo", desc: "A ClickMont monitora o andamento com código de segurança e confirmação de etapas." },
-              { icon: CreditCard, step: "5", title: "Pagamento no ambiente seguro", desc: "O valor fica custodiado até a confirmação da conclusão do serviço pelo cliente." },
-              { icon: DollarSign, step: "6", title: "Split automático", desc: "Montador recebe o valor líquido automaticamente. A plataforma retém a taxa operacional." },
-            ].map((s) => (
-              <motion.div key={s.step} variants={fadeUp} transition={{ duration: 0.4 }}>
+            { icon: FileText, step: "1", title: "Cliente solicita o serviço", desc: "Descreva o móvel, envie fotos e indique cidade e data desejada." },
+            { icon: Users, step: "2", title: "Montador aceita a demanda", desc: "Profissionais verificados da região enviam propostas com valor e prazo." },
+            { icon: MessageCircle, step: "3", title: "Comunicação via chat interno", desc: "Toda a comunicação ocorre dentro da plataforma, sem exposição de dados pessoais." },
+            { icon: Eye, step: "4", title: "Plataforma acompanha o processo", desc: "A ClickMont monitora o andamento com código de segurança e confirmação de etapas." },
+            { icon: CreditCard, step: "5", title: "Pagamento no ambiente seguro", desc: "O valor fica custodiado até a confirmação da conclusão do serviço pelo cliente." },
+            { icon: DollarSign, step: "6", title: "Split automático", desc: "Montador recebe o valor líquido automaticamente. A plataforma retém a taxa operacional." }].
+            map((s) =>
+            <motion.div key={s.step} variants={fadeUp} transition={{ duration: 0.4 }}>
                 <Card className="border-border hover:shadow-md transition-shadow">
                   <CardContent className="flex items-start gap-4 p-5">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-primary text-primary-foreground text-sm font-black shrink-0">{s.step}</div>
@@ -146,7 +146,7 @@ const LandingPage = () => {
                   </CardContent>
                 </Card>
               </motion.div>
-            ))}
+            )}
           </motion.div>
         </div>
       </section>
@@ -167,16 +167,16 @@ const LandingPage = () => {
           <motion.div variants={fadeUp} transition={{ duration: 0.6, delay: 0.15 }} className="flex flex-1 justify-center">
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: UserCheck, label: "Verificação de identidade" },
-                { icon: Hash, label: "Código de 4 dígitos" },
-                { icon: Shield, label: "Pagamento custodiado" },
-                { icon: MessageCircle, label: "Chat interno protegido" },
-              ].map((f) => (
-                <motion.div key={f.label} whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }} className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-background p-6 text-center shadow-sm">
+              { icon: UserCheck, label: "Verificação de identidade" },
+              { icon: Hash, label: "Código de 4 dígitos" },
+              { icon: Shield, label: "Pagamento custodiado" },
+              { icon: MessageCircle, label: "Chat interno protegido" }].
+              map((f) =>
+              <motion.div key={f.label} whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 300 }} className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-background p-6 text-center shadow-sm">
                   <f.icon className="h-8 w-8 text-primary" />
                   <span className="text-sm font-medium">{f.label}</span>
                 </motion.div>
-              ))}
+              )}
             </div>
           </motion.div>
         </motion.div>
@@ -327,8 +327,8 @@ const LandingPage = () => {
       <motion.a initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 260, damping: 20, delay: 1 }} href="https://wa.me/551151280116" target="_blank" rel="noopener noreferrer" className="fixed bottom-6 left-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-success text-success-foreground shadow-lg transition-transform hover:scale-110" aria-label="Fale conosco no WhatsApp">
         <MessageCircle className="h-7 w-7" />
       </motion.a>
-    </div>
-  );
+    </div>);
+
 };
 
 export default LandingPage;
