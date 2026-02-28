@@ -134,6 +134,38 @@ export type Database = {
           },
         ]
       }
+      code_validation_attempts: {
+        Row: {
+          attempted_code: string
+          created_at: string
+          id: string
+          montador_id: string
+          order_id: string
+        }
+        Insert: {
+          attempted_code: string
+          created_at?: string
+          id?: string
+          montador_id: string
+          order_id: string
+        }
+        Update: {
+          attempted_code?: string
+          created_at?: string
+          id?: string
+          montador_id?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "code_validation_attempts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -459,6 +491,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      validate_verification_code: {
+        Args: { _code: string; _order_id: string }
+        Returns: Json
       }
     }
     Enums: {

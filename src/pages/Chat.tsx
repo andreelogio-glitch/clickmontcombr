@@ -181,16 +181,21 @@ const Chat = () => {
   const validateCode = async () => {
     if (!order || !codeInput.trim()) return;
     setValidatingCode(true);
-    if (codeInput.trim() === order.verification_code) {
-      await supabase.from("orders").update({
-        code_validated: true,
-        status: "em_andamento",
-        started_at: new Date().toISOString(),
-      } as any).eq("id", order.id);
-      setOrder({ ...order, code_validated: true, status: "em_andamento" });
-      toast.success("Código validado! Serviço iniciado — horário registrado.");
-    } else {
-      toast.error("Código incorreto. Peça ao cliente o código correto.");
+    try {
+      const { data, error } = await supabase.rpc("validate_verification_code", {
+        _order_id: order.id,
+        _code: codeInput.trim(),
+      });
+      if (error) throw error;
+      const result = data as { success: boolean; error?: string };
+      if (result.success) {
+        setOrder({ ...order, code_validated: true, status: "em_andamento" });
+        toast.success("Código validado! Serviço iniciado — horário registrado.");
+      } else {
+        toast.error(result.error || "Código incorreto.");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao validar código.");
     }
     setValidatingCode(false);
   };
