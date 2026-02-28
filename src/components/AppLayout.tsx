@@ -178,7 +178,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             <span>© {new Date().getFullYear()} ClickMont</span>
           </div>
           <p className="text-center text-[11px] text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Operado por André Ramos dos Santos · São Paulo – SP, Brasil · contato@clickmont.com.br
+            Operado por André Ramos dos Santos · CNPJ: 61.774.392/0001-30 · São Paulo – SP, Brasil · contato@clickmont.com.br
           </p>
           <p className="text-center text-[11px] text-muted-foreground max-w-xl mx-auto leading-relaxed">
             🔒 Pagamentos processados em ambiente seguro. A ClickMont atua exclusivamente como intermediador tecnológico.

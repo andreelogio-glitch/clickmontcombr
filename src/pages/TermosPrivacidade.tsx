@@ -161,6 +161,9 @@ const TermosPrivacidade = () => {
               © {new Date().getFullYear()} Clickmont — Todos os direitos reservados
             </p>
             <p className="text-xs text-muted-foreground mt-1">
+              CNPJ: 61.774.392/0001-30 · Operado por André Ramos dos Santos · São Paulo – SP
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
               🔒 Plataforma protegida com criptografia de ponta a ponta
             </p>
           </div>
