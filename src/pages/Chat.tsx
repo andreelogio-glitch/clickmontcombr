@@ -204,13 +204,14 @@ const Chat = () => {
       const path = `${user.id}/arrival-${orderId}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("user-documents").upload(path, file);
       if (upErr) throw upErr;
-      const { data: urlData } = supabase.storage.from("user-documents").getPublicUrl(path);
+      const { data: signedData, error: signErr } = await supabase.storage.from("user-documents").createSignedUrl(path, 86400);
+      if (signErr || !signedData?.signedUrl) throw new Error("Erro ao gerar URL da selfie");
 
-      // Send as chat message with image
+      // Send as chat message with image (signed URL valid for 24h)
       await supabase.from("chat_messages").insert({
         order_id: orderId,
         sender_id: user.id,
-        message: `📸 Selfie de chegada: ${urlData.publicUrl}`,
+        message: `📸 Selfie de chegada: ${signedData.signedUrl}`,
         is_preset: false,
       });
       toast.success("Selfie enviada ao cliente!");
