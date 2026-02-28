@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import logoClickmont from "@/assets/logo-clickmont.png";
+import heroQuarto from "@/assets/hero-quarto.jpg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -39,7 +40,7 @@ const LandingPage = () => {
 
       {/* Hero */}
       <section className="relative overflow-hidden px-4 py-24 md:py-36 bg-cover bg-center"
-        style={{ backgroundImage: `url(https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=2070)` }}
+        style={{ backgroundImage: `url(${heroQuarto})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-orange-900/70 via-background/80 to-background/95" />
         <motion.div initial="hidden" animate="visible" variants={stagger} className="relative mx-auto max-w-4xl text-center z-10">
