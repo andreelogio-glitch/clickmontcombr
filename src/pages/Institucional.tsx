@@ -268,6 +268,7 @@ const Institucional = () => {
               <Building2 className="h-4 w-4" />
               <span>Operado por <strong className="text-foreground">André Ramos dos Santos</strong></span>
             </div>
+            <p className="text-sm text-muted-foreground">CNPJ: 61.774.392/0001-30</p>
             <p className="text-sm text-muted-foreground">São Paulo – SP, Brasil</p>
           </motion.div>
           <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="mt-8">
@@ -301,7 +302,7 @@ const Institucional = () => {
             </div>
           </div>
           <div className="text-center space-y-1">
-            <p className="text-xs text-muted-foreground">Operado por <strong>André Ramos dos Santos</strong> · São Paulo – SP, Brasil</p>
+            <p className="text-xs text-muted-foreground">Operado por <strong>André Ramos dos Santos</strong> · CNPJ: 61.774.392/0001-30 · São Paulo – SP, Brasil</p>
             <p className="text-xs text-muted-foreground">contato@clickmont.com.br · <a href="https://wa.me/551151280116" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">WhatsApp</a></p>
             <p className="text-xs text-muted-foreground mt-2">© {new Date().getFullYear()} ClickMont. Todos os direitos reservados.</p>
           </div>

@@ -99,6 +99,7 @@ const QuemSomos = () => {
         <div className="space-y-4 text-center">
           <h2 className="text-xl font-bold">Identidade Institucional</h2>
           <p className="text-sm text-muted-foreground">Operado por <strong className="text-foreground">André Ramos dos Santos</strong></p>
+          <p className="text-sm text-muted-foreground">CNPJ: 61.774.392/0001-30</p>
           <p className="text-sm text-muted-foreground">São Paulo – SP, Brasil</p>
           <p className="text-sm text-muted-foreground">contato@clickmont.com.br · <a href="https://wa.me/551151280116" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">WhatsApp</a></p>
           <Card className="border-primary/20 mt-4">
