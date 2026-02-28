@@ -127,17 +127,14 @@ const DashboardMontador = () => {
       const { data: mp } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).single();
       const montadorName = mp?.full_name || "Montador";
 
-      // Get verification code
-      const { data: orderData } = await supabase.from("orders").select("verification_code").eq("id", orderId).single();
-      const code = (orderData as any)?.verification_code || "****";
-
-      // Send push to client
+      // Send push to client — verification code is injected server-side
       await supabase.functions.invoke("send-push", {
         body: {
           user_id: clientId,
           title: "🔔 Seu montador chegou!",
-          message: `${montadorName} acabou de chegar! Tenha em mãos o seu código de segurança: #${code}`,
+          message: `${montadorName} acabou de chegar! Tenha em mãos o seu código de segurança: #{CODE}`,
           order_id: orderId,
+          include_verification_code: true,
         },
       });
 

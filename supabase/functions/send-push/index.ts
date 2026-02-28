@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { user_id, title, message, order_id, city } = await req.json();
+    const { user_id, title, message, order_id, city, include_verification_code } = await req.json();
 
     // Input validation
     if (!user_id || typeof user_id !== "string") {
@@ -72,11 +72,23 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // If requested, look up verification code server-side and inject into message
+    let finalMessage = message;
+    if (include_verification_code && order_id) {
+      const { data: orderData } = await supabase
+        .from("orders")
+        .select("verification_code")
+        .eq("id", order_id)
+        .single();
+      const code = orderData?.verification_code || "****";
+      finalMessage = message.replace("{CODE}", code);
+    }
+
     // Insert in-app notification
     await supabase.from("notifications").insert({
       user_id,
       title: title.slice(0, 200),
-      message: message.slice(0, 1000),
+      message: finalMessage.slice(0, 1000),
       order_id: order_id || null,
     });
 
@@ -87,7 +99,7 @@ Deno.serve(async (req) => {
     if (vapidPublicKey && vapidPrivateKey) {
       const payload = JSON.stringify({
         title: title.slice(0, 100),
-        body: message.slice(0, 500),
+        body: finalMessage.slice(0, 500),
         icon: "/pwa-192x192.png",
         badge: "/pwa-192x192.png",
         data: { url: order_id ? `/chat/${order_id}` : "/" },
