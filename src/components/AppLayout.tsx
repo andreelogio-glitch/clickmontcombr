@@ -165,22 +165,23 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               <Wrench className="h-6 w-6 shrink-0" />
               <div>
                 <p className="font-bold text-sm">É montador profissional?</p>
-                <p className="text-xs opacity-90">Cadastre-se e ganhe dinheiro com montagens e mudanças!</p>
+                <p className="text-xs opacity-90">Cadastre-se e receba demandas de montagem na sua região!</p>
               </div>
             </div>
             <Link to="/sou-montador">
-              <Button variant="secondary" size="sm" className="shrink-0">
-                Sou Montador →
-              </Button>
+              <Button variant="secondary" size="sm" className="shrink-0">Sou Montador →</Button>
             </Link>
           </div>
 
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <img src={logoClickmont} alt="Clickmont" className="h-5 w-5" />
-            <span>© {new Date().getFullYear()} Clickmont</span>
+            <img src={logoClickmont} alt="ClickMont" className="h-5 w-5" />
+            <span>© {new Date().getFullYear()} ClickMont</span>
           </div>
           <p className="text-center text-[11px] text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            🔒 Sua segurança é nossa prioridade. Todos os pagamentos na Clickmont são realizados através do Mercado Pago, garantindo proteção total dos seus dados e a custódia do seu dinheiro até a conclusão do serviço.
+            Operado por André Ramos dos Santos · São Paulo – SP, Brasil · contato@clickmont.com.br
+          </p>
+          <p className="text-center text-[11px] text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            🔒 Pagamentos processados em ambiente seguro. A ClickMont atua exclusivamente como intermediador tecnológico.
           </p>
         </div>
       </footer>

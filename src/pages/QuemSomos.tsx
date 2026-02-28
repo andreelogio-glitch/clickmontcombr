@@ -79,18 +79,37 @@ const QuemSomos = () => {
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground flex items-center gap-2">
-                    <ShieldCheck className="h-5 w-5 text-primary" /> Garantia Clickmont + Mercado Pago
+                    <ShieldCheck className="h-5 w-5 text-primary" /> Pagamento Protegido
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                    Sua montagem protegida: O Mercado Pago segura o seu pagamento e a Clickmont só libera o valor ao montador após você confirmar que o móvel está pronto e aprovado.
+                    O pagamento fica custodiado no ambiente seguro da plataforma e só é liberado ao montador após a confirmação da conclusão do serviço pelo cliente.
                   </p>
                 </div>
               </div>
               <div className="border-t border-[hsl(210,60%,85%)] pt-3 text-center">
                 <p className="text-xs text-muted-foreground">
-                  🔒 Todos os pagamentos são processados com segurança pelo <strong className="text-foreground">Mercado Pago</strong> — aceitamos PIX, Cartão de Crédito/Débito e Boleto.
+                  🔒 Pagamentos processados com segurança — aceitamos PIX, Cartão de Crédito/Débito e Boleto.
                 </p>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Identidade Institucional */}
+        <div className="space-y-4 text-center">
+          <h2 className="text-xl font-bold">Identidade Institucional</h2>
+          <p className="text-sm text-muted-foreground">Operado por <strong className="text-foreground">André Ramos dos Santos</strong></p>
+          <p className="text-sm text-muted-foreground">São Paulo – SP, Brasil</p>
+          <p className="text-sm text-muted-foreground">contato@clickmont.com.br · <a href="https://wa.me/551151280116" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">WhatsApp</a></p>
+          <Card className="border-primary/20 mt-4">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Target className="h-5 w-5 text-primary" />
+                <h3 className="font-bold">Missão</h3>
+              </div>
+              <p className="text-muted-foreground leading-relaxed text-sm">
+                Facilitar a conexão entre clientes e prestadores de serviços de montagem de móveis de forma segura, transparente e eficiente.
+              </p>
             </CardContent>
           </Card>
         </div>
