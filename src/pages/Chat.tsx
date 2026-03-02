@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSignedUrl } from "@/hooks/useSignedUrl";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -72,6 +73,7 @@ const Chat = () => {
   const isPaid = order?.status === "pago" || order?.status === "em_andamento" || order?.status === "desmontagem_confirmada" || order?.status === "aguardando_liberacao" || order?.status === "concluido";
   const isClient = user?.id === order?.client_id;
   const isMontador = profile?.role === "montador";
+  const montadorSelfieUrl = useSignedUrl("user-documents", montadorProfile?.selfie_url);
 
   useEffect(() => {
     if (orderId) {
@@ -243,8 +245,8 @@ const Chat = () => {
           <CardContent className="py-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16 border-2 border-primary">
-                {montadorProfile.selfie_url ? (
-                  <AvatarImage src={montadorProfile.selfie_url} alt={montadorProfile.full_name} />
+                {montadorSelfieUrl ? (
+                  <AvatarImage src={montadorSelfieUrl} alt={montadorProfile.full_name} />
                 ) : null}
                 <AvatarFallback className="bg-primary text-primary-foreground text-lg">
                   {montadorProfile.full_name.charAt(0).toUpperCase()}
