@@ -492,6 +492,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      release_payment: {
+        Args: { _order_id: string; _stage: string }
+        Returns: Json
+      }
       validate_verification_code: {
         Args: { _code: string; _order_id: string }
         Returns: Json
