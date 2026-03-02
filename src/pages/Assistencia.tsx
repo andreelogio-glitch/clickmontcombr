@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getSignedUrl } from "@/lib/storage";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { AlertTriangle, Send, Upload, Image, MessageSquare, Clock } from "lucide-react";
+import { SignedImage } from "@/components/SignedImage";
 
 interface Order {
   id: string;
@@ -139,7 +141,8 @@ const Assistencia = () => {
     const path = `${user!.id}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("ticket-media").upload(path, file);
     if (error) { toast.error("Erro no upload: " + error.message); return null; }
-    return supabase.storage.from("ticket-media").getPublicUrl(path).data.publicUrl;
+    // Store path reference (bucket is private); signed URL generated on display
+    return path;
   };
 
   const handleCreateTicket = async (e: React.FormEvent) => {
@@ -234,7 +237,7 @@ const Assistencia = () => {
                     )}
                     <p className="text-sm">{msg.message}</p>
                     {msg.media_url && (
-                      <img src={msg.media_url} alt="Anexo" className="mt-2 max-w-full rounded-md max-h-48 object-cover" />
+                      <SignedImage bucket="ticket-media" path={msg.media_url} alt="Anexo" className="mt-2 max-w-full rounded-md max-h-48 object-cover" />
                     )}
                     <p className="text-xs opacity-60 mt-1">
                       {new Date(msg.created_at).toLocaleString("pt-BR")}

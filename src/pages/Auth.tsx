@@ -47,8 +47,8 @@ const Auth = () => {
       console.error("Upload error:", error);
       return null;
     }
-    const { data } = supabase.storage.from("user-documents").getPublicUrl(path);
-    return data.publicUrl;
+    // Store the path reference, not a URL (bucket is private)
+    return path;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
