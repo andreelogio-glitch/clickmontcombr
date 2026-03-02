@@ -11,34 +11,12 @@ const Index = () => {
   const { user, profile, loading } = useAuth();
   const { isAdmin, loading: adminLoading } = useIsAdmin(user);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
+  // Never block rendering — show LandingPage if anything is still loading or missing
+  if (loading || !user) return <LandingPage />;
 
-  if (!user) return <LandingPage />;
+  if (isAdmin && !adminLoading) return <Navigate to="/admin" replace />;
 
-  if (adminLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
-
-  if (isAdmin) return <Navigate to="/admin" replace />;
-
-  // Wait for profile to load before deciding which view to show
-  if (!profile) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
+  if (!profile) return <LandingPage />;
 
   // Block unapproved montadores
   if (profile.role === "montador" && !profile.is_approved) {
