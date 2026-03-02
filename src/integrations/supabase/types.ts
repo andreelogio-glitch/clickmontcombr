@@ -482,7 +482,57 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_safe: {
+        Row: {
+          city: string | null
+          created_at: string | null
+          document_url: string | null
+          experience_proof_url: string | null
+          full_name: string | null
+          id: string | null
+          is_approved: boolean | null
+          is_verified: boolean | null
+          lgpd_accepted_at: string | null
+          phone: string | null
+          pix_key: string | null
+          role: string | null
+          selfie_url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string | null
+          document_url?: never
+          experience_proof_url?: never
+          full_name?: string | null
+          id?: string | null
+          is_approved?: boolean | null
+          is_verified?: boolean | null
+          lgpd_accepted_at?: never
+          phone?: string | null
+          pix_key?: never
+          role?: string | null
+          selfie_url?: never
+          user_id?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string | null
+          document_url?: never
+          experience_proof_url?: never
+          full_name?: string | null
+          id?: string | null
+          is_approved?: boolean | null
+          is_verified?: boolean | null
+          lgpd_accepted_at?: never
+          phone?: string | null
+          pix_key?: never
+          role?: string | null
+          selfie_url?: never
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
