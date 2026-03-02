@@ -11,7 +11,7 @@ const Index = () => {
   const { user, profile, loading } = useAuth();
   const { isAdmin, loading: adminLoading } = useIsAdmin(user);
 
-  // While loading, show nothing (avoid flashing LandingPage for logged-in users)
+  // Brief spinner only while auth bootstraps (max 3s)
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -20,35 +20,25 @@ const Index = () => {
     );
   }
 
-  // No session → landing page
+  // No session at all → landing
   if (!user) return <LandingPage />;
 
-  // Admin redirect
+  // Admin redirect (non-blocking: if still loading admin check, skip it)
   if (!adminLoading && isAdmin) return <Navigate to="/admin" replace />;
 
-  // Profile not loaded yet but user exists → simple spinner (won't hang due to 2s timeout)
-  if (!profile) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
+  // If profile exists, route by role; otherwise show ClienteHome as fallback
+  const role = profile?.role;
+
+  if (role === "montador" && profile?.is_approved) {
+    return <AppLayout><DashboardMontador /></AppLayout>;
   }
 
-  // Unapproved montador
-  if (profile.role === "montador" && !profile.is_approved) {
-    return (
-      <AppLayout>
-        <MontadorPendingApproval />
-      </AppLayout>
-    );
+  if (role === "montador" && !profile?.is_approved) {
+    return <AppLayout><MontadorPendingApproval /></AppLayout>;
   }
 
-  return (
-    <AppLayout>
-      {profile.role === "montador" ? <DashboardMontador /> : <ClienteHome />}
-    </AppLayout>
-  );
+  // Default: show cliente home (even if profile is null — no blocking)
+  return <AppLayout><ClienteHome /></AppLayout>;
 };
 
 export default Index;
