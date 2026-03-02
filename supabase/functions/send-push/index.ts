@@ -39,19 +39,32 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabaseAuth = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+
+    // Determine caller identity
+    let callerUserId: string | null = null;
+    let isServiceRole = false;
+
+    // Check if this is a service role call (from webhook or other edge functions)
+    if (token === serviceRoleKey) {
+      isServiceRole = true;
+    } else {
+      const { data: userData, error: userError } = await supabaseAuth.auth.getUser();
+      if (userError || !userData?.user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      callerUserId = userData.user.id;
     }
 
     const { user_id, title, message, order_id, city, include_verification_code } = await req.json();
@@ -67,10 +80,85 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Invalid message" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    // ── Authorization checks ──
+    if (!isServiceRole) {
+      // Check if caller is admin
+      const { data: adminRole } = await supabase
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", callerUserId!)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      const isAdmin = !!adminRole;
+
+      // Broadcast: admin-only
+      if (user_id === "broadcast") {
+        if (!isAdmin) {
+          return new Response(JSON.stringify({ error: "Forbidden: broadcast requires admin" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      } else if (order_id) {
+        // Order-related notification: verify caller is a participant
+        const { data: order } = await supabase
+          .from("orders")
+          .select("client_id")
+          .eq("id", order_id)
+          .single();
+
+        if (!order) {
+          return new Response(JSON.stringify({ error: "Order not found" }), {
+            status: 404,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const isClient = order.client_id === callerUserId;
+
+        const { data: bid } = await supabase
+          .from("bids")
+          .select("montador_id")
+          .eq("order_id", order_id)
+          .eq("montador_id", callerUserId!)
+          .maybeSingle();
+
+        const isMontador = !!bid;
+
+        if (!isClient && !isMontador && !isAdmin) {
+          return new Response(JSON.stringify({ error: "Forbidden: not a participant" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        // Additional check: target user_id must be a participant too
+        const isTargetClient = order.client_id === user_id;
+        const { data: targetBid } = await supabase
+          .from("bids")
+          .select("montador_id")
+          .eq("order_id", order_id)
+          .eq("montador_id", user_id)
+          .maybeSingle();
+        const isTargetMontador = !!targetBid;
+
+        if (!isTargetClient && !isTargetMontador && !isAdmin) {
+          return new Response(JSON.stringify({ error: "Forbidden: target not a participant" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      } else if (!isAdmin) {
+        // Non-order, non-broadcast, non-admin: forbidden
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // If requested, look up verification code server-side and inject into message
     let finalMessage = message;
@@ -156,7 +244,7 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("Send push error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: "Internal error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
