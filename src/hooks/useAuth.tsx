@@ -35,10 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const timeout = setTimeout(() => {
       if (mounted && loading) {
-        console.warn("Auth bootstrap timeout");
+        console.warn("Auth bootstrap timeout – forcing render");
         setLoading(false);
       }
-    }, 5000);
+    }, 3000);
 
     const fetchProfile = async (userId: string) => {
       const { data } = await supabase
