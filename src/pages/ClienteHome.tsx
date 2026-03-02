@@ -10,7 +10,7 @@ import { PlusCircle, Package, DollarSign, Check, MessageSquare, ExternalLink, He
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { calcClientTotal, calcMontadorReceives, calcSameDayBonus, calcDesmontagemFirst, calcDesmontagemSecond } from "@/lib/fees";
+import { calcClientTotal } from "@/lib/fees";
 
 interface Order {
   id: string;
@@ -66,14 +66,33 @@ const ClienteHome = () => {
   const [helpDescription, setHelpDescription] = useState("");
   const [helpSubmitting, setHelpSubmitting] = useState(false);
 
-  // Handle Mercado Pago return
+  // Handle Mercado Pago return — poll for webhook-driven status update
   useEffect(() => {
     const paymentStatus = searchParams.get("payment");
     const orderId = searchParams.get("order");
     if (paymentStatus === "success" && orderId && user) {
-      markAsPaid(orderId);
-      // Clean URL params
+      toast.info("Processando pagamento... Aguarde a confirmação.");
       setSearchParams({});
+      // Poll for status change (webhook handles the actual update)
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        const { data } = await supabase
+          .from("orders")
+          .select("status")
+          .eq("id", orderId)
+          .single();
+        if (data?.status === "pago") {
+          clearInterval(poll);
+          toast.success("Pagamento confirmado! Chat liberado.");
+          fetchData();
+        } else if (attempts >= 30) {
+          clearInterval(poll);
+          toast.info("O pagamento está sendo processado. A página será atualizada automaticamente.");
+          fetchData();
+        }
+      }, 3000);
+      return () => clearInterval(poll);
     } else if (paymentStatus === "failure") {
       toast.error("Pagamento não concluído. Tente novamente.");
       setSearchParams({});
@@ -146,82 +165,44 @@ const ClienteHome = () => {
     }
   };
 
-  const markAsPaid = async (orderId: string) => {
-    const verificationCode = String(Math.floor(1000 + Math.random() * 9000));
-    await supabase.from("orders").update({ status: "pago", verification_code: verificationCode } as any).eq("id", orderId);
-    toast.success("Pagamento confirmado! Chat liberado.");
-    fetchData();
-  };
+  // markAsPaid removed — payment status is now updated exclusively by the server-side webhook
 
   const confirmDesmontagem = async (orderId: string) => {
-    const orderBids = bids[orderId] || [];
-    const acceptedBid = orderBids.find((b) => b.accepted);
-    if (!acceptedBid) return;
-
-    const order = orders.find((o) => o.id === orderId);
-    const isUrgent = !!(order as any)?.is_urgent;
-    const montadorAmount = calcMontadorReceives(acceptedBid.amount, isUrgent);
-    const first40 = calcDesmontagemFirst(montadorAmount);
-
-    await supabase.from("orders").update({ status: "desmontagem_confirmada" }).eq("id", orderId);
-
-    await supabase.from("wallet_transactions").insert({
-      montador_id: acceptedBid.montador_id,
-      order_id: orderId,
-      type: "credit",
-      status: "auditoria",
-      amount: first40,
-      description: `Desmontagem 40%${isUrgent ? " (Urgente - Taxa Zero)" : ""} - Pedido confirmado pelo cliente`,
-    });
-
-    toast.success("Obrigado! O pagamento de 40% foi enviado para análise da plataforma e será liberado ao montador em breve.");
-    fetchData();
+    try {
+      const { data, error } = await supabase.rpc("release_payment", {
+        _order_id: orderId,
+        _stage: "desmontagem",
+      });
+      if (error) throw error;
+      const result = data as any;
+      if (result?.success === false) {
+        toast.error(result.error || "Erro ao confirmar desmontagem");
+        return;
+      }
+      toast.success("Obrigado! O pagamento de 40% foi enviado para análise da plataforma e será liberado ao montador em breve.");
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message);
+    }
   };
 
   const confirmConcluido = async (orderId: string) => {
-    const orderBids = bids[orderId] || [];
-    const acceptedBid = orderBids.find((b) => b.accepted);
-    if (!acceptedBid) return;
-
-    const order = orders.find((o) => o.id === orderId);
-    const isDesmontagem = order?.service_type === "desmontagem";
-    const isUrgent = !!(order as any)?.is_urgent;
-    const montadorAmount = calcMontadorReceives(acceptedBid.amount, isUrgent);
-    const releaseAmount = isDesmontagem ? calcDesmontagemSecond(montadorAmount) : montadorAmount;
-    const label = isDesmontagem ? "Montagem 60%" : "Serviço completo";
-
-    // Check same-day bonus: if accepted today and concluded today
-    const acceptedBidDate = new Date(acceptedBid.created_at).toDateString();
-    const todayDate = new Date().toDateString();
-    const isSameDay = acceptedBidDate === todayDate;
-    const bonus = isSameDay ? calcSameDayBonus(releaseAmount) : 0;
-
-    await supabase.from("orders").update({ status: "aguardando_liberacao" }).eq("id", orderId);
-
-    // Main payment
-    await supabase.from("wallet_transactions").insert({
-      montador_id: acceptedBid.montador_id,
-      order_id: orderId,
-      type: "credit",
-      status: "auditoria",
-      amount: releaseAmount,
-      description: `${label}${isUrgent ? " (Urgente - Taxa Zero)" : ""} - Pedido confirmado pelo cliente`,
-    });
-
-    // Same-day bonus as separate transaction
-    if (bonus > 0) {
-      await supabase.from("wallet_transactions").insert({
-        montador_id: acceptedBid.montador_id,
-        order_id: orderId,
-        type: "credit",
-        status: "auditoria",
-        amount: bonus,
-        description: `Bônus de Produtividade (+10%) - Conclusão no mesmo dia`,
+    try {
+      const { data, error } = await supabase.rpc("release_payment", {
+        _order_id: orderId,
+        _stage: "complete",
       });
+      if (error) throw error;
+      const result = data as any;
+      if (result?.success === false) {
+        toast.error(result.error || "Erro ao confirmar conclusão");
+        return;
+      }
+      toast.success("Obrigado! O pagamento foi enviado para análise da plataforma e será liberado ao montador em breve.");
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message);
     }
-
-    toast.success("Obrigado! O pagamento foi enviado para análise da plataforma e será liberado ao montador em breve.");
-    fetchData();
   };
 
   const handleOpenHelp = (orderId: string) => {
