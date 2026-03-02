@@ -133,7 +133,7 @@ const LandingPage = () => {
             { icon: MessageCircle, step: "3", title: "Comunicação via chat interno", desc: "Toda a comunicação ocorre dentro da plataforma, sem exposição de dados pessoais." },
             { icon: Eye, step: "4", title: "Plataforma acompanha o processo", desc: "A ClickMont monitora o andamento com código de segurança e confirmação de etapas." },
             { icon: CreditCard, step: "5", title: "Pagamento no ambiente seguro", desc: "O valor fica custodiado até a confirmação da conclusão do serviço pelo cliente." },
-            { icon: DollarSign, step: "6", title: "Split automático", desc: "Montador recebe o valor líquido automaticamente. A plataforma retém a taxa operacional." }].
+            { icon: DollarSign, step: "6", title: "Pagamento garantido", desc: "Montador recebe o valor automaticamente após a confirmação do serviço pelo cliente." }].
             map((s) =>
             <motion.div key={s.step} variants={fadeUp} transition={{ duration: 0.4 }}>
                 <Card className="border-border hover:shadow-md transition-shadow">
@@ -182,33 +182,18 @@ const LandingPage = () => {
         </motion.div>
       </section>
 
-      {/* Modelo Operacional */}
+      {/* Encontre Montadores */}
       <section className="px-4 py-20 md:py-28">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={stagger} className="mx-auto max-w-3xl">
-          <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="text-center text-3xl font-bold md:text-4xl">Modelo Operacional</motion.h2>
-          <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="mt-8 space-y-6">
-            <p className="text-lg text-muted-foreground leading-relaxed text-center">
-              A plataforma aplica uma <strong className="text-foreground">taxa operacional entre 20% e 30%</strong> (padrão de 25%) sobre o valor do serviço.
-              Essa taxa cobre: tecnologia, intermediação, suporte, segurança da transação e manutenção da plataforma.
-            </p>
-            <Card className="border-primary/20">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-2 text-primary">
-                  <DollarSign className="h-5 w-5" />
-                  <h3 className="font-bold">Exemplo de Split</h3>
-                </div>
-                <div className="bg-accent/30 rounded-xl p-4 space-y-2 text-sm">
-                  <p className="flex justify-between"><span>Valor do serviço:</span><strong className="text-foreground">R$ 100,00</strong></p>
-                  <p className="flex justify-between"><span>Taxa operacional (25%):</span><strong className="text-foreground">R$ 25,00</strong></p>
-                  <div className="border-t border-border pt-2">
-                    <p className="flex justify-between font-bold"><span>Montador recebe:</span><span className="text-primary">R$ 75,00</span></p>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground text-center">
-                  A taxa é exibida de forma transparente antes da confirmação do pagamento.
-                </p>
-              </CardContent>
-            </Card>
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={stagger} className="mx-auto max-w-3xl text-center">
+          <motion.h2 variants={fadeUp} transition={{ duration: 0.5 }} className="text-3xl font-bold md:text-4xl">Encontre Montadores Profissionais</motion.h2>
+          <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground leading-relaxed">
+            Receba propostas de profissionais verificados da sua região em poucos minutos.
+            Compare valores, avalie perfis e contrate com a segurança do pagamento custodiado pela plataforma.
+          </motion.p>
+          <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="mt-8">
+            <Button size="lg" className="h-14 gap-2 px-10 text-lg font-bold bg-orange-500 hover:bg-orange-600 text-white shadow-xl" onClick={() => navigate("/auth?role=cliente")}>
+              Solicitar Montador <ArrowRight className="h-5 w-5" />
+            </Button>
           </motion.div>
         </motion.div>
       </section>
@@ -273,7 +258,7 @@ const LandingPage = () => {
                   <li className="flex items-start gap-3"><Scale className="h-5 w-5 shrink-0 mt-0.5" /><span>A plataforma <strong className="text-foreground">não promete renda</strong> e não constitui oferta de emprego.</span></li>
                   <li className="flex items-start gap-3"><Scale className="h-5 w-5 shrink-0 mt-0.5" /><span>Não existe vínculo empregatício entre a plataforma e os montadores cadastrados.</span></li>
                   <li className="flex items-start gap-3"><Scale className="h-5 w-5 shrink-0 mt-0.5" /><span>O ClickMont atua <strong className="text-foreground">exclusivamente como intermediador tecnológico</strong>.</span></li>
-                  <li className="flex items-start gap-3"><Scale className="h-5 w-5 shrink-0 mt-0.5" /><span>A taxa operacional (20% a 30%) é <strong className="text-foreground">sempre exibida antes da confirmação</strong> do pagamento.</span></li>
+                  <li className="flex items-start gap-3"><Scale className="h-5 w-5 shrink-0 mt-0.5" /><span>O valor final é <strong className="text-foreground">sempre exibido antes da confirmação</strong> do pagamento.</span></li>
                 </ul>
               </CardContent>
             </Card>

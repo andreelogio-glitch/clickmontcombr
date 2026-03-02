@@ -303,7 +303,7 @@ const DashboardMontador = () => {
                           <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                           <span>
                             Seu lance: R$ {bidVal.toFixed(2)} → Cliente paga: R$ {calcClientTotal(bidVal).toFixed(2)} → Você recebe: <strong className={isUrgent ? "text-destructive" : "text-success"}>R$ {calcMontadorReceives(bidVal, isUrgent).toFixed(2)}</strong>
-                            {isUrgent ? " (🔥 Taxa Zero!)" : " (taxa 10%)"}
+                            {isUrgent ? " (🔥 Taxa Zero!)" : " (taxa de intermediação 5%)"}
                             {isDesmontagem && " · Desmontagem: 40% liberado após desmontagem, 60% após montagem"}
                           </span>
                         </div>
