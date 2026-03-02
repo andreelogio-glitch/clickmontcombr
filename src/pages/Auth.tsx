@@ -70,7 +70,7 @@ const Auth = () => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Login realizado com sucesso!");
-        navigate("/");
+        // Auth state change listener will handle the redirect + reload
       } else {
         const { data: signUpData, error } = await supabase.auth.signUp({
           email,
