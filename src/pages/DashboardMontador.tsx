@@ -127,14 +127,17 @@ const DashboardMontador = () => {
       const { data: mp } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).single();
       const montadorName = mp?.full_name || "Montador";
 
-      // Send push to client — verification code is injected server-side
+      // Get verification code
+      const { data: orderData } = await supabase.from("orders").select("verification_code").eq("id", orderId).single();
+      const code = (orderData as any)?.verification_code || "****";
+
+      // Send push to client
       await supabase.functions.invoke("send-push", {
         body: {
           user_id: clientId,
           title: "🔔 Seu montador chegou!",
-          message: `${montadorName} acabou de chegar! Tenha em mãos o seu código de segurança: #{CODE}`,
+          message: `${montadorName} acabou de chegar! Tenha em mãos o seu código de segurança: #${code}`,
           order_id: orderId,
-          include_verification_code: true,
         },
       });
 
@@ -303,7 +306,7 @@ const DashboardMontador = () => {
                           <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                           <span>
                             Seu lance: R$ {bidVal.toFixed(2)} → Cliente paga: R$ {calcClientTotal(bidVal).toFixed(2)} → Você recebe: <strong className={isUrgent ? "text-destructive" : "text-success"}>R$ {calcMontadorReceives(bidVal, isUrgent).toFixed(2)}</strong>
-                            {isUrgent ? " (🔥 Taxa Zero!)" : " (taxa de intermediação 5%)"}
+                            {isUrgent ? " (🔥 Taxa Zero!)" : " (taxa 10%)"}
                             {isDesmontagem && " · Desmontagem: 40% liberado após desmontagem, 60% após montagem"}
                           </span>
                         </div>

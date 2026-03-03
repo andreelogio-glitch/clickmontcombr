@@ -134,38 +134,6 @@ export type Database = {
           },
         ]
       }
-      code_validation_attempts: {
-        Row: {
-          attempted_code: string
-          created_at: string
-          id: string
-          montador_id: string
-          order_id: string
-        }
-        Insert: {
-          attempted_code: string
-          created_at?: string
-          id?: string
-          montador_id: string
-          order_id: string
-        }
-        Update: {
-          attempted_code?: string
-          created_at?: string
-          id?: string
-          montador_id?: string
-          order_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "code_validation_attempts_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       notifications: {
         Row: {
           created_at: string
@@ -482,57 +450,7 @@ export type Database = {
       }
     }
     Views: {
-      profiles_safe: {
-        Row: {
-          city: string | null
-          created_at: string | null
-          document_url: string | null
-          experience_proof_url: string | null
-          full_name: string | null
-          id: string | null
-          is_approved: boolean | null
-          is_verified: boolean | null
-          lgpd_accepted_at: string | null
-          phone: string | null
-          pix_key: string | null
-          role: string | null
-          selfie_url: string | null
-          user_id: string | null
-        }
-        Insert: {
-          city?: string | null
-          created_at?: string | null
-          document_url?: never
-          experience_proof_url?: never
-          full_name?: string | null
-          id?: string | null
-          is_approved?: boolean | null
-          is_verified?: boolean | null
-          lgpd_accepted_at?: never
-          phone?: string | null
-          pix_key?: never
-          role?: string | null
-          selfie_url?: never
-          user_id?: string | null
-        }
-        Update: {
-          city?: string | null
-          created_at?: string | null
-          document_url?: never
-          experience_proof_url?: never
-          full_name?: string | null
-          id?: string | null
-          is_approved?: boolean | null
-          is_verified?: boolean | null
-          lgpd_accepted_at?: never
-          phone?: string | null
-          pix_key?: never
-          role?: string | null
-          selfie_url?: never
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       has_role: {
@@ -541,14 +459,6 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
-      }
-      release_payment: {
-        Args: { _order_id: string; _stage: string }
-        Returns: Json
-      }
-      validate_verification_code: {
-        Args: { _code: string; _order_id: string }
-        Returns: Json
       }
     }
     Enums: {

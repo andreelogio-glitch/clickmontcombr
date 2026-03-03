@@ -47,8 +47,8 @@ const Auth = () => {
       console.error("Upload error:", error);
       return null;
     }
-    // Store the path reference, not a URL (bucket is private)
-    return path;
+    const { data } = supabase.storage.from("user-documents").getPublicUrl(path);
+    return data.publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,7 +70,7 @@ const Auth = () => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Login realizado com sucesso!");
-        // Auth state change listener will handle the redirect + reload
+        navigate("/");
       } else {
         const { data: signUpData, error } = await supabase.auth.signUp({
           email,

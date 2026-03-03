@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getSignedUrl } from "@/lib/storage";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Shield, Send, Image, ArrowLeft } from "lucide-react";
-import { SignedImage } from "@/components/SignedImage";
 
 interface Ticket {
   id: string;
@@ -151,8 +149,7 @@ const AdminAssistencia = () => {
     const path = `admin/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("ticket-media").upload(path, file);
     if (error) { toast.error("Erro no upload"); return null; }
-    // Store path reference (bucket is private); signed URL generated on display
-    return path;
+    return supabase.storage.from("ticket-media").getPublicUrl(path).data.publicUrl;
   };
 
   const handleSendMessage = async () => {
@@ -236,8 +233,8 @@ const AdminAssistencia = () => {
                       </p>
                       <p className="text-sm">{msg.message}</p>
                       {msg.media_url && (
-                        <a href="#" onClick={async (e) => { e.preventDefault(); const url = await getSignedUrl("ticket-media", msg.media_url); if (url) window.open(url, "_blank"); }}>
-                          <SignedImage bucket="ticket-media" path={msg.media_url} alt="Anexo" className="mt-2 max-w-full rounded-md max-h-48 object-cover cursor-pointer hover:opacity-80" />
+                        <a href={msg.media_url} target="_blank" rel="noopener noreferrer">
+                          <img src={msg.media_url} alt="Anexo" className="mt-2 max-w-full rounded-md max-h-48 object-cover cursor-pointer hover:opacity-80" />
                         </a>
                       )}
                       <p className="text-xs opacity-60 mt-1">

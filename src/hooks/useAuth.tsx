@@ -33,13 +33,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Safety timeout – never hang more than 3s
     const timeout = setTimeout(() => {
       if (mounted && loading) {
-        console.warn("Auth bootstrap timeout – forcing render");
+        console.warn("Auth bootstrap timeout");
         setLoading(false);
       }
-    }, 3000);
+    }, 5000);
 
     const fetchProfile = async (userId: string) => {
       const { data } = await supabase
@@ -50,38 +49,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (mounted) setProfile(data as Profile | null);
     };
 
-    // Listen for auth changes (including SIGNED_IN after login)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return;
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
-        await fetchProfile(currentUser.id);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        await fetchProfile(session.user.id);
       } else {
         setProfile(null);
       }
       if (mounted) setLoading(false);
-
-      // Force full page reload on sign-in to ensure clean state
-      if (event === "SIGNED_IN") {
-        // Small delay to let state settle, then reload to root
-        setTimeout(() => {
-          if (window.location.hash !== "#/") {
-            window.location.hash = "#/";
-          }
-          window.location.reload();
-        }, 300);
-      }
     });
 
-    // Bootstrap: check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      if (currentUser) {
-        fetchProfile(currentUser.id).then(() => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id).then(() => {
           if (mounted) setLoading(false);
         });
       } else {
@@ -98,12 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
     localStorage.clear();
     sessionStorage.clear();
-    window.location.hash = "#/";
-    window.location.reload();
   };
 
   return (

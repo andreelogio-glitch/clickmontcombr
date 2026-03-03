@@ -156,24 +156,15 @@ const AdminApproval = () => {
                   {m.pix_key && <span>PIX: {m.pix_key}</span>}
                 </div>
 
-              <div className="flex flex-wrap gap-2 text-xs">
+                <div className="flex flex-wrap gap-2 text-xs">
                   {m.selfie_url && (
-                    <button className="text-primary underline" onClick={async () => {
-                      const { data } = await supabase.storage.from("user-documents").createSignedUrl(m.selfie_url!, 300);
-                      if (data?.signedUrl) window.open(data.signedUrl, "_blank");
-                    }}>Ver Selfie</button>
+                    <a href={m.selfie_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Selfie</a>
                   )}
                   {m.document_url && (
-                    <button className="text-primary underline" onClick={async () => {
-                      const { data } = await supabase.storage.from("user-documents").createSignedUrl(m.document_url!, 300);
-                      if (data?.signedUrl) window.open(data.signedUrl, "_blank");
-                    }}>Ver Documento</button>
+                    <a href={m.document_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Documento</a>
                   )}
                   {m.experience_proof_url && (
-                    <button className="text-primary underline" onClick={async () => {
-                      const { data } = await supabase.storage.from("user-documents").createSignedUrl(m.experience_proof_url!, 300);
-                      if (data?.signedUrl) window.open(data.signedUrl, "_blank");
-                    }}>Ver Experiência</button>
+                    <a href={m.experience_proof_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Experiência</a>
                   )}
                 </div>
 

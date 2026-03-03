@@ -66,8 +66,8 @@ const PedirMontagem = () => {
           .from("user-documents")
           .upload(filePath, photoFile);
         if (uploadError) throw uploadError;
-        // Store the path reference, not a URL (bucket is private)
-        photo_url = filePath;
+        const { data: urlData } = supabase.storage.from("user-documents").getPublicUrl(filePath);
+        photo_url = urlData.publicUrl;
       }
 
       // Map mudanca to desmontagem for DB (fractioned logic handled by service_type)

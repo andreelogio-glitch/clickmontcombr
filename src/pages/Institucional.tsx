@@ -144,24 +144,10 @@ const Institucional = () => {
             Modelo Operacional
           </motion.h2>
           <motion.p variants={fadeUp} transition={{ duration: 0.5 }} className="mt-6 text-muted-foreground leading-relaxed text-lg">
-            A plataforma aplica uma <strong className="text-foreground">taxa operacional entre 20% e 30%</strong> (padrão de 25%) sobre o valor do serviço,
-            cobrindo: tecnologia, intermediação, suporte, segurança da transação e manutenção da plataforma.
+            A plataforma pode aplicar <strong className="text-foreground">taxas operacionais</strong> relacionadas à intermediação tecnológica, 
+            manutenção do ambiente digital, segurança da transação e facilitação da conexão entre as partes. 
+            Todos os valores são apresentados de forma transparente antes da confirmação do serviço.
           </motion.p>
-          <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="mt-6">
-            <Card className="border-primary/20 mx-auto max-w-md">
-              <CardContent className="p-6 space-y-3">
-                <h3 className="font-bold text-center flex items-center justify-center gap-2"><CreditCard className="h-4 w-4 text-primary" /> Exemplo de Split</h3>
-                <div className="bg-accent/30 rounded-xl p-4 space-y-2 text-sm">
-                  <p className="flex justify-between"><span>Valor do serviço:</span><strong>R$ 100,00</strong></p>
-                  <p className="flex justify-between"><span>Taxa operacional (25%):</span><strong>R$ 25,00</strong></p>
-                  <div className="border-t border-border pt-2">
-                    <p className="flex justify-between font-bold"><span>Montador recebe:</span><span className="text-primary">R$ 75,00</span></p>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground text-center">A taxa é exibida de forma transparente antes da confirmação do pagamento.</p>
-              </CardContent>
-            </Card>
-          </motion.div>
         </motion.div>
       </section>
 
@@ -268,7 +254,6 @@ const Institucional = () => {
               <Building2 className="h-4 w-4" />
               <span>Operado por <strong className="text-foreground">André Ramos dos Santos</strong></span>
             </div>
-            <p className="text-sm text-muted-foreground">CNPJ: 61.774.392/0001-30</p>
             <p className="text-sm text-muted-foreground">São Paulo – SP, Brasil</p>
           </motion.div>
           <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="mt-8">
@@ -290,22 +275,16 @@ const Institucional = () => {
 
       {/* Footer */}
       <footer className="border-t border-border bg-card px-4 py-8">
-        <div className="mx-auto max-w-6xl space-y-4">
-          <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between">
-            <img src={logoClickmont} alt="ClickMont" className="h-10 opacity-70 w-auto" />
-            <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-              <button onClick={() => navigate("/termos-e-privacidade")} className="hover:text-foreground transition-colors">Termos de Uso</button>
-              <span className="text-border">·</span>
-              <button onClick={() => navigate("/quem-somos")} className="hover:text-foreground transition-colors">Quem Somos</button>
-              <span className="text-border">·</span>
-              <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">Início</button>
-            </div>
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 md:flex-row md:justify-between">
+          <img src={logoClickmont} alt="ClickMont" className="h-10 opacity-70 w-auto" />
+          <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+            <button onClick={() => navigate("/termos-e-privacidade")} className="hover:text-foreground transition-colors">Termos de Uso</button>
+            <span className="text-border">·</span>
+            <button onClick={() => navigate("/quem-somos")} className="hover:text-foreground transition-colors">Quem Somos</button>
+            <span className="text-border">·</span>
+            <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">Início</button>
           </div>
-          <div className="text-center space-y-1">
-            <p className="text-xs text-muted-foreground">Operado por <strong>André Ramos dos Santos</strong> · CNPJ: 61.774.392/0001-30 · São Paulo – SP, Brasil</p>
-            <p className="text-xs text-muted-foreground">contato@clickmont.com.br · <a href="https://wa.me/551151280116" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">WhatsApp</a></p>
-            <p className="text-xs text-muted-foreground mt-2">© {new Date().getFullYear()} ClickMont. Todos os direitos reservados.</p>
-          </div>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} ClickMont. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

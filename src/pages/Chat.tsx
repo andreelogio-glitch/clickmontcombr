@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useSignedUrl } from "@/hooks/useSignedUrl";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -73,7 +72,6 @@ const Chat = () => {
   const isPaid = order?.status === "pago" || order?.status === "em_andamento" || order?.status === "desmontagem_confirmada" || order?.status === "aguardando_liberacao" || order?.status === "concluido";
   const isClient = user?.id === order?.client_id;
   const isMontador = profile?.role === "montador";
-  const montadorSelfieUrl = useSignedUrl("user-documents", montadorProfile?.selfie_url);
 
   useEffect(() => {
     if (orderId) {
@@ -183,21 +181,16 @@ const Chat = () => {
   const validateCode = async () => {
     if (!order || !codeInput.trim()) return;
     setValidatingCode(true);
-    try {
-      const { data, error } = await supabase.rpc("validate_verification_code", {
-        _order_id: order.id,
-        _code: codeInput.trim(),
-      });
-      if (error) throw error;
-      const result = data as { success: boolean; error?: string };
-      if (result.success) {
-        setOrder({ ...order, code_validated: true, status: "em_andamento" });
-        toast.success("Código validado! Serviço iniciado — horário registrado.");
-      } else {
-        toast.error(result.error || "Código incorreto.");
-      }
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao validar código.");
+    if (codeInput.trim() === order.verification_code) {
+      await supabase.from("orders").update({
+        code_validated: true,
+        status: "em_andamento",
+        started_at: new Date().toISOString(),
+      } as any).eq("id", order.id);
+      setOrder({ ...order, code_validated: true, status: "em_andamento" });
+      toast.success("Código validado! Serviço iniciado — horário registrado.");
+    } else {
+      toast.error("Código incorreto. Peça ao cliente o código correto.");
     }
     setValidatingCode(false);
   };
@@ -211,14 +204,13 @@ const Chat = () => {
       const path = `${user.id}/arrival-${orderId}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("user-documents").upload(path, file);
       if (upErr) throw upErr;
-      const { data: signedData, error: signErr } = await supabase.storage.from("user-documents").createSignedUrl(path, 86400);
-      if (signErr || !signedData?.signedUrl) throw new Error("Erro ao gerar URL da selfie");
+      const { data: urlData } = supabase.storage.from("user-documents").getPublicUrl(path);
 
-      // Send as chat message with image (signed URL valid for 24h)
+      // Send as chat message with image
       await supabase.from("chat_messages").insert({
         order_id: orderId,
         sender_id: user.id,
-        message: `📸 Selfie de chegada: ${signedData.signedUrl}`,
+        message: `📸 Selfie de chegada: ${urlData.publicUrl}`,
         is_preset: false,
       });
       toast.success("Selfie enviada ao cliente!");
@@ -245,8 +237,8 @@ const Chat = () => {
           <CardContent className="py-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16 border-2 border-primary">
-                {montadorSelfieUrl ? (
-                  <AvatarImage src={montadorSelfieUrl} alt={montadorProfile.full_name} />
+                {montadorProfile.selfie_url ? (
+                  <AvatarImage src={montadorProfile.selfie_url} alt={montadorProfile.full_name} />
                 ) : null}
                 <AvatarFallback className="bg-primary text-primary-foreground text-lg">
                   {montadorProfile.full_name.charAt(0).toUpperCase()}
