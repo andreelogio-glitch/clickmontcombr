@@ -3,12 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Shield, Package, AlertTriangle, Eye, DollarSign, CheckCircle, XCircle, Landmark, Loader2, Users, ShieldCheck } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Shield, Package, AlertTriangle, Eye, DollarSign, CheckCircle, XCircle, Landmark, Loader2, Users, ShieldCheck, FileText, TrendingUp, Clock, Wallet } from "lucide-react";
 import { toast } from "sonner";
 
 interface Order {
@@ -30,15 +32,21 @@ interface WalletTx {
   type: string; description: string; amount: number;
   status: string; created_at: string;
 }
+interface AuditLog {
+  id: string; created_at: string; user_id: string;
+  action_type: string; order_id: string | null;
+  details: Record<string, any> | null;
+}
 
 const orderStatusLabels: Record<string, string> = {
   pendente: "Pendente", com_lance: "Com lance", aceito: "Aceito",
-  pago: "Pago", desmontagem_confirmada: "Desmontagem OK",
+  pago: "Pago", em_andamento: "Em andamento", desmontagem_confirmada: "Desmontagem OK",
   aguardando_liberacao: "Aguardando liberação", concluido: "Concluído",
 };
 const orderStatusColors: Record<string, string> = {
   pendente: "bg-muted text-muted-foreground", com_lance: "bg-warning text-warning-foreground",
   aceito: "bg-primary text-primary-foreground", pago: "bg-success text-success-foreground",
+  em_andamento: "bg-accent text-accent-foreground",
   desmontagem_confirmada: "bg-accent text-accent-foreground",
   aguardando_liberacao: "bg-primary/80 text-primary-foreground",
   concluido: "bg-secondary text-secondary-foreground",
@@ -46,6 +54,13 @@ const orderStatusColors: Record<string, string> = {
 const ticketStatusColors: Record<string, string> = {
   aberto: "bg-warning text-warning-foreground", em_analise: "bg-primary text-primary-foreground",
   resolvido: "bg-success text-success-foreground", fechado: "bg-muted text-muted-foreground",
+};
+
+const actionTypeLabels: Record<string, string> = {
+  RELEASE_PAYMENT: "Pagamento Liberado",
+  BLOCK_PAYMENT: "Pagamento Bloqueado",
+  CONFIRM_WITHDRAWAL: "Saque Confirmado",
+  SERVICE_CONFIRMED: "Serviço Confirmado",
 };
 
 const AdminDashboard = () => {
@@ -57,6 +72,7 @@ const AdminDashboard = () => {
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [walletTxs, setWalletTxs] = useState<WalletTx[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
 
@@ -71,27 +87,40 @@ const AdminDashboard = () => {
   }, [isAdmin]);
 
   const fetchAll = async () => {
-    const [ordersRes, ticketsRes, walletRes, profilesRes] = await Promise.all([
+    const [ordersRes, ticketsRes, walletRes, profilesRes, logsRes] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("support_tickets").select("*").order("created_at", { ascending: false }),
       supabase.from("wallet_transactions").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+      supabase.from("platform_logs").select("*").order("created_at", { ascending: false }).limit(50),
     ]);
 
     const allOrders = (ordersRes.data || []) as Order[];
     const allTickets = (ticketsRes.data || []) as Ticket[];
     const allWallet = (walletRes.data || []) as WalletTx[];
     const allProfilesList = (profilesRes.data || []) as Profile[];
+    const allLogs = (logsRes.data || []) as AuditLog[];
 
     setOrders(allOrders);
     setTickets(allTickets);
     setWalletTxs(allWallet);
     setAllProfiles(allProfilesList);
+    setAuditLogs(allLogs);
 
     const map: Record<string, Profile> = {};
     allProfilesList.forEach((p) => { map[p.user_id] = p; });
     setProfiles(map);
     setLoading(false);
+  };
+
+  const logAction = async (actionType: string, orderId: string | null, details: Record<string, any>) => {
+    if (!user) return;
+    await supabase.from("platform_logs").insert({
+      user_id: user.id,
+      action_type: actionType,
+      order_id: orderId,
+      details,
+    });
   };
 
   const executeAuthorize = async (tx: WalletTx) => {
@@ -109,6 +138,12 @@ const AdminDashboard = () => {
           .eq("id", tx.order_id)
           .eq("status", "aguardando_liberacao");
       }
+      await logAction("RELEASE_PAYMENT", tx.order_id, {
+        tx_id: tx.id,
+        montador_id: tx.montador_id,
+        amount: tx.amount,
+        description: tx.description,
+      });
       toast.success("Pagamento autorizado! Saldo liberado para o montador.");
       setConfirmAction(null);
       fetchAll();
@@ -127,6 +162,11 @@ const AdminDashboard = () => {
         .update({ status: "bloqueado" })
         .eq("id", tx.id);
       if (error) throw error;
+      await logAction("BLOCK_PAYMENT", tx.order_id, {
+        tx_id: tx.id,
+        montador_id: tx.montador_id,
+        amount: tx.amount,
+      });
       toast.success("Pagamento bloqueado para análise.");
       setConfirmAction(null);
       fetchAll();
@@ -145,6 +185,11 @@ const AdminDashboard = () => {
         .update({ status: "sacado" })
         .eq("id", tx.id);
       if (error) throw error;
+      await logAction("CONFIRM_WITHDRAWAL", tx.order_id, {
+        tx_id: tx.id,
+        montador_id: tx.montador_id,
+        amount: tx.amount,
+      });
       toast.success("Saque confirmado como pago!");
       setConfirmAction(null);
       fetchAll();
@@ -181,6 +226,19 @@ const AdminDashboard = () => {
   const pendingWithdrawals = walletTxs.filter((t) => t.type === "debit" && t.status === "pendente");
   const pendingMontadores = allProfiles.filter((p) => p.role === "montador" && !p.is_approved);
 
+  // Financial summary calculations
+  const custodyOrders = orders.filter((o) => ["pago", "em_andamento", "desmontagem_confirmada", "aguardando_liberacao"].includes(o.status));
+  const custodyTotal = walletTxs
+    .filter((t) => t.type === "credit" && ["auditoria", "pendente"].includes(t.status))
+    .reduce((sum, t) => sum + t.amount, 0);
+  
+  // Projected profit: sum of platform fees (25% of bid amounts on active orders)
+  const projectedProfit = walletTxs
+    .filter((t) => t.type === "credit" && ["auditoria", "disponivel"].includes(t.status))
+    .reduce((sum, t) => sum + (t.amount * 0.25 / 0.75), 0); // reverse-calculate the fee from the montador amount
+
+  const pendingRelease = orders.filter((o) => o.status === "aguardando_liberacao").length;
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -213,6 +271,7 @@ const AdminDashboard = () => {
           <TabsTrigger value="orders" className="gap-1"><Package className="h-4 w-4" /> Pedidos ({orders.length})</TabsTrigger>
           <TabsTrigger value="users" className="gap-1"><Users className="h-4 w-4" /> Usuários ({allProfiles.length})</TabsTrigger>
           <TabsTrigger value="financeiro" className="gap-1"><DollarSign className="h-4 w-4" /> Financeiro ({auditTxs.length + pendingWithdrawals.length})</TabsTrigger>
+          <TabsTrigger value="gestao" className="gap-1"><Wallet className="h-4 w-4" /> Gestão Financeira</TabsTrigger>
           <TabsTrigger value="tickets" className="gap-1"><AlertTriangle className="h-4 w-4" /> Tickets ({tickets.length})</TabsTrigger>
         </TabsList>
 
@@ -267,7 +326,7 @@ const AdminDashboard = () => {
           ))}
         </TabsContent>
 
-        {/* Financeiro Tab */}
+        {/* Financeiro Tab (existing) */}
         <TabsContent value="financeiro" className="mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-3">
@@ -337,6 +396,157 @@ const AdminDashboard = () => {
                 })
               )}
             </div>
+          </div>
+        </TabsContent>
+
+        {/* Gestão Financeira Tab (NEW) */}
+        <TabsContent value="gestao" className="mt-4 space-y-6">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card className="border-primary/30">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                  <Shield className="h-4 w-4" /> Custódia Total
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-primary">R$ {custodyTotal.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground mt-1">{custodyOrders.length} ordens ativas</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-success/30">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                  <TrendingUp className="h-4 w-4" /> Lucro Projetado
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-success">R$ {projectedProfit.toFixed(2)}</p>
+                <p className="text-xs text-muted-foreground mt-1">Taxas de intermediação</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-warning/30">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                  <Clock className="h-4 w-4" /> Pendentes de Liberação
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-warning">{pendingRelease}</p>
+                <p className="text-xs text-muted-foreground mt-1">Serviços aguardando aprovação</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Orders awaiting release - responsive table */}
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2 mb-3">
+              <DollarSign className="h-5 w-5 text-primary" /> Ordens Concluídas — Autorizar Pagamento
+            </h2>
+            {(() => {
+              const releaseOrders = orders.filter((o) => o.status === "aguardando_liberacao");
+              if (releaseOrders.length === 0) {
+                return <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhuma ordem pendente de liberação.</CardContent></Card>;
+              }
+              return (
+                <div className="overflow-x-auto rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Pedido</TableHead>
+                        <TableHead className="hidden sm:table-cell">Cliente</TableHead>
+                        <TableHead className="hidden md:table-cell">Tipo</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead className="text-right">Ação</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {releaseOrders.map((order) => {
+                        const client = profiles[order.client_id];
+                        const relatedTx = auditTxs.find((t) => t.order_id === order.id);
+                        return (
+                          <TableRow key={order.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium text-sm">{order.title}</p>
+                                <p className="text-xs text-muted-foreground sm:hidden">{client?.full_name || "?"}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell className="hidden sm:table-cell text-sm">{client?.full_name || "?"}</TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              <Badge variant="secondary">{order.service_type}</Badge>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString("pt-BR")}</TableCell>
+                            <TableCell className="text-right">
+                              {relatedTx ? (
+                                <Button
+                                  size="sm"
+                                  className="bg-success hover:bg-success/80 text-success-foreground"
+                                  onClick={() => setConfirmAction({ type: "authorize", tx: relatedTx, montadorName: profiles[relatedTx.montador_id]?.full_name || "Montador" })}
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" /> Autorizar
+                                </Button>
+                              ) : (
+                                <Badge variant="outline">Sem transação</Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Audit Log Section */}
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2 mb-3">
+              <FileText className="h-5 w-5 text-muted-foreground" /> Histórico de Auditoria
+            </h2>
+            {auditLogs.length === 0 ? (
+              <Card><CardContent className="py-8 text-center text-muted-foreground">Nenhum registro de auditoria encontrado.</CardContent></Card>
+            ) : (
+              <div className="overflow-x-auto rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data/Hora</TableHead>
+                      <TableHead>Ação</TableHead>
+                      <TableHead className="hidden sm:table-cell">Executor</TableHead>
+                      <TableHead className="hidden md:table-cell">Detalhes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {auditLogs.map((log) => {
+                      const executor = profiles[log.user_id];
+                      return (
+                        <TableRow key={log.id}>
+                          <TableCell className="text-xs whitespace-nowrap">{new Date(log.created_at).toLocaleString("pt-BR")}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{actionTypeLabels[log.action_type] || log.action_type}</Badge>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell text-sm">{executor?.full_name || "Sistema"}</TableCell>
+                          <TableCell className="hidden md:table-cell text-xs text-muted-foreground max-w-[200px] truncate">
+                            {log.details ? (
+                              <>
+                                {log.details.amount && <span>R$ {Number(log.details.amount).toFixed(2)}</span>}
+                                {log.details.montador_id && (
+                                  <span className="ml-2">→ {profiles[log.details.montador_id as string]?.full_name || "Montador"}</span>
+                                )}
+                              </>
+                            ) : "—"}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </div>
         </TabsContent>
 
