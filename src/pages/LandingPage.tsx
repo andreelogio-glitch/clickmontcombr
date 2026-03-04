@@ -343,9 +343,10 @@ const LandingPage = () => {
               Quem Somos
             </a>
           </div>
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Clickmont. Todos os direitos reservados.
-          </p>
+          <div className="text-center md:text-right">
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} ClickMont. Todos os direitos reservados.</p>
+            <p className="text-xs text-muted-foreground">CNPJ: 61.774.392/0001-30 · contato@clickmont.com.br</p>
+          </div>
         </div>
       </motion.footer>
 

@@ -175,12 +175,15 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             </Link>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <img src={logoClickmont} alt="Clickmont" className="h-5 w-5" />
-            <span>© {new Date().getFullYear()} Clickmont</span>
+          <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <img src={logoClickmont} alt="Clickmont" className="h-5 w-5" />
+              <span>© {new Date().getFullYear()} ClickMont</span>
+            </div>
+            <p>CNPJ: 61.774.392/0001-30 · contato@clickmont.com.br</p>
           </div>
           <p className="text-center text-[11px] text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            🔒 Sua segurança é nossa prioridade. Todos os pagamentos na Clickmont são realizados através do Mercado Pago, garantindo proteção total dos seus dados e a custódia do seu dinheiro até a conclusão do serviço.
+            🔒 Sua segurança é nossa prioridade. Todos os pagamentos na ClickMont são realizados através do Mercado Pago, garantindo proteção total dos seus dados e a custódia do seu dinheiro até a conclusão do serviço.
           </p>
         </div>
       </footer>
