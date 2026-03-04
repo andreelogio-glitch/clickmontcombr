@@ -110,7 +110,8 @@ const Auth = () => {
           await supabase.from("profiles").update(updates).eq("user_id", userId);
         }
 
-        toast.success("Conta criada! Verifique seu e-mail para confirmar.");
+        toast.success("Conta criada com sucesso!");
+        window.location.hash = "#/";
       }
     } catch (error: any) {
       toast.error(error.message);
