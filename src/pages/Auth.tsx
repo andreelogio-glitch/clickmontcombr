@@ -70,7 +70,8 @@ const Auth = () => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Login realizado com sucesso!");
-        navigate("/");
+        // Let Index handle role-based routing — just navigate to root
+        window.location.hash = "#/";
       } else {
         const { data: signUpData, error } = await supabase.auth.signUp({
           email,
