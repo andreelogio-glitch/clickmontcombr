@@ -230,12 +230,11 @@ const AdminDashboard = () => {
   const custodyOrders = orders.filter((o) => ["pago", "em_andamento", "desmontagem_confirmada", "aguardando_liberacao"].includes(o.status));
   const custodyTotal = walletTxs
     .filter((t) => t.type === "credit" && ["auditoria", "pendente"].includes(t.status))
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + Math.round(t.amount * 1.20 * 100) / 100, 0);
   
-  // Projected profit: sum of platform fees (25% of bid amounts on active orders)
   const projectedProfit = walletTxs
     .filter((t) => t.type === "credit" && ["auditoria", "disponivel"].includes(t.status))
-    .reduce((sum, t) => sum + (t.amount * 0.25 / 0.75), 0); // reverse-calculate the fee from the montador amount
+    .reduce((sum, t) => sum + Math.round(t.amount * 0.25 * 100) / 100, 0);
 
   const pendingRelease = orders.filter((o) => o.status === "aguardando_liberacao").length;
 
@@ -406,7 +405,7 @@ const AdminDashboard = () => {
             <Card className="border-primary/30">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
-                  <Shield className="h-4 w-4" /> Custódia Total
+                  <Shield className="h-4 w-4" /> Saldo em Custódia
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -418,12 +417,12 @@ const AdminDashboard = () => {
             <Card className="border-success/30">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
-                  <TrendingUp className="h-4 w-4" /> Lucro Projetado
+                  <TrendingUp className="h-4 w-4" /> Receita Prevista
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold text-success">R$ {projectedProfit.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Taxas de intermediação</p>
+                <p className="text-xs text-muted-foreground mt-1">Receita acumulada</p>
               </CardContent>
             </Card>
 
