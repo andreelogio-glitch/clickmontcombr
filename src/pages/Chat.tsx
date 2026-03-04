@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Lock, Unlock, Send, Phone, MessageSquare, ShieldCheck, Camera, KeyRound, UserCheck, AlertTriangle } from "lucide-react";
+import { Lock, Unlock, Send, Phone, MessageSquare, ShieldCheck, Camera, KeyRound, UserCheck, AlertTriangle, Zap } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface ChatMessage {
@@ -66,12 +67,19 @@ const Chat = () => {
   const [codeInput, setCodeInput] = useState("");
   const [validatingCode, setValidatingCode] = useState(false);
   const [uploadingSelfie, setUploadingSelfie] = useState(false);
+  const [chatTemplates, setChatTemplates] = useState<{ id: string; content: string }[]>([]);
   const selfieInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isPaid = order?.status === "pago" || order?.status === "em_andamento" || order?.status === "desmontagem_confirmada" || order?.status === "aguardando_liberacao" || order?.status === "concluido";
   const isClient = user?.id === order?.client_id;
   const isMontador = profile?.role === "montador";
+
+  useEffect(() => {
+    supabase.from("chat_templates").select("id, content").order("created_at").then(({ data }) => {
+      if (data) setChatTemplates(data);
+    });
+  }, []);
 
   useEffect(() => {
     if (orderId) {
@@ -165,9 +173,19 @@ const Chat = () => {
     } catch (error: any) { toast.error(error.message); }
   };
 
+  const containsContactInfo = (text: string): boolean => {
+    const phoneRegex = /(\+?\d[\d\s\-().]{7,}\d)/;
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+    return phoneRegex.test(text) || emailRegex.test(text);
+  };
+
   const sendFreeMessage = async () => {
     if (!user || !orderId || !newMessage.trim()) return;
     if (!isPaid) { toast.error("Chat liberado apenas após o pagamento"); return; }
+    if (containsContactInfo(newMessage)) {
+      toast.error("Aviso de Segurança: Por sua proteção, não é permitido partilhar contactos (telefone/e-mail) no chat. Mantenha a conversa aqui!");
+      return;
+    }
     const sanitized = sanitizeMessage(newMessage);
     try {
       const { error } = await supabase.from("chat_messages").insert({
@@ -440,6 +458,22 @@ const Chat = () => {
                     <Camera className="h-4 w-4" />
                   </Button>
                 </>
+              )}
+              {chatTemplates.length > 0 && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" title="Frases rápidas">
+                      <Zap className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-2 space-y-1" align="end">
+                    {chatTemplates.map((t) => (
+                      <Button key={t.id} variant="ghost" size="sm" className="w-full justify-start text-xs" onClick={() => setNewMessage(t.content)}>
+                        {t.content}
+                      </Button>
+                    ))}
+                  </PopoverContent>
+                </Popover>
               )}
               <Button className="gradient-primary text-primary-foreground" onClick={sendFreeMessage}>
                 <Send className="h-4 w-4" />

@@ -10,8 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Shield, Package, AlertTriangle, Eye, DollarSign, CheckCircle, XCircle, Landmark, Loader2, Users, ShieldCheck, FileText, TrendingUp, Clock, Wallet } from "lucide-react";
+import { Shield, Package, AlertTriangle, Eye, DollarSign, CheckCircle, XCircle, Landmark, Loader2, Users, ShieldCheck, FileText, TrendingUp, Clock, Wallet, Trash2, Ban, RotateCcw, MessageSquareText, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 interface Order {
   id: string; title: string; furniture_type: string; status: string;
@@ -37,6 +38,9 @@ interface AuditLog {
   action_type: string; order_id: string | null;
   details: Record<string, any> | null;
 }
+interface ChatTemplate {
+  id: string; content: string; created_at: string;
+}
 
 const orderStatusLabels: Record<string, string> = {
   pendente: "Pendente", com_lance: "Com lance", aceito: "Aceito",
@@ -61,6 +65,10 @@ const actionTypeLabels: Record<string, string> = {
   BLOCK_PAYMENT: "Pagamento Bloqueado",
   CONFIRM_WITHDRAWAL: "Saque Confirmado",
   SERVICE_CONFIRMED: "Serviço Confirmado",
+  REFUND_TO_CLIENT: "Estorno ao Cliente",
+  SUSPEND_USER: "Usuário Suspenso",
+  DELETE_USER: "Usuário Excluído",
+  DELETE_ORDER: "Pedido Excluído",
 };
 
 const AdminDashboard = () => {
@@ -73,13 +81,17 @@ const AdminDashboard = () => {
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [walletTxs, setWalletTxs] = useState<WalletTx[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [chatTemplates, setChatTemplates] = useState<ChatTemplate[]>([]);
+  const [newTemplate, setNewTemplate] = useState("");
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
 
   const [confirmAction, setConfirmAction] = useState<{
-    type: "authorize" | "block" | "withdraw";
-    tx: WalletTx;
-    montadorName: string;
+    type: "authorize" | "block" | "withdraw" | "suspend" | "delete_user" | "delete_order" | "refund";
+    tx?: WalletTx;
+    montadorName?: string;
+    targetId?: string;
+    targetName?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -87,12 +99,13 @@ const AdminDashboard = () => {
   }, [isAdmin]);
 
   const fetchAll = async () => {
-    const [ordersRes, ticketsRes, walletRes, profilesRes, logsRes] = await Promise.all([
+    const [ordersRes, ticketsRes, walletRes, profilesRes, logsRes, templatesRes] = await Promise.all([
       supabase.from("orders").select("*").order("created_at", { ascending: false }),
       supabase.from("support_tickets").select("*").order("created_at", { ascending: false }),
       supabase.from("wallet_transactions").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("platform_logs").select("*").order("created_at", { ascending: false }).limit(50),
+      supabase.from("chat_templates").select("*").order("created_at", { ascending: true }),
     ]);
 
     const allOrders = (ordersRes.data || []) as Order[];
@@ -100,12 +113,14 @@ const AdminDashboard = () => {
     const allWallet = (walletRes.data || []) as WalletTx[];
     const allProfilesList = (profilesRes.data || []) as Profile[];
     const allLogs = (logsRes.data || []) as AuditLog[];
+    const allTemplates = (templatesRes.data || []) as ChatTemplate[];
 
     setOrders(allOrders);
     setTickets(allTickets);
     setWalletTxs(allWallet);
     setAllProfiles(allProfilesList);
     setAuditLogs(allLogs);
+    setChatTemplates(allTemplates);
 
     const map: Record<string, Profile> = {};
     allProfilesList.forEach((p) => { map[p.user_id] = p; });
@@ -200,6 +215,70 @@ const AdminDashboard = () => {
     }
   };
 
+  const executeSuspend = async (userId: string) => {
+    setProcessing(userId);
+    try {
+      const { error } = await supabase.from("profiles").update({ role: "suspenso" } as any).eq("user_id", userId);
+      if (error) throw error;
+      await logAction("SUSPEND_USER", null, { suspended_user_id: userId });
+      toast.success("Usuário suspenso.");
+      setConfirmAction(null);
+      fetchAll();
+    } catch (err: any) { toast.error(err.message); } finally { setProcessing(null); }
+  };
+
+  const executeDeleteUser = async (userId: string) => {
+    setProcessing(userId);
+    try {
+      const { error } = await supabase.from("profiles").delete().eq("user_id", userId);
+      if (error) throw error;
+      await logAction("DELETE_USER", null, { deleted_user_id: userId });
+      toast.success("Perfil excluído.");
+      setConfirmAction(null);
+      fetchAll();
+    } catch (err: any) { toast.error(err.message); } finally { setProcessing(null); }
+  };
+
+  const executeDeleteOrder = async (orderId: string) => {
+    setProcessing(orderId);
+    try {
+      const { error } = await supabase.from("orders").delete().eq("id", orderId);
+      if (error) throw error;
+      await logAction("DELETE_ORDER", orderId, {});
+      toast.success("Pedido excluído.");
+      setConfirmAction(null);
+      fetchAll();
+    } catch (err: any) { toast.error(err.message); } finally { setProcessing(null); }
+  };
+
+  const executeRefund = async (orderId: string) => {
+    setProcessing(orderId);
+    try {
+      const { error } = await supabase.from("orders").update({ status: "cancelado" } as any).eq("id", orderId);
+      if (error) throw error;
+      await logAction("REFUND_TO_CLIENT", orderId, { refunded: true });
+      toast.success("Pedido estornado e marcado como cancelado.");
+      setConfirmAction(null);
+      fetchAll();
+    } catch (err: any) { toast.error(err.message); } finally { setProcessing(null); }
+  };
+
+  const addTemplate = async () => {
+    if (!newTemplate.trim()) return;
+    const { error } = await supabase.from("chat_templates").insert({ content: newTemplate.trim() });
+    if (error) { toast.error(error.message); return; }
+    setNewTemplate("");
+    fetchAll();
+    toast.success("Frase adicionada!");
+  };
+
+  const deleteTemplate = async (id: string) => {
+    const { error } = await supabase.from("chat_templates").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    fetchAll();
+    toast.success("Frase removida.");
+  };
+
   if (adminLoading || loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -271,6 +350,7 @@ const AdminDashboard = () => {
           <TabsTrigger value="users" className="gap-1"><Users className="h-4 w-4" /> Usuários ({allProfiles.length})</TabsTrigger>
           <TabsTrigger value="financeiro" className="gap-1"><DollarSign className="h-4 w-4" /> Financeiro ({auditTxs.length + pendingWithdrawals.length})</TabsTrigger>
           <TabsTrigger value="gestao" className="gap-1"><Wallet className="h-4 w-4" /> Gestão Financeira</TabsTrigger>
+          <TabsTrigger value="templates" className="gap-1"><MessageSquareText className="h-4 w-4" /> Chat Templates</TabsTrigger>
           <TabsTrigger value="tickets" className="gap-1"><AlertTriangle className="h-4 w-4" /> Tickets ({tickets.length})</TabsTrigger>
         </TabsList>
 
@@ -294,6 +374,12 @@ const AdminDashboard = () => {
                   <div className="flex items-center gap-2">
                     <Badge className={orderStatusColors[order.status]}>{orderStatusLabels[order.status] || order.status}</Badge>
                     <Button variant="outline" size="sm" onClick={() => navigate(`/chat/${order.id}`)}><Eye className="h-3.5 w-3.5" /></Button>
+                    <Button variant="outline" size="sm" className="text-destructive" onClick={() => setConfirmAction({ type: "refund", targetId: order.id, targetName: order.title })} title="Estornar">
+                      <RotateCcw className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setConfirmAction({ type: "delete_order", targetId: order.id, targetName: order.title })} title="Excluir">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -319,6 +405,12 @@ const AdminDashboard = () => {
                       {p.is_approved ? "Aprovado" : "Pendente"}
                     </Badge>
                   )}
+                  <Button variant="outline" size="sm" className="text-warning" onClick={() => setConfirmAction({ type: "suspend", targetId: p.user_id, targetName: p.full_name })} title="Suspender">
+                    <Ban className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setConfirmAction({ type: "delete_user", targetId: p.user_id, targetName: p.full_name })} title="Excluir">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -549,6 +641,31 @@ const AdminDashboard = () => {
           </div>
         </TabsContent>
 
+        {/* Chat Templates Tab */}
+        <TabsContent value="templates" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader><CardTitle className="text-lg flex items-center gap-2"><MessageSquareText className="h-5 w-5" /> Frases Pré-definidas do Chat</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input placeholder="Nova frase curta..." value={newTemplate} onChange={(e) => setNewTemplate(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTemplate()} />
+                <Button onClick={addTemplate} className="gap-1"><Plus className="h-4 w-4" /> Adicionar</Button>
+              </div>
+              {chatTemplates.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhuma frase cadastrada.</p>
+              ) : (
+                <div className="space-y-2">
+                  {chatTemplates.map((t) => (
+                    <div key={t.id} className="flex items-center justify-between rounded-lg border p-3">
+                      <span className="text-sm">{t.content}</span>
+                      <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteTemplate(t.id)}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Tickets Tab */}
         <TabsContent value="tickets" className="mt-4 space-y-3">
           {tickets.map((ticket) => {
@@ -578,35 +695,51 @@ const AdminDashboard = () => {
               {confirmAction?.type === "authorize" && "Confirmar Autorização de Pagamento"}
               {confirmAction?.type === "block" && "Confirmar Bloqueio de Pagamento"}
               {confirmAction?.type === "withdraw" && "Confirmar Transferência PIX"}
+              {confirmAction?.type === "suspend" && "Suspender Usuário"}
+              {confirmAction?.type === "delete_user" && "Excluir Usuário"}
+              {confirmAction?.type === "delete_order" && "Excluir Pedido"}
+              {confirmAction?.type === "refund" && "Estornar Pedido"}
             </DialogTitle>
             <DialogDescription>
-              {confirmAction?.type === "authorize" && (
-                <>Deseja realmente autorizar o pagamento de <strong className="text-success">R$ {confirmAction.tx.amount.toFixed(2)}</strong> para o montador <strong>{confirmAction.montadorName}</strong>?</>
+              {confirmAction?.type === "authorize" && confirmAction.tx && (
+                <>Deseja autorizar o pagamento de <strong className="text-success">R$ {confirmAction.tx.amount.toFixed(2)}</strong> para <strong>{confirmAction.montadorName}</strong>?</>
               )}
-              {confirmAction?.type === "block" && (
+              {confirmAction?.type === "block" && confirmAction.tx && (
                 <>Deseja bloquear o pagamento de <strong className="text-destructive">R$ {confirmAction.tx.amount.toFixed(2)}</strong> para <strong>{confirmAction.montadorName}</strong>?</>
               )}
-              {confirmAction?.type === "withdraw" && (
-                <>Confirma que a transferência PIX de <strong className="text-destructive">R$ {Math.abs(confirmAction.tx.amount).toFixed(2)}</strong> para <strong>{confirmAction.montadorName}</strong> foi realizada?</>
+              {confirmAction?.type === "withdraw" && confirmAction.tx && (
+                <>Confirma a transferência PIX de <strong className="text-destructive">R$ {Math.abs(confirmAction.tx.amount).toFixed(2)}</strong> para <strong>{confirmAction.montadorName}</strong>?</>
               )}
+              {confirmAction?.type === "suspend" && <>Deseja suspender o usuário <strong>{confirmAction.targetName}</strong>?</>}
+              {confirmAction?.type === "delete_user" && <>Deseja excluir permanentemente o perfil de <strong className="text-destructive">{confirmAction.targetName}</strong>?</>}
+              {confirmAction?.type === "delete_order" && <>Deseja excluir permanentemente o pedido <strong className="text-destructive">{confirmAction.targetName}</strong>?</>}
+              {confirmAction?.type === "refund" && <>Deseja estornar e cancelar o pedido <strong className="text-warning">{confirmAction.targetName}</strong>?</>}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setConfirmAction(null)} disabled={!!processing}>Cancelar</Button>
             <Button
-              className={confirmAction?.type === "block" ? "bg-destructive hover:bg-destructive/80 text-destructive-foreground" : "bg-success hover:bg-success/80 text-success-foreground"}
+              className={["block", "delete_user", "delete_order"].includes(confirmAction?.type || "") ? "bg-destructive hover:bg-destructive/80 text-destructive-foreground" : "bg-success hover:bg-success/80 text-success-foreground"}
               disabled={!!processing}
               onClick={() => {
                 if (!confirmAction) return;
-                if (confirmAction.type === "authorize") executeAuthorize(confirmAction.tx);
-                else if (confirmAction.type === "block") executeBlock(confirmAction.tx);
-                else if (confirmAction.type === "withdraw") executeWithdraw(confirmAction.tx);
+                if (confirmAction.type === "authorize" && confirmAction.tx) executeAuthorize(confirmAction.tx);
+                else if (confirmAction.type === "block" && confirmAction.tx) executeBlock(confirmAction.tx);
+                else if (confirmAction.type === "withdraw" && confirmAction.tx) executeWithdraw(confirmAction.tx);
+                else if (confirmAction.type === "suspend" && confirmAction.targetId) executeSuspend(confirmAction.targetId);
+                else if (confirmAction.type === "delete_user" && confirmAction.targetId) executeDeleteUser(confirmAction.targetId);
+                else if (confirmAction.type === "delete_order" && confirmAction.targetId) executeDeleteOrder(confirmAction.targetId);
+                else if (confirmAction.type === "refund" && confirmAction.targetId) executeRefund(confirmAction.targetId);
               }}
             >
               {processing ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
               {confirmAction?.type === "authorize" && "Sim, Autorizar"}
               {confirmAction?.type === "block" && "Sim, Bloquear"}
               {confirmAction?.type === "withdraw" && "Sim, Confirmar"}
+              {confirmAction?.type === "suspend" && "Sim, Suspender"}
+              {confirmAction?.type === "delete_user" && "Sim, Excluir"}
+              {confirmAction?.type === "delete_order" && "Sim, Excluir"}
+              {confirmAction?.type === "refund" && "Sim, Estornar"}
             </Button>
           </DialogFooter>
         </DialogContent>

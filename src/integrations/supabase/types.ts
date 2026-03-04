@@ -134,6 +134,24 @@ export type Database = {
           },
         ]
       }
+      chat_templates: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       code_validation_attempts: {
         Row: {
           attempted_code: string
