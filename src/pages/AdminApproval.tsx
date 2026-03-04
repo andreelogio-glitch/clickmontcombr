@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, MessageCircle, User, Phone, MapPin, ShieldCheck, LogOut } from "lucide-react";
+import { CheckCircle, XCircle, MessageCircle, User, Phone, MapPin, ShieldCheck, LogOut, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 interface PendingMontador {
   id: string;
@@ -25,6 +26,7 @@ interface PendingMontador {
 const AdminApproval = () => {
   const { user, signOut } = useAuth();
   const { isAdmin, loading: adminLoading } = useIsAdmin(user);
+  const navigate = useNavigate();
   const [montadores, setMontadores] = useState<PendingMontador[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
@@ -116,8 +118,11 @@ const AdminApproval = () => {
 
   return (
     <div className="container py-8 space-y-6 max-w-4xl">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={() => navigate("/admin")} className="gap-1">
+            <ArrowLeft className="h-4 w-4" /> Voltar ao Painel
+          </Button>
           <ShieldCheck className="h-7 w-7 text-primary" />
           <h1 className="text-2xl font-bold">Aprovação de Montadores</h1>
           <Badge variant="outline">{montadores.length} pendente(s)</Badge>
