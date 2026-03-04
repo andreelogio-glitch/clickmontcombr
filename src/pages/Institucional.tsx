@@ -254,7 +254,9 @@ const Institucional = () => {
               <Building2 className="h-4 w-4" />
               <span>Operado por <strong className="text-foreground">André Ramos dos Santos</strong></span>
             </div>
+            <p className="text-sm text-muted-foreground">CNPJ: 61.774.392/0001-30</p>
             <p className="text-sm text-muted-foreground">São Paulo – SP, Brasil</p>
+            <p className="text-sm text-muted-foreground">Contato: contato@clickmont.com.br</p>
           </motion.div>
           <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="mt-8">
             <Card className="border-primary/20">
@@ -284,7 +286,10 @@ const Institucional = () => {
             <span className="text-border">·</span>
             <button onClick={() => navigate("/")} className="hover:text-foreground transition-colors">Início</button>
           </div>
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} ClickMont. Todos os direitos reservados.</p>
+          <div className="text-center md:text-right">
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} ClickMont. Todos os direitos reservados.</p>
+            <p className="text-xs text-muted-foreground">CNPJ: 61.774.392/0001-30 · contato@clickmont.com.br</p>
+          </div>
         </div>
       </footer>
     </div>

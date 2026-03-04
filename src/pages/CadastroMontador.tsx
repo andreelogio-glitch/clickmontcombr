@@ -21,6 +21,7 @@ const CadastroMontador = () => {
   const [phone, setPhone] = useState("");
   const [pixKey, setPixKey] = useState("");
   const [bio, setBio] = useState("");
+  const [cnpj, setCnpj] = useState("");
   const [city, setCity] = useState("");
   const [lgpdAccepted, setLgpdAccepted] = useState(false);
 
@@ -67,6 +68,7 @@ const CadastroMontador = () => {
           role: "montador",
           phone: phone || null,
           pix_key: pixKey || null,
+          cnpj: cnpj || null,
           city,
           is_approved: false,
           lgpd_accepted_at: new Date().toISOString(),
@@ -131,6 +133,11 @@ const CadastroMontador = () => {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs flex items-center gap-1"><FileText className="h-3.5 w-3.5" /> CNPJ (opcional)</Label>
+                <Input placeholder="00.000.000/0000-00" value={cnpj} onChange={(e) => setCnpj(e.target.value)} className="mt-1" />
               </div>
 
               <div>
