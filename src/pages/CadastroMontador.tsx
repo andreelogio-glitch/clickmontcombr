@@ -82,8 +82,8 @@ const CadastroMontador = () => {
           body: { montador_name: fullName },
         });
       }
-      toast.success("Conta de montador criada! Verifique seu e-mail para confirmar.");
-      navigate("/");
+      toast.success("Conta de montador criada com sucesso!");
+      window.location.hash = "#/";
     } catch (error: any) {
       toast.error(error.message);
     } finally {
