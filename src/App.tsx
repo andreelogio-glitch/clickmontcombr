@@ -18,6 +18,8 @@ import QuemSomos from "./pages/QuemSomos";
 import SouMontador from "./pages/SouMontador";
 import CadastroMontador from "./pages/CadastroMontador";
 import TermosPrivacidade from "./pages/TermosPrivacidade";
+import TermosDeUso from "./pages/TermosDeUso";
+import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
 import SuporteMontador from "./pages/SuporteMontador";
 import AdminApproval from "./pages/AdminApproval";
 import Institucional from "./pages/Institucional";
@@ -47,6 +49,8 @@ const App = () => {
             <Route path="/sou-montador" element={<SouMontador />} />
             <Route path="/cadastro-montador" element={<CadastroMontador />} />
             <Route path="/termos-e-privacidade" element={<TermosPrivacidade />} />
+            <Route path="/termos-de-uso" element={<TermosDeUso />} />
+            <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
             <Route path="/suporte-montador" element={<SuporteMontador />} />
             <Route path="/admin-approval" element={<AdminApproval />} />
             <Route path="/institucional" element={<Institucional />} />

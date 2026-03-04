@@ -331,15 +331,19 @@ const LandingPage = () => {
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 md:flex-row md:justify-between">
           <img src={logoClickmont} alt="Clickmont" className="h-12 md:h-14 opacity-70 w-auto" />
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-            <a href="/termos-e-privacidade" className="hover:text-foreground transition-colors">
+            <a href="#/termos-de-uso" className="hover:text-foreground transition-colors">
               Termos de Uso
             </a>
             <span className="text-border">·</span>
-            <a href="/termos-e-privacidade" className="hover:text-foreground transition-colors">
-              Privacidade
+            <a href="#/politica-de-privacidade" className="hover:text-foreground transition-colors">
+              Política de Privacidade
             </a>
             <span className="text-border">·</span>
-            <a href="/quem-somos" className="hover:text-foreground transition-colors">
+            <a href="#/institucional" className="hover:text-foreground transition-colors">
+              Institucional
+            </a>
+            <span className="text-border">·</span>
+            <a href="#/quem-somos" className="hover:text-foreground transition-colors">
               Quem Somos
             </a>
           </div>
