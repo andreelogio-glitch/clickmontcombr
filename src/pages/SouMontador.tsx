@@ -131,7 +131,8 @@ const SouMontador = () => {
       {/* Footer */}
       <footer className="border-t border-border py-6">
         <div className="container text-center text-xs text-muted-foreground space-y-2">
-          <p>© {new Date().getFullYear()} Clickmont — Todos os direitos reservados</p>
+          <p>© {new Date().getFullYear()} ClickMont — Todos os direitos reservados</p>
+          <p>CNPJ: 61.774.392/0001-30 · contato@clickmont.com.br</p>
           <p>🔒 Pagamentos seguros via Mercado Pago</p>
           <Link to="/termos-e-privacidade" className="text-primary hover:underline inline-block mt-1">
             📄 Termos de Uso e Política de Privacidade
