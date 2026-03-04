@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -228,10 +228,10 @@ const Auth = () => {
                 {/* LGPD */}
                 <div className="flex items-start gap-2 rounded-lg border border-border p-3">
                   <Checkbox id="lgpd" checked={lgpdAccepted} onCheckedChange={(v) => setLgpdAccepted(v === true)} />
-                  <label htmlFor="lgpd" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                    Li e aceito a{" "}
-                    <span className="text-primary underline">Política de Privacidade</span> e os{" "}
-                    <span className="text-primary underline">Termos de Uso</span> da Clickmont, em conformidade com a LGPD (Lei nº 13.709/2018). Autorizo o tratamento dos meus dados pessoais para a prestação dos serviços.
+                   <label htmlFor="lgpd" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
+                    Ao cadastrar-se, você concorda com nossos{" "}
+                    <Link to="/termos-de-uso" className="text-primary underline hover:text-primary/80" target="_blank" onClick={(e) => e.stopPropagation()}>Termos de Uso</Link> e{" "}
+                    <Link to="/politica-de-privacidade" className="text-primary underline hover:text-primary/80" target="_blank" onClick={(e) => e.stopPropagation()}>Política de Privacidade</Link> da ClickMont, em conformidade com a LGPD (Lei nº 13.709/2018).
                   </label>
                 </div>
               </>

@@ -280,7 +280,9 @@ const Institucional = () => {
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 md:flex-row md:justify-between">
           <img src={logoClickmont} alt="ClickMont" className="h-10 opacity-70 w-auto" />
           <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-            <button onClick={() => navigate("/termos-e-privacidade")} className="hover:text-foreground transition-colors">Termos de Uso</button>
+            <button onClick={() => navigate("/termos-de-uso")} className="hover:text-foreground transition-colors">Termos de Uso</button>
+            <span className="text-border">·</span>
+            <button onClick={() => navigate("/politica-de-privacidade")} className="hover:text-foreground transition-colors">Política de Privacidade</button>
             <span className="text-border">·</span>
             <button onClick={() => navigate("/quem-somos")} className="hover:text-foreground transition-colors">Quem Somos</button>
             <span className="text-border">·</span>
