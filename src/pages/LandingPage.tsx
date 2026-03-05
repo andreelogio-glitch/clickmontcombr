@@ -113,9 +113,10 @@ const LandingPage = () => {
               className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
             />
             <img 
-              src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=1200"
-              alt="Sala e Cozinha conjugada com painel de TV e armários de cozinha instalados"
+              src={cozinhaMontada}
+              alt="Armários de cozinha montados profissionalmente"
               className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
+            />
             />
           </div>
         </div>
