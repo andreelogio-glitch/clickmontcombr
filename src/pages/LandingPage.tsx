@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import logoClickmont from "@/assets/logo-clickmont.png";
 import cozinhaMontada from "@/assets/cozinha-montada.png";
+import guardaRoupa from "@/assets/guarda-roupa-montado.jpeg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
