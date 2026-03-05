@@ -110,7 +110,7 @@ const LandingPage = () => {
               className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
             />
             <img 
-              src="https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?q=80&w=800"
+              src={painelTv}
               alt="Instalação de Painel de TV"
               className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
             />
