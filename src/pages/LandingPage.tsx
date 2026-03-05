@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import logoClickmont from "@/assets/logo-clickmont.png";
 import cozinhaMontada from "@/assets/cozinha-montada.png";
 import guardaRoupa from "@/assets/guarda-roupa-montado.jpeg";
+import painelTv from "@/assets/painel-tv-montado.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
