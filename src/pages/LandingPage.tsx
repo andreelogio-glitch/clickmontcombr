@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import logoClickmont from "@/assets/logo-clickmont.png";
 import cozinhaMontada from "@/assets/cozinha-montada.png";
 import guardaRoupa from "@/assets/guarda-roupa-montado.jpeg";
+import painelTv from "@/assets/painel-tv-montado.png";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -109,7 +110,7 @@ const LandingPage = () => {
               className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
             />
             <img 
-              src="https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?q=80&w=800"
+              src={painelTv}
               alt="Instalação de Painel de TV"
               className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
             />
