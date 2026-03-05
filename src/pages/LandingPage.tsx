@@ -104,7 +104,7 @@ const LandingPage = () => {
           <h3 className="text-center text-2xl font-bold mb-10">Serviços que realizamos</h3>
           <div className="grid gap-8 md:grid-cols-3">
             <img 
-              src="https://images.unsplash.com/photo-1595428774223-ef52624120d2?q=80&w=800"
+              src={guardaRoupa}
               alt="Montagem de Guarda-Roupa"
               className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
             />
