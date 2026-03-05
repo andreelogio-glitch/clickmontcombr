@@ -117,7 +117,6 @@ const LandingPage = () => {
               alt="Armários de cozinha montados profissionalmente"
               className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300 object-cover h-64 w-full"
             />
-            />
           </div>
         </div>
       </section>
