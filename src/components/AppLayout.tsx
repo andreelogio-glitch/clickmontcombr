@@ -38,13 +38,15 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             )}
             {profile?.role === "montador" && (
               <>
-                <Link to="/"><Button variant={isActive("/") ? "default" : "ghost"} size="sm"><LayoutDashboard className="h-4 w-4 mr-1" /> Pedidos</Button></Link>
+                <Link to="/montador"><Button variant={isActive("/montador") ? "default" : "ghost"} size="sm"><LayoutDashboard className="h-4 w-4 mr-1" /> Mural</Button></Link>
                 <Link to="/carteira"><Button variant={isActive("/carteira") ? "default" : "ghost"} size="sm"><Wallet className="h-4 w-4 mr-1" /> Carteira</Button></Link>
                 <Link to="/suporte-montador"><Button variant={isActive("/suporte-montador") ? "default" : "ghost"} size="sm"><HelpCircle className="h-4 w-4 mr-1" /> Suporte</Button></Link>
               </>
             )}
             <Link to="/assistencia"><Button variant={isActive("/assistencia") ? "default" : "ghost"} size="sm"><AlertTriangle className="h-4 w-4 mr-1" /> Ajuda</Button></Link>
-            <Link to="/sou-montador"><Button variant={isActive("/sou-montador") ? "default" : "ghost"} size="sm"><Wrench className="h-4 w-4 mr-1" /> Sou Montador</Button></Link>
+            {profile?.role !== "montador" && (
+              <Link to="/sou-montador"><Button variant={isActive("/sou-montador") ? "default" : "ghost"} size="sm"><Wrench className="h-4 w-4 mr-1" /> Sou Montador</Button></Link>
+            )}
             <Link to="/quem-somos"><Button variant={isActive("/quem-somos") ? "default" : "ghost"} size="sm"><Info className="h-4 w-4 mr-1" /> Sobre</Button></Link>
             <NotificationBell unreadCount={unreadCount} onClick={() => setShowNotifs(!showNotifs)} />
             <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4 mr-1" /> Sair</Button>
