@@ -327,7 +327,7 @@ const ClienteHome = () => {
                               <p className="font-semibold text-primary flex items-center gap-1">
                                 <DollarSign className="h-4 w-4" /> R$ {clientTotal.toFixed(2)}
                               </p>
-                              <p className="text-xs text-muted-foreground">(Lance: R$ {bid.amount.toFixed(2)} + taxa 20%)</p>
+                              <p className="text-xs text-muted-foreground">(Lance: R$ {bid.amount.toFixed(2)} + taxa 15%)</p>
                               {bid.message && <p className="text-sm text-muted-foreground mt-1">{bid.message}</p>}
                             </div>
                             <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => acceptBid(bid)}>
