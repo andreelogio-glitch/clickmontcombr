@@ -56,6 +56,7 @@ const App = () => {
             <Route path="/admin-approval" element={<AdminApproval />} />
             <Route path="/institucional" element={<Institucional />} />
             <Route path="/montador" element={<MontadorDashboardPage />} />
+            <Route path="/montador-dashboard" element={<MontadorDashboardPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>

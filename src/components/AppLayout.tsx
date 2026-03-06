@@ -164,20 +164,22 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       <footer className="border-t border-border py-6">
         <div className="container space-y-4">
           {/* Montador recruitment banner */}
-          <div className="rounded-xl gradient-primary p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-3 text-primary-foreground">
-              <Wrench className="h-6 w-6 shrink-0" />
-              <div>
-                <p className="font-bold text-sm">É montador profissional?</p>
-                <p className="text-xs opacity-90">Cadastre-se e ganhe dinheiro com montagens e mudanças!</p>
+          {profile?.role !== "montador" && (
+            <div className="rounded-xl gradient-primary p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-3 text-primary-foreground">
+                <Wrench className="h-6 w-6 shrink-0" />
+                <div>
+                  <p className="font-bold text-sm">É montador profissional?</p>
+                  <p className="text-xs opacity-90">Cadastre-se e ganhe dinheiro com montagens e mudanças!</p>
+                </div>
               </div>
+              <Link to="/sou-montador">
+                <Button variant="secondary" size="sm" className="shrink-0">
+                  Sou Montador →
+                </Button>
+              </Link>
             </div>
-            <Link to="/sou-montador">
-              <Button variant="secondary" size="sm" className="shrink-0">
-                Sou Montador →
-              </Button>
-            </Link>
-          </div>
+          )}
 
           <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
