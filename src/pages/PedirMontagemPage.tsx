@@ -14,10 +14,19 @@ const PedirMontagemPage = () => {
     );
   }
 
-  if (!user) return <Navigate to="/" />;
+  if (!user) return <Navigate to="/auth" replace />;
+
+  // Wait for profile before checking role
+  if (!profile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   // Block montadores from creating orders
-  if (profile?.role === "montador") return <Navigate to="/" replace />;
+  if (profile.role === "montador") return <Navigate to="/montador" replace />;
 
   return (
     <AppLayout>
