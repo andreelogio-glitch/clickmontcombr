@@ -75,6 +75,7 @@ const PedirMontagem = () => {
 
       const { error } = await supabase.from("orders").insert({
         client_id: user.id,
+        status: "pendente",
         title: form.title,
         description: `${form.description}${form.preferred_date ? `\n📅 Data preferencial: ${form.preferred_date}` : ""}${form.is_urgent ? "\n⚠️ URGENTE" : ""}`,
         furniture_type: form.furniture_type,
