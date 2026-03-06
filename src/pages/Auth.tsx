@@ -51,6 +51,35 @@ const Auth = () => {
     return data.publicUrl;
   };
 
+  const ensureProfileExists = async (userId: string, userRole: "cliente" | "montador", name: string) => {
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!existing) {
+      await supabase.from("profiles").insert({
+        user_id: userId,
+        full_name: name || "Usuário",
+        role: userRole,
+      } as any);
+    }
+  };
+
+  const waitForProfileSync = async (userId: string) => {
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (data?.id) return;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLogin && !lgpdAccepted) {
