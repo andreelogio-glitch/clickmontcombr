@@ -111,8 +111,17 @@ const Auth = () => {
         });
         if (error) throw error;
 
-        const userId = signUpData.user?.id;
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (signInError) throw signInError;
+
+        const userId = signInData.user?.id ?? signUpData.user?.id;
         if (userId) {
+          await ensureProfileExists(userId, role, fullName);
+          await waitForProfileSync(userId);
+
           // Update profile with phone and LGPD
           const updates: Record<string, any> = {
             role,

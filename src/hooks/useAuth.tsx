@@ -35,12 +35,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     const fetchProfile = async (userId: string) => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
-      if (mounted) setProfile(data as Profile | null);
+      let profileData: Profile | null = null;
+
+      for (let i = 0; i < 6; i++) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (data) {
+          profileData = data as Profile;
+          break;
+        }
+
+        if (error && error.code !== "PGRST116") {
+          console.error("Profile fetch error:", error);
+          break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      }
+
+      if (mounted) setProfile(profileData);
     };
 
     // 1. Restore session from storage FIRST, then mark ready

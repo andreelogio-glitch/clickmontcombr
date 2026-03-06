@@ -86,8 +86,17 @@ const CadastroMontador = () => {
       });
       if (error) throw error;
 
-      const userId = signUpData.user?.id;
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (signInError) throw signInError;
+
+      const userId = signInData.user?.id ?? signUpData.user?.id;
       if (userId) {
+        await ensureProfileExists(userId, fullName);
+        await waitForProfileSync(userId);
+
         const [selfieUrl, docUrl, expUrl] = await Promise.all([
           uploadFile(selfieFile, userId, "selfie"),
           uploadFile(documentFile, userId, "documento"),
