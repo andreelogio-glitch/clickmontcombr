@@ -74,7 +74,6 @@ const PedirMontagem = () => {
       const dbServiceType = form.service_type === "mudanca" ? "desmontagem" : form.service_type;
 
       const { error } = await supabase.from("orders").insert({
-        client_id: user.id,
         status: "pendente",
         title: form.title,
         description: `${form.description}${form.preferred_date ? `\n📅 Data preferencial: ${form.preferred_date}` : ""}${form.is_urgent ? "\n⚠️ URGENTE" : ""}`,
