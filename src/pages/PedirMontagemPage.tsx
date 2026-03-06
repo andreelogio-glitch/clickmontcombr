@@ -26,7 +26,7 @@ const PedirMontagemPage = () => {
   }
 
   // Block montadores from creating orders
-  if (profile.role === "montador") return <Navigate to="/montador-dashboard" replace />;
+  if (profile.role === "montador") return <Navigate to="/" replace />;
 
   return (
     <AppLayout>
