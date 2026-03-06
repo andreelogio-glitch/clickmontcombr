@@ -73,22 +73,22 @@ const PedirMontagem = () => {
       // Map mudanca to desmontagem for DB (fractioned logic handled by service_type)
       const dbServiceType = form.service_type === "mudanca" ? "desmontagem" : form.service_type;
 
-      const { error } = await supabase.from("orders").insert({
-        status: "pendente",
-        title: form.title,
-        description: `${form.description}${form.preferred_date ? `\n📅 Data preferencial: ${form.preferred_date}` : ""}${form.is_urgent ? "\n⚠️ URGENTE" : ""}`,
-        furniture_type: form.furniture_type,
-        brand: form.brand || null,
-        address: form.address,
-        city: form.city,
-        service_type: dbServiceType,
-        photo_url,
-        is_urgent: form.is_urgent,
-        needs_wall_mount: form.needs_wall_mount,
-      } as any);
+      const { data: createdOrderId, error } = await supabase.rpc("create_order_safe", {
+        _title: form.title,
+        _description: `${form.description}${form.preferred_date ? `\n📅 Data preferencial: ${form.preferred_date}` : ""}${form.is_urgent ? "\n⚠️ URGENTE" : ""}`,
+        _furniture_type: form.furniture_type,
+        _brand: form.brand || "",
+        _address: form.address,
+        _city: form.city,
+        _service_type: dbServiceType,
+        _photo_url: photo_url || "",
+        _is_urgent: form.is_urgent,
+        _needs_wall_mount: form.needs_wall_mount,
+      });
+
       if (error) throw error;
       toast.success("Pedido criado com sucesso! Montadores da região serão notificados.");
-      navigate("/");
+      navigate(`/chat/${createdOrderId}`);
     } catch (error: any) {
       console.error("[orders.insert] Falha ao criar pedido:", error);
       toast.error("Erro ao criar pedido: " + error.message);
