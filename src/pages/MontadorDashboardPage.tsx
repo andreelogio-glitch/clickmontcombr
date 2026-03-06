@@ -1,9 +1,9 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
-import PedirMontagem from "./PedirMontagem";
+import DashboardMontador from "./DashboardMontador";
 
-const PedirMontagemPage = () => {
+const MontadorDashboardPage = () => {
   const { user, profile, loading } = useAuth();
 
   if (loading) {
@@ -16,7 +16,7 @@ const PedirMontagemPage = () => {
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  // Wait for profile before checking role
+  // Wait for profile to load
   if (!profile) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -25,14 +25,14 @@ const PedirMontagemPage = () => {
     );
   }
 
-  // Block montadores from creating orders
-  if (profile.role === "montador") return <Navigate to="/montador" replace />;
+  // Only montadores can access this page
+  if (profile.role !== "montador") return <Navigate to="/" replace />;
 
   return (
     <AppLayout>
-      <PedirMontagem />
+      <DashboardMontador />
     </AppLayout>
   );
 };
 
-export default PedirMontagemPage;
+export default MontadorDashboardPage;
