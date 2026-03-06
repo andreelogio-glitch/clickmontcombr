@@ -58,6 +58,8 @@ const App = () => {
             <Route path="/institucional" element={<Institucional />} />
             <Route path="/montador" element={<MontadorDashboardPage />} />
             <Route path="/montador-dashboard" element={<MontadorDashboardPage />} />
+            <Route path="/dashboard/cliente" element={<ClienteDashboardPage />} />
+            <Route path="/dashboard/montador" element={<MontadorDashboardPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>
