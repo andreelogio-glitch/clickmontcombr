@@ -41,6 +41,35 @@ const CadastroMontador = () => {
     return data.publicUrl;
   };
 
+  const ensureProfileExists = async (userId: string, name: string) => {
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!existing) {
+      await supabase.from("profiles").insert({
+        user_id: userId,
+        full_name: name || "Usuário",
+        role: "montador",
+      } as any);
+    }
+  };
+
+  const waitForProfileSync = async (userId: string) => {
+    for (let i = 0; i < 6; i++) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (data?.id) return;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!city) { toast.error("Selecione sua cidade de atuação."); return; }
@@ -57,8 +86,17 @@ const CadastroMontador = () => {
       });
       if (error) throw error;
 
-      const userId = signUpData.user?.id;
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (signInError) throw signInError;
+
+      const userId = signInData.user?.id ?? signUpData.user?.id;
       if (userId) {
+        await ensureProfileExists(userId, fullName);
+        await waitForProfileSync(userId);
+
         const [selfieUrl, docUrl, expUrl] = await Promise.all([
           uploadFile(selfieFile, userId, "selfie"),
           uploadFile(documentFile, userId, "documento"),
