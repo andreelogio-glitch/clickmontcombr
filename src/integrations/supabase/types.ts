@@ -591,11 +591,30 @@ export type Database = {
       }
     }
     Functions: {
+      create_order_safe: {
+        Args: {
+          _address: string
+          _brand: string
+          _city: string
+          _description: string
+          _furniture_type: string
+          _is_urgent: boolean
+          _needs_wall_mount: boolean
+          _photo_url: string
+          _service_type: string
+          _title: string
+        }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_accepted_montador_for_order: {
+        Args: { _order_id: string; _user_id: string }
         Returns: boolean
       }
       release_payment: {
