@@ -91,8 +91,8 @@ const PedirMontagem = () => {
       toast.success("Pedido criado com sucesso! Montadores da região serão notificados.");
       navigate("/");
     } catch (error: any) {
+      console.error("[orders.insert] Falha ao criar pedido:", error);
       toast.error("Erro ao criar pedido: " + error.message);
-    } finally {
       setLoading(false);
     }
   };
