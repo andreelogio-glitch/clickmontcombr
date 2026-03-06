@@ -24,6 +24,7 @@ import SuporteMontador from "./pages/SuporteMontador";
 import AdminApproval from "./pages/AdminApproval";
 import Institucional from "./pages/Institucional";
 import MontadorDashboardPage from "./pages/MontadorDashboardPage";
+import ClienteDashboardPage from "./pages/ClienteDashboardPage";
 
 const queryClient = new QueryClient();
 
