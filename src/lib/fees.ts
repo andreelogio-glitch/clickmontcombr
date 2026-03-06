@@ -1,8 +1,8 @@
 // Platform fee calculation
-// Montador bids X → client pays X * 1.2 → montador receives X * 0.9 → platform keeps X * 0.3
+// Montador bids X → client pays X * 1.15 → montador receives X * 0.90 → platform keeps X * 0.25
 
-export const PLATFORM_CLIENT_FEE = 0.20; // 20% added for the client
-export const PLATFORM_MONTADOR_FEE = 0.10; // 10% deducted from montador
+export const PLATFORM_CLIENT_FEE = 0.15; // 15% service fee for the client
+export const PLATFORM_MONTADOR_FEE = 0.10; // 10% ClickMont commission from montador
 
 // Desmontagem split: montador gets 40% on disassembly confirmation, 60% on assembly confirmation
 export const DESMONTAGEM_FIRST_SPLIT = 0.40;
