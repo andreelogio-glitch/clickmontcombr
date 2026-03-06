@@ -24,6 +24,7 @@ import SuporteMontador from "./pages/SuporteMontador";
 import AdminApproval from "./pages/AdminApproval";
 import Institucional from "./pages/Institucional";
 import MontadorDashboardPage from "./pages/MontadorDashboardPage";
+import ClienteDashboardPage from "./pages/ClienteDashboardPage";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,8 @@ const App = () => {
             <Route path="/institucional" element={<Institucional />} />
             <Route path="/montador" element={<MontadorDashboardPage />} />
             <Route path="/montador-dashboard" element={<MontadorDashboardPage />} />
+            <Route path="/dashboard/cliente" element={<ClienteDashboardPage />} />
+            <Route path="/dashboard/montador" element={<MontadorDashboardPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>
