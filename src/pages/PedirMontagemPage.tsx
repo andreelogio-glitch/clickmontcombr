@@ -4,7 +4,7 @@ import AppLayout from "@/components/AppLayout";
 import PedirMontagem from "./PedirMontagem";
 
 const PedirMontagemPage = () => {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
 
   if (loading) {
     return (
@@ -15,6 +15,9 @@ const PedirMontagemPage = () => {
   }
 
   if (!user) return <Navigate to="/" />;
+
+  // Block montadores from creating orders
+  if (profile?.role === "montador") return <Navigate to="/" replace />;
 
   return (
     <AppLayout>
