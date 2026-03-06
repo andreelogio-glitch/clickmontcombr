@@ -247,7 +247,7 @@ export type Database = {
           address: string
           brand?: string | null
           city?: string | null
-          client_id: string
+          client_id?: string
           code_validated?: boolean | null
           created_at?: string
           description: string
