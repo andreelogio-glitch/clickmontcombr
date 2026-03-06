@@ -112,8 +112,8 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               )}
               {profile?.role === "montador" && (
                 <>
-                  <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant={isActive("/") ? "default" : "ghost"} size="sm" className="w-full justify-start"><LayoutDashboard className="h-4 w-4 mr-2" /> Pedidos</Button>
+                  <Link to="/montador" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant={isActive("/montador") ? "default" : "ghost"} size="sm" className="w-full justify-start"><LayoutDashboard className="h-4 w-4 mr-2" /> Mural</Button>
                   </Link>
                   <Link to="/carteira" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant={isActive("/carteira") ? "default" : "ghost"} size="sm" className="w-full justify-start"><Wallet className="h-4 w-4 mr-2" /> Carteira</Button>
@@ -126,9 +126,11 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               <Link to="/assistencia" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant={isActive("/assistencia") ? "default" : "ghost"} size="sm" className="w-full justify-start"><AlertTriangle className="h-4 w-4 mr-2" /> Ajuda</Button>
               </Link>
-              <Link to="/sou-montador" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant={isActive("/sou-montador") ? "default" : "ghost"} size="sm" className="w-full justify-start"><Wrench className="h-4 w-4 mr-2" /> Sou Montador</Button>
-              </Link>
+              {profile?.role !== "montador" && (
+                <Link to="/sou-montador" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant={isActive("/sou-montador") ? "default" : "ghost"} size="sm" className="w-full justify-start"><Wrench className="h-4 w-4 mr-2" /> Sou Montador</Button>
+                </Link>
+              )}
               <Link to="/quem-somos" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant={isActive("/quem-somos") ? "default" : "ghost"} size="sm" className="w-full justify-start"><Info className="h-4 w-4 mr-2" /> Sobre</Button>
               </Link>
