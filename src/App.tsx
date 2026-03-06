@@ -23,6 +23,7 @@ import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
 import SuporteMontador from "./pages/SuporteMontador";
 import AdminApproval from "./pages/AdminApproval";
 import Institucional from "./pages/Institucional";
+import MontadorDashboardPage from "./pages/MontadorDashboardPage";
 
 const queryClient = new QueryClient();
 
