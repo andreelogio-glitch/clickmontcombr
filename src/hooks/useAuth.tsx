@@ -7,7 +7,7 @@ export interface Profile {
   user_id: string;
   full_name: string;
   phone: string | null;
-  role: "cliente" | "montador";
+  role: "cliente" | "montador" | "admin";
   is_approved?: boolean;
 }
 
@@ -60,7 +60,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (mounted) setProfile(profileData);
     };
 
-    // 1. Restore session from storage FIRST, then mark ready
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!mounted) return;
       const currentUser = session?.user ?? null;
@@ -74,20 +73,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // 2. Listen for subsequent changes (login, logout, token refresh)
-    // This fires AFTER getSession, so we gate updates on initializedRef
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
 
-        // Skip the INITIAL_SESSION event — we handle it via getSession above
         if (event === "INITIAL_SESSION") return;
 
         const newUser = session?.user ?? null;
         setUser(newUser);
 
         if (newUser) {
-          // Use setTimeout to avoid blocking the callback
           setTimeout(async () => {
             if (!mounted) return;
             await fetchProfile(newUser.id);
