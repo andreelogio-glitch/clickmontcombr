@@ -41,26 +41,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       for (let i = 0; i < 6; i++) {
         const { data, error } = await supabase
           .from("profiles")
-          .select("id, full_name, phone, role")
+          .select("id, user_id, full_name, phone, role, city, is_approved")
           .eq("user_id", userId)
           .limit(1)
           .maybeSingle();
 
         if (data) {
-          // Busca city e user_id separadamente para contornar tipos gerados
-          const { data: extra } = await supabase
-            .from("profiles")
-            .select("user_id, city")
-            .eq("id", data.id)
-            .maybeSingle();
-
           profileData = {
             id: data.id,
-            user_id: (extra as any)?.user_id ?? userId,
+            user_id: data.user_id,
             full_name: data.full_name ?? "",
             phone: data.phone ?? null,
             role: data.role as Profile["role"],
-            city: (extra as any)?.city ?? null,
+            city: data.city ?? null,
+            is_approved: data.is_approved ?? false,
           };
           break;
         }

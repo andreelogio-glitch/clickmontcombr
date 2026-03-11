@@ -38,7 +38,6 @@ interface Order {
   brand: string | null;
   address: string;
   city: string | null;
-  neighborhood: string | null;
   status: string;
   service_type: string;
   created_at: string;
@@ -48,7 +47,6 @@ interface Order {
   montador_arrived?: boolean;
   code_validated?: boolean;
   verification_code?: string | null;
-  assigned_montador_id?: string | null;
 }
 
 interface Bid {
@@ -281,7 +279,7 @@ const DashboardMontador = () => {
     (o) =>
       o.status === "pendente" &&
       !myBidOrderIds.has(o.id) &&
-      (!o.assigned_montador_id || o.assigned_montador_id === user?.id)
+      true
   );
 
   const filteredMural =
@@ -403,9 +401,7 @@ const DashboardMontador = () => {
                         <p className="font-medium text-sm">{order.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {order.furniture_type} ·{" "}
-                          {order.neighborhood
-                            ? `${order.neighborhood} · `
-                            : ""}
+                          {order.city || "Cidade não informada"}
                           {order.city || "Cidade não informada"}
                         </p>
                       </div>
@@ -436,8 +432,7 @@ const DashboardMontador = () => {
                   const isDesmontagem = order.service_type === "desmontagem";
 
                   const neighborhood =
-                    order.neighborhood ||
-                    (order.address ? order.address.split(",")[0] : "Bairro não informado");
+                    order.address ? order.address.split(",")[0] : "Bairro não informado";
 
                   return (
                     <Card
@@ -677,7 +672,7 @@ const DashboardMontador = () => {
                             </p>
                             <p className="text-sm mt-1">{order.address}</p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {order.neighborhood && `${order.neighborhood} · `}
+                              {order.city}
                               {order.city}
                             </p>
                             <div className="flex gap-2 mt-2">
