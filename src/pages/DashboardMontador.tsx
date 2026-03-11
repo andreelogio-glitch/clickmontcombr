@@ -403,7 +403,10 @@ const DashboardMontador = () => {
                         <p className="font-medium text-sm">{order.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {order.furniture_type} ·{" "}
-                          {order.city || "Sem cidade definida"}
+                          {order.neighborhood
+                            ? `${order.neighborhood} · `
+                            : ""}
+                          {order.city || "Cidade não informada"}
                         </p>
                       </div>
                       <Badge className={statusColors["com_lance"]}>
@@ -432,7 +435,6 @@ const DashboardMontador = () => {
                   const needsWallMount = !!order.needs_wall_mount;
                   const isDesmontagem = order.service_type === "desmontagem";
 
-                  // bairro vem da coluna neighborhood; fallback simples
                   const neighborhood =
                     order.neighborhood ||
                     (order.address ? order.address.split(",")[0] : "Bairro não informado");
@@ -440,7 +442,7 @@ const DashboardMontador = () => {
                   return (
                     <Card
                       key={order.id}
-                      className={`overflow-hidden ${
+                      className={`overflow-hidden hover:border-primary/60 transition-colors cursor-default ${
                         isUrgent
                           ? "border-destructive/60 shadow-lg shadow-destructive/10"
                           : ""
@@ -457,18 +459,27 @@ const DashboardMontador = () => {
                                 </Badge>
                               )}
                             </CardTitle>
-                            <div className="flex items-center gap-2 mt-1">
+
+                            {/* Linha destacando tipo + bairro + cidade */}
+                            <div className="flex flex-wrap items-center gap-2 mt-1 text-sm">
                               <Badge variant="outline" className="text-xs">
                                 {isDesmontagem
                                   ? "🚚 Mudança (Des+Mont)"
                                   : "🔧 Montagem"}
                               </Badge>
-                              <span className="text-sm text-muted-foreground">
+                              <span className="text-muted-foreground">
                                 {order.furniture_type}
                                 {order.brand && ` · ${order.brand}`}
                               </span>
                             </div>
+
+                            <p className="mt-1 text-xs font-medium text-primary flex items-center gap-1">
+                              <MapPin className="h-3.5 w-3.5" />
+                              {neighborhood} ·{" "}
+                              {order.city || "Cidade não informada"}
+                            </p>
                           </div>
+
                           <Badge className={statusColors[order.status]}>
                             {statusLabels[order.status] || order.status}
                           </Badge>
@@ -477,11 +488,6 @@ const DashboardMontador = () => {
 
                       <CardContent className="space-y-3">
                         <p className="text-sm">{order.description}</p>
-
-                        <p className="text-sm text-muted-foreground flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5" />
-                          {neighborhood} · {order.city || "Cidade não informada"}
-                        </p>
 
                         {needsWallMount && (
                           <Alert className="border-warning/50 bg-warning/10">
@@ -580,7 +586,7 @@ const DashboardMontador = () => {
                               <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                               <span>
                                 Seu lance: R$ {bidVal.toFixed(2)} → Cliente
-                                paga: R${" "}
+                                paga: R{"$ "}
                                 {calcClientTotal(bidVal).toFixed(2)} → Você
                                 recebe:{" "}
                                 <strong
@@ -590,7 +596,7 @@ const DashboardMontador = () => {
                                       : "text-success"
                                   }
                                 >
-                                  R${" "}
+                                  R{"$ "}
                                   {calcMontadorReceives(
                                     bidVal,
                                     isUrgent
@@ -785,7 +791,7 @@ const DashboardMontador = () => {
                               <p className="text-sm mt-1">
                                 Valor:{" "}
                                 <strong className="text-success">
-                                  R${" "}
+                                  R{"$ "}
                                   {calcMontadorReceives(
                                     acceptedBid.amount,
                                     isUrgent
