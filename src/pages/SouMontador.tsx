@@ -1,8 +1,11 @@
+import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Zap, Clock, Truck, Shield, Wrench, ArrowRight, DollarSign, Star } from "lucide-react";
 import logoClickmont from "@/assets/logo-clickmont.png";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const benefits = [
   {
@@ -33,6 +36,23 @@ const benefits = [
 
 const SouMontador = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+
+    const checkProfile = async () => {
+      const { data, error } = await supabase.from("profiles").select("role").eq("user_id", user.id).single();
+
+      if (error || !data) return;
+
+      if (data.role === "montador" || data.role === "admin") {
+        navigate("/dashboard/montador", { replace: true });
+      }
+    };
+
+    checkProfile();
+  }, [user, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -45,12 +65,11 @@ const SouMontador = () => {
             <span className="text-3xl font-black text-gradient">Clickmont</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-black leading-tight">
-            Ganhe dinheiro com{" "}
-            <span className="text-gradient">montagens e mudanças</span>
+            Ganhe dinheiro com <span className="text-gradient">montagens e mudanças</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Na Clickmont, seu esforço vale mais. Receba pedidos na sua região, 
-            defina seus valores e ganhe bônus por agilidade.
+            Na Clickmont, seu esforço vale mais. Receba pedidos na sua região, defina seus valores e ganhe bônus por
+            agilidade.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Button
@@ -63,9 +82,15 @@ const SouMontador = () => {
             </Button>
           </div>
           <div className="flex items-center justify-center gap-6 pt-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1"><Star className="h-4 w-4 text-warning" /> Cadastro gratuito</span>
-            <span className="flex items-center gap-1"><DollarSign className="h-4 w-4 text-success" /> Receba via PIX</span>
-            <span className="flex items-center gap-1"><Shield className="h-4 w-4 text-primary" /> Sem mensalidade</span>
+            <span className="flex items-center gap-1">
+              <Star className="h-4 w-4 text-warning" /> Cadastro gratuito
+            </span>
+            <span className="flex items-center gap-1">
+              <DollarSign className="h-4 w-4 text-success" /> Receba via PIX
+            </span>
+            <span className="flex items-center gap-1">
+              <Shield className="h-4 w-4 text-primary" /> Sem mensalidade
+            </span>
           </div>
         </div>
       </section>
@@ -80,15 +105,15 @@ const SouMontador = () => {
             <Card
               key={i}
               className={`transition-all hover:scale-[1.02] ${
-                b.highlight
-                  ? "border-primary/50 bg-accent/30 shadow-lg shadow-primary/5"
-                  : ""
+                b.highlight ? "border-primary/50 bg-accent/30 shadow-lg shadow-primary/5" : ""
               }`}
             >
               <CardContent className="pt-6 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className={`rounded-lg p-2 ${b.highlight ? "gradient-primary" : "bg-muted"}`}>
-                    <b.icon className={`h-6 w-6 ${b.highlight ? "text-primary-foreground" : "text-muted-foreground"}`} />
+                    <b.icon
+                      className={`h-6 w-6 ${b.highlight ? "text-primary-foreground" : "text-muted-foreground"}`}
+                    />
                   </div>
                   <h3 className="font-bold text-lg">{b.title}</h3>
                 </div>
