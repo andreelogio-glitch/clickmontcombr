@@ -3,9 +3,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Package,
@@ -22,6 +30,8 @@ import {
   Calendar,
   History,
   Briefcase,
+  Clock,
+  FileText,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -79,51 +89,39 @@ const statusColors: Record<string, string> = {
   concluido: "bg-muted text-muted-foreground",
 };
 
+const extractNeighborhood = (address: string) =>
+  address ? address.split(",")[0] : "Bairro não informado";
+
 const DashboardMontador = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const montadorCity = profile?.city ?? null;
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [myBids, setMyBids] = useState<Bid[]>([]);
-  const [bidAmounts, setBidAmounts] = useState<Record<string, string>>({});
-  const [bidMessages, setBidMessages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [wallMountAccepted, setWallMountAccepted] = useState<Record<string, boolean>>({});
   const [arrivingAt, setArrivingAt] = useState<string | null>(null);
-  const [montadorCity, setMontadorCity] = useState<string | null>(null);
   const [showAllRegion, setShowAllRegion] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem("montador-onboarding-done");
   });
 
+  // Detail modal state
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [bidAmount, setBidAmount] = useState("");
+  const [bidDeadline, setBidDeadline] = useState("");
+  const [bidMessage, setBidMessage] = useState("");
+
   useEffect(() => {
     if (user) {
-      fetchProfile();
       fetchOrders();
       fetchMyBids();
     } else {
       setLoading(false);
     }
   }, [user]);
-
-  const fetchProfile = async () => {
-    if (!user) return;
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("city")
-      .eq("user_id", user.id)
-      .single();
-
-    if (error) {
-      console.error("Erro ao buscar perfil do montador:", error);
-      return;
-    }
-
-    if (data?.city) {
-      setMontadorCity(data.city);
-    }
-  };
 
   const fetchOrders = async () => {
     const { data, error } = await supabase
@@ -138,9 +136,7 @@ const DashboardMontador = () => {
       return;
     }
 
-    if (data) {
-      setOrders(data as Order[]);
-    }
+    if (data) setOrders(data as Order[]);
     setLoading(false);
   };
 
@@ -155,59 +151,62 @@ const DashboardMontador = () => {
       console.error("Erro ao buscar meus lances:", error);
       return;
     }
-
-    if (data) {
-      setMyBids(data as Bid[]);
-    }
+    if (data) setMyBids(data as Bid[]);
   };
 
-  const handleBid = async (orderId: string, needsWallMount?: boolean) => {
-    if (!user) return;
+  const openOrderDetail = (order: Order) => {
+    setSelectedOrder(order);
+    setBidAmount("");
+    setBidDeadline("");
+    setBidMessage("");
+  };
 
-    const amount = parseFloat(bidAmounts[orderId] || "0");
-    if (amount <= 0) {
+  const handleBidFromModal = async () => {
+    if (!user || !selectedOrder) return;
+
+    const amount = parseFloat(bidAmount);
+    if (amount <= 0 || isNaN(amount)) {
       toast.error("Informe um valor válido");
       return;
     }
 
-    if (needsWallMount && !wallMountAccepted[orderId]) {
-      toast.error("Você precisa aceitar o termo de instalação em parede para enviar o lance.");
+    const needsWallMount = !!selectedOrder.needs_wall_mount;
+    if (needsWallMount && !wallMountAccepted[selectedOrder.id]) {
+      toast.error("Você precisa aceitar o termo de instalação em parede.");
       return;
     }
 
-    setSubmitting(orderId);
+    setSubmitting(selectedOrder.id);
 
     try {
       const { error } = await supabase.from("bids").insert({
-        order_id: orderId,
+        order_id: selectedOrder.id,
         montador_id: user.id,
         amount,
-        message: bidMessages[orderId] || null,
-      });
+        message: bidMessage || null,
+        deadline: bidDeadline || null,
+      } as any);
 
       if (error) throw error;
 
       await supabase
         .from("orders")
         .update({ status: "com_lance" })
-        .eq("id", orderId);
+        .eq("id", selectedOrder.id);
 
-      toast.success("Lance enviado!");
+      toast.success("Orçamento enviado com sucesso!");
+      setSelectedOrder(null);
       fetchOrders();
       fetchMyBids();
     } catch (error: any) {
-      console.error("Erro ao enviar lance:", error);
+      console.error("Erro ao enviar orçamento:", error);
       toast.error("Erro: " + error.message);
     } finally {
       setSubmitting(null);
     }
   };
 
-  const handleArrival = async (
-    orderId: string,
-    orderTitle: string,
-    clientId: string
-  ) => {
+  const handleArrival = async (orderId: string, orderTitle: string, clientId: string) => {
     if (!user) return;
     setArrivingAt(orderId);
 
@@ -274,12 +273,8 @@ const DashboardMontador = () => {
     myBids.filter((b) => b.accepted).map((b) => b.order_id)
   );
 
-  // Mural: pedidos pendentes em que ainda não dei lance
   const muralOrders = orders.filter(
-    (o) =>
-      o.status === "pendente" &&
-      !myBidOrderIds.has(o.id) &&
-      true
+    (o) => o.status === "pendente" && !myBidOrderIds.has(o.id)
   );
 
   const filteredMural =
@@ -287,28 +282,16 @@ const DashboardMontador = () => {
       ? muralOrders.filter((o) => o.city === montadorCity)
       : muralOrders;
 
-  // Agenda: pedidos com lance aceito em status ativo
-  const activeStatuses = [
-    "aceito",
-    "pago",
-    "em_andamento",
-    "desmontagem_confirmada",
-  ];
-
+  const activeStatuses = ["aceito", "pago", "em_andamento", "desmontagem_confirmada"];
   const agendaOrders = orders.filter(
-    (o) =>
-      myAcceptedBidOrderIds.has(o.id) && activeStatuses.includes(o.status)
+    (o) => myAcceptedBidOrderIds.has(o.id) && activeStatuses.includes(o.status)
   );
 
-  // Histórico: pedidos concluídos / aguardando liberação
   const historicoStatuses = ["aguardando_liberacao", "concluido"];
-
   const historicoOrders = orders.filter(
-    (o) =>
-      myAcceptedBidOrderIds.has(o.id) && historicoStatuses.includes(o.status)
+    (o) => myAcceptedBidOrderIds.has(o.id) && historicoStatuses.includes(o.status)
   );
 
-  // Pedidos onde já dei lance mas ainda não foi aceito
   const pendingBidOrders = orders.filter(
     (o) =>
       myBidOrderIds.has(o.id) &&
@@ -321,6 +304,198 @@ const DashboardMontador = () => {
       {showOnboarding && (
         <MontadorOnboarding onComplete={() => setShowOnboarding(false)} />
       )}
+
+      {/* ===== DETAIL MODAL ===== */}
+      <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          {selectedOrder && (() => {
+            const neighborhood = extractNeighborhood(selectedOrder.address);
+            const isUrgent = !!selectedOrder.is_urgent;
+            const needsWallMount = !!selectedOrder.needs_wall_mount;
+            const isDesmontagem = selectedOrder.service_type === "desmontagem";
+            const parsedAmount = parseFloat(bidAmount) || 0;
+
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    {selectedOrder.title}
+                    {isUrgent && (
+                      <Badge className="bg-destructive text-destructive-foreground text-xs animate-pulse">
+                        <Flame className="h-3 w-3 mr-1" /> URGENTE
+                      </Badge>
+                    )}
+                  </DialogTitle>
+                  <DialogDescription>
+                    Detalhes do pedido e envio de orçamento
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4">
+                  {/* Status + Type */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge className={statusColors[selectedOrder.status]}>
+                      {statusLabels[selectedOrder.status] || selectedOrder.status}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {isDesmontagem ? "🚚 Mudança (Des+Mont)" : "🔧 Montagem"}
+                    </Badge>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Descrição</p>
+                    <p className="text-sm">{selectedOrder.description}</p>
+                  </div>
+
+                  {/* Furniture */}
+                  <div className="flex gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Móvel</p>
+                      <p className="text-sm">{selectedOrder.furniture_type}</p>
+                    </div>
+                    {selectedOrder.brand && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Marca</p>
+                        <p className="text-sm">{selectedOrder.brand}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Location */}
+                  <div className="rounded-lg bg-muted p-3 space-y-1">
+                    <p className="text-sm font-medium flex items-center gap-1">
+                      <MapPin className="h-4 w-4 text-primary" /> Localização
+                    </p>
+                    <p className="text-sm">
+                      {neighborhood} · {selectedOrder.city || "Cidade não informada"}
+                    </p>
+                  </div>
+
+                  {/* Date */}
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    Publicado em{" "}
+                    {new Date(selectedOrder.created_at).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </div>
+
+                  {/* Wall mount warning */}
+                  {needsWallMount && (
+                    <Alert className="border-warning/50 bg-warning/10">
+                      <AlertTriangle className="h-5 w-5 text-warning" />
+                      <AlertTitle className="text-warning font-bold">
+                        ⚠️ Requer furação de parede
+                      </AlertTitle>
+                      <AlertDescription className="text-sm text-muted-foreground">
+                        Certifique-se de possuir furadeira e brocas adequadas.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {isUrgent && (
+                    <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3 flex items-start gap-2">
+                      <Rocket className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-destructive">
+                          🚀 Pedido urgente — Taxa Zero!
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Você recebe o valor total do seu lance.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ===== BID FORM ===== */}
+                  <div className="border-t border-border pt-4 space-y-3">
+                    <p className="text-sm font-semibold flex items-center gap-1">
+                      <FileText className="h-4 w-4" /> Enviar Orçamento
+                    </p>
+
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Valor proposto (R$) *</label>
+                      <Input
+                        type="number"
+                        placeholder="Ex: 150.00"
+                        value={bidAmount}
+                        onChange={(e) => setBidAmount(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Prazo estimado</label>
+                      <Input
+                        placeholder="Ex: 2 horas, 1 dia"
+                        value={bidDeadline}
+                        onChange={(e) => setBidDeadline(e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Mensagem (opcional)</label>
+                      <Textarea
+                        placeholder="Observações, experiência, etc."
+                        value={bidMessage}
+                        onChange={(e) => setBidMessage(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+
+                    {needsWallMount && (
+                      <div className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/5 p-3">
+                        <Checkbox
+                          id={`wall-mount-modal`}
+                          checked={wallMountAccepted[selectedOrder.id] || false}
+                          onCheckedChange={(checked) =>
+                            setWallMountAccepted({
+                              ...wallMountAccepted,
+                              [selectedOrder.id]: checked === true,
+                            })
+                          }
+                        />
+                        <label
+                          htmlFor={`wall-mount-modal`}
+                          className="text-xs text-muted-foreground leading-relaxed cursor-pointer"
+                        >
+                          Confirmo que possuo as ferramentas necessárias para instalação em parede.
+                        </label>
+                      </div>
+                    )}
+
+                    {parsedAmount > 0 && (
+                      <div className="flex items-start gap-1.5 text-xs text-muted-foreground rounded-lg bg-muted p-2">
+                        <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                        <span>
+                          Seu lance: R$ {parsedAmount.toFixed(2)} → Cliente paga: R${" "}
+                          {calcClientTotal(parsedAmount).toFixed(2)} → Você recebe:{" "}
+                          <strong className={isUrgent ? "text-destructive" : "text-success"}>
+                            R$ {calcMontadorReceives(parsedAmount, isUrgent).toFixed(2)}
+                          </strong>
+                          {isUrgent ? " (🔥 Taxa Zero!)" : " (comissão 10%)"}
+                          {isDesmontagem && " · 40% após desmontagem, 60% após montagem"}
+                        </span>
+                      </div>
+                    )}
+
+                    <Button
+                      className="w-full gradient-primary text-primary-foreground"
+                      disabled={submitting === selectedOrder.id}
+                      onClick={handleBidFromModal}
+                    >
+                      <Send className="h-4 w-4 mr-1" />
+                      {submitting === selectedOrder.id ? "Enviando..." : "Enviar Orçamento"}
+                    </Button>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
       <div className="space-y-6 animate-fade-in">
         <div className="flex items-center justify-between">
@@ -339,28 +514,20 @@ const DashboardMontador = () => {
               <Briefcase className="h-4 w-4" />
               <span className="hidden sm:inline">Mural</span>
               {filteredMural.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
-                >
+                <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                   {filteredMural.length}
                 </Badge>
               )}
             </TabsTrigger>
-
             <TabsTrigger value="agenda" className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Agenda</span>
               {agendaOrders.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
-                >
+                <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                   {agendaOrders.length}
                 </Badge>
               )}
             </TabsTrigger>
-
             <TabsTrigger value="historico" className="flex items-center gap-1">
               <History className="h-4 w-4" />
               <span className="hidden sm:inline">Histórico</span>
@@ -375,7 +542,6 @@ const DashboardMontador = () => {
                   ? `Pedidos em ${montadorCity}`
                   : "Todos os pedidos disponíveis"}
               </p>
-
               {montadorCity && (
                 <Button
                   variant={showAllRegion ? "default" : "outline"}
@@ -388,7 +554,7 @@ const DashboardMontador = () => {
               )}
             </div>
 
-            {/* Pedidos onde já enviei lance e está aguardando */}
+            {/* Lances pendentes */}
             {pendingBidOrders.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm font-medium text-muted-foreground">
@@ -400,9 +566,7 @@ const DashboardMontador = () => {
                       <div>
                         <p className="font-medium text-sm">{order.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {order.furniture_type} ·{" "}
-                          {order.city || "Cidade não informada"}
-                          {order.city || "Cidade não informada"}
+                          {order.furniture_type} · {extractNeighborhood(order.address)} · {order.city || "Cidade não informada"}
                         </p>
                       </div>
                       <Badge className={statusColors["com_lance"]}>
@@ -426,22 +590,17 @@ const DashboardMontador = () => {
             ) : (
               <div className="grid gap-4">
                 {filteredMural.map((order) => {
-                  const bidVal = parseFloat(bidAmounts[order.id] || "0");
                   const isUrgent = !!order.is_urgent;
-                  const needsWallMount = !!order.needs_wall_mount;
                   const isDesmontagem = order.service_type === "desmontagem";
-
-                  const neighborhood =
-                    order.address ? order.address.split(",")[0] : "Bairro não informado";
+                  const neighborhood = extractNeighborhood(order.address);
 
                   return (
                     <Card
                       key={order.id}
-                      className={`overflow-hidden hover:border-primary/60 transition-colors cursor-default ${
-                        isUrgent
-                          ? "border-destructive/60 shadow-lg shadow-destructive/10"
-                          : ""
+                      className={`overflow-hidden hover:border-primary/60 transition-colors cursor-pointer ${
+                        isUrgent ? "border-destructive/60 shadow-lg shadow-destructive/10" : ""
                       }`}
+                      onClick={() => openOrderDetail(order)}
                     >
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
@@ -454,158 +613,28 @@ const DashboardMontador = () => {
                                 </Badge>
                               )}
                             </CardTitle>
-
-                            {/* Linha destacando tipo + bairro + cidade */}
                             <div className="flex flex-wrap items-center gap-2 mt-1 text-sm">
                               <Badge variant="outline" className="text-xs">
-                                {isDesmontagem
-                                  ? "🚚 Mudança (Des+Mont)"
-                                  : "🔧 Montagem"}
+                                {isDesmontagem ? "🚚 Mudança (Des+Mont)" : "🔧 Montagem"}
                               </Badge>
                               <span className="text-muted-foreground">
                                 {order.furniture_type}
                                 {order.brand && ` · ${order.brand}`}
                               </span>
                             </div>
-
                             <p className="mt-1 text-xs font-medium text-primary flex items-center gap-1">
                               <MapPin className="h-3.5 w-3.5" />
-                              {neighborhood} ·{" "}
-                              {order.city || "Cidade não informada"}
+                              {neighborhood} · {order.city || "Cidade não informada"}
                             </p>
                           </div>
-
                           <Badge className={statusColors[order.status]}>
                             {statusLabels[order.status] || order.status}
                           </Badge>
                         </div>
                       </CardHeader>
-
-                      <CardContent className="space-y-3">
-                        <p className="text-sm">{order.description}</p>
-
-                        {needsWallMount && (
-                          <Alert className="border-warning/50 bg-warning/10">
-                            <AlertTriangle className="h-5 w-5 text-warning" />
-                            <AlertTitle className="text-warning font-bold">
-                              ⚠️ Requer furação de parede
-                            </AlertTitle>
-                            <AlertDescription className="text-sm text-muted-foreground">
-                              Certifique-se de possuir furadeira e brocas
-                              adequadas.
-                            </AlertDescription>
-                          </Alert>
-                        )}
-
-                        {isUrgent && (
-                          <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3 flex items-start gap-2">
-                            <Rocket className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm font-semibold text-destructive">
-                                🚀 Pedido urgente — Taxa Zero!
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                Você recebe o valor total do seu lance.
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="space-y-2 pt-2 border-t border-border">
-                          <div className="flex flex-col md:flex-row gap-2">
-                            <Input
-                              type="number"
-                              placeholder="Seu valor R$"
-                              className="md:flex-1"
-                              value={bidAmounts[order.id] || ""}
-                              onChange={(e) =>
-                                setBidAmounts({
-                                  ...bidAmounts,
-                                  [order.id]: e.target.value,
-                                })
-                              }
-                            />
-
-                            <Input
-                              placeholder="Mensagem (opcional)"
-                              className="md:flex-1"
-                              value={bidMessages[order.id] || ""}
-                              onChange={(e) =>
-                                setBidMessages({
-                                  ...bidMessages,
-                                  [order.id]: e.target.value,
-                                })
-                              }
-                            />
-
-                            <Button
-                              className="gradient-primary text-primary-foreground md:w-auto w-full"
-                              disabled={
-                                submitting === order.id ||
-                                (needsWallMount &&
-                                  !wallMountAccepted[order.id])
-                              }
-                              onClick={() =>
-                                handleBid(order.id, needsWallMount)
-                              }
-                            >
-                              <Send className="h-4 w-4 mr-1" />
-                              {submitting === order.id ? "..." : "Enviar"}
-                            </Button>
-                          </div>
-
-                          {needsWallMount && (
-                            <div className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/5 p-3">
-                              <Checkbox
-                                id={`wall-mount-${order.id}`}
-                                checked={wallMountAccepted[order.id] || false}
-                                onCheckedChange={(checked) =>
-                                  setWallMountAccepted({
-                                    ...wallMountAccepted,
-                                    [order.id]: checked === true,
-                                  })
-                                }
-                              />
-                              <label
-                                htmlFor={`wall-mount-${order.id}`}
-                                className="text-xs text-muted-foreground leading-relaxed cursor-pointer"
-                              >
-                                Confirmo que possuo as ferramentas necessárias
-                                para instalação em parede.
-                              </label>
-                            </div>
-                          )}
-
-                          {bidVal > 0 && (
-                            <div className="flex items-start gap-1.5 text-xs text-muted-foreground rounded-lg bg-muted p-2">
-                              <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                              <span>
-                                Seu lance: R$ {bidVal.toFixed(2)} → Cliente
-                                paga: R{"$ "}
-                                {calcClientTotal(bidVal).toFixed(2)} → Você
-                                recebe:{" "}
-                                <strong
-                                  className={
-                                    isUrgent
-                                      ? "text-destructive"
-                                      : "text-success"
-                                  }
-                                >
-                                  R{"$ "}
-                                  {calcMontadorReceives(
-                                    bidVal,
-                                    isUrgent
-                                  ).toFixed(2)}
-                                </strong>
-                                {isUrgent
-                                  ? " (🔥 Taxa Zero!)"
-                                  : " (comissão 10%)"}
-                                {isDesmontagem &&
-                                  " · 40% após desmontagem, 60% após montagem"}
-                              </span>
-                            </div>
-                          )}
-                        </div>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-muted-foreground line-clamp-2">{order.description}</p>
+                        <p className="text-xs text-primary mt-2 font-medium">Clique para ver detalhes e enviar orçamento →</p>
                       </CardContent>
                     </Card>
                   );
@@ -626,26 +655,15 @@ const DashboardMontador = () => {
             ) : (
               <div className="grid gap-4">
                 {agendaOrders.map((order) => {
-                  const isPaid = [
-                    "pago",
-                    "em_andamento",
-                    "desmontagem_confirmada",
-                  ].includes(order.status);
+                  const isPaid = ["pago", "em_andamento", "desmontagem_confirmada"].includes(order.status);
                   const isDesmontagem = order.service_type === "desmontagem";
-                  const acceptedBid = myBids.find(
-                    (b) => b.order_id === order.id && b.accepted
-                  );
+                  const acceptedBid = myBids.find((b) => b.order_id === order.id && b.accepted);
 
                   return (
-                    <Card
-                      key={order.id}
-                      className="overflow-hidden border-primary/30"
-                    >
+                    <Card key={order.id} className="overflow-hidden border-primary/30">
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
-                          <CardTitle className="text-lg">
-                            {order.title}
-                          </CardTitle>
+                          <CardTitle className="text-lg">{order.title}</CardTitle>
                           <Badge className={statusColors[order.status]}>
                             {statusLabels[order.status] || order.status}
                           </Badge>
@@ -660,7 +678,6 @@ const DashboardMontador = () => {
                           </span>
                         </div>
                       </CardHeader>
-
                       <CardContent className="space-y-3">
                         <p className="text-sm">{order.description}</p>
 
@@ -672,14 +689,11 @@ const DashboardMontador = () => {
                             </p>
                             <p className="text-sm mt-1">{order.address}</p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {order.city}
-                              {order.city}
+                              {extractNeighborhood(order.address)} · {order.city}
                             </p>
                             <div className="flex gap-2 mt-2">
                               <a
-                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                                  order.address
-                                )}`}
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-xs text-primary underline"
@@ -687,9 +701,7 @@ const DashboardMontador = () => {
                                 📍 Google Maps
                               </a>
                               <a
-                                href={`https://waze.com/ul?q=${encodeURIComponent(
-                                  order.address
-                                )}`}
+                                href={`https://waze.com/ul?q=${encodeURIComponent(order.address)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-xs text-primary underline"
@@ -700,17 +712,14 @@ const DashboardMontador = () => {
                           </div>
                         ) : (
                           <p className="text-sm text-muted-foreground flex items-center gap-1">
-                            <MapPin className="h-3.5 w-3.5" /> Endereço liberado
-                            após pagamento
+                            <MapPin className="h-3.5 w-3.5" /> Endereço liberado após pagamento
                           </p>
                         )}
 
                         {acceptedBid && (
                           <p className="text-sm text-muted-foreground">
                             Valor do lance:{" "}
-                            <strong className="text-primary">
-                              R$ {acceptedBid.amount.toFixed(2)}
-                            </strong>
+                            <strong className="text-primary">R$ {acceptedBid.amount.toFixed(2)}</strong>
                           </p>
                         )}
 
@@ -719,30 +728,21 @@ const DashboardMontador = () => {
                             size="sm"
                             className="gradient-primary text-primary-foreground"
                             disabled={arrivingAt === order.id}
-                            onClick={() =>
-                              handleArrival(order.id, order.title, order.client_id)
-                            }
+                            onClick={() => handleArrival(order.id, order.title, order.client_id)}
                           >
                             <MapPinCheck className="h-4 w-4 mr-1" />
-                            {arrivingAt === order.id
-                              ? "Notificando..."
-                              : "Cheguei no Local"}
+                            {arrivingAt === order.id ? "Notificando..." : "Cheguei no Local"}
                           </Button>
                         )}
 
-                        {order.montador_arrived &&
-                          order.status === "pago" && (
-                            <Badge className="bg-success/20 text-success border border-success/30">
-                              <MapPinCheck className="h-3 w-3 mr-1" />
-                              Chegada confirmada
-                            </Badge>
-                          )}
+                        {order.montador_arrived && order.status === "pago" && (
+                          <Badge className="bg-success/20 text-success border border-success/30">
+                            <MapPinCheck className="h-3 w-3 mr-1" />
+                            Chegada confirmada
+                          </Badge>
+                        )}
 
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => navigate(`/chat/${order.id}`)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => navigate(`/chat/${order.id}`)}>
                           <MessageSquare className="h-4 w-4 mr-1" /> Abrir Chat
                         </Button>
                       </CardContent>
@@ -765,9 +765,7 @@ const DashboardMontador = () => {
             ) : (
               <div className="grid gap-4">
                 {historicoOrders.map((order) => {
-                  const acceptedBid = myBids.find(
-                    (b) => b.order_id === order.id && b.accepted
-                  );
+                  const acceptedBid = myBids.find((b) => b.order_id === order.id && b.accepted);
                   const isUrgent = !!order.is_urgent;
 
                   return (
@@ -778,24 +776,16 @@ const DashboardMontador = () => {
                             <p className="font-medium">{order.title}</p>
                             <p className="text-xs text-muted-foreground">
                               {order.furniture_type} ·{" "}
-                              {new Date(order.created_at).toLocaleDateString(
-                                "pt-BR"
-                              )}
+                              {new Date(order.created_at).toLocaleDateString("pt-BR")}
                             </p>
                             {acceptedBid && (
                               <p className="text-sm mt-1">
                                 Valor:{" "}
                                 <strong className="text-success">
-                                  R{"$ "}
-                                  {calcMontadorReceives(
-                                    acceptedBid.amount,
-                                    isUrgent
-                                  ).toFixed(2)}
+                                  R$ {calcMontadorReceives(acceptedBid.amount, isUrgent).toFixed(2)}
                                 </strong>
                                 {isUrgent && (
-                                  <span className="text-xs text-destructive ml-1">
-                                    (Taxa Zero)
-                                  </span>
+                                  <span className="text-xs text-destructive ml-1">(Taxa Zero)</span>
                                 )}
                               </p>
                             )}
@@ -811,11 +801,7 @@ const DashboardMontador = () => {
               </div>
             )}
 
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => navigate("/carteira")}
-            >
+            <Button variant="outline" className="w-full" onClick={() => navigate("/carteira")}>
               <DollarSign className="h-4 w-4 mr-1" /> Ver Carteira Completa
             </Button>
           </TabsContent>
