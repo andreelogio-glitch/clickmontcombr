@@ -66,6 +66,7 @@ export type Database = {
           accepted: boolean | null
           amount: number
           created_at: string
+          deadline: string | null
           id: string
           message: string | null
           montador_id: string
@@ -75,6 +76,7 @@ export type Database = {
           accepted?: boolean | null
           amount: number
           created_at?: string
+          deadline?: string | null
           id?: string
           message?: string | null
           montador_id: string
@@ -84,6 +86,7 @@ export type Database = {
           accepted?: boolean | null
           amount?: number
           created_at?: string
+          deadline?: string | null
           id?: string
           message?: string | null
           montador_id?: string
