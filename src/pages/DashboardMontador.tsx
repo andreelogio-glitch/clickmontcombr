@@ -401,9 +401,7 @@ const DashboardMontador = () => {
                         <p className="font-medium text-sm">{order.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {order.furniture_type} ·{" "}
-                          {order.neighborhood
-                            ? `${order.neighborhood} · `
-                            : ""}
+                          {order.city || "Cidade não informada"}
                           {order.city || "Cidade não informada"}
                         </p>
                       </div>
