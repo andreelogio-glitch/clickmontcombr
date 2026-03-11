@@ -279,7 +279,7 @@ const DashboardMontador = () => {
     (o) =>
       o.status === "pendente" &&
       !myBidOrderIds.has(o.id) &&
-      (!o.assigned_montador_id || o.assigned_montador_id === user?.id)
+      true
   );
 
   const filteredMural =
