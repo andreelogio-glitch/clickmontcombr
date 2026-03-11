@@ -38,7 +38,6 @@ interface Order {
   brand: string | null;
   address: string;
   city: string | null;
-  neighborhood: string | null;
   status: string;
   service_type: string;
   created_at: string;
@@ -48,7 +47,6 @@ interface Order {
   montador_arrived?: boolean;
   code_validated?: boolean;
   verification_code?: string | null;
-  assigned_montador_id?: string | null;
 }
 
 interface Bid {
