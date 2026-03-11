@@ -672,7 +672,7 @@ const DashboardMontador = () => {
                             </p>
                             <p className="text-sm mt-1">{order.address}</p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {order.neighborhood && `${order.neighborhood} · `}
+                              {order.city}
                               {order.city}
                             </p>
                             <div className="flex gap-2 mt-2">
