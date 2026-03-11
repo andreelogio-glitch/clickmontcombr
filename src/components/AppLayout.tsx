@@ -2,7 +2,7 @@ import { ReactNode, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Wallet, Info, Wrench, HelpCircle, Menu, X } from "lucide-react";
+import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Wallet, Info, Wrench, HelpCircle, Menu, X, FileText } from "lucide-react";
 import { NotificationBell, PushPermissionBanner, useNotifications } from "@/components/Notifications";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
