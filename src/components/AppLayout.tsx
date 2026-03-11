@@ -2,7 +2,7 @@ import { ReactNode, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Wallet, Info, Wrench, HelpCircle, Menu, X } from "lucide-react";
+import { Home, PlusCircle, LayoutDashboard, LogOut, AlertTriangle, Wallet, Info, Wrench, HelpCircle, Menu, X, FileText } from "lucide-react";
 import { NotificationBell, PushPermissionBanner, useNotifications } from "@/components/Notifications";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
@@ -38,16 +38,17 @@ const AppLayout = ({ children }: AppLayoutProps) => {
             )}
             {profile?.role === "montador" && (
               <>
-                <Link to="/montador"><Button variant={isActive("/montador") ? "default" : "ghost"} size="sm"><LayoutDashboard className="h-4 w-4 mr-1" /> Mural</Button></Link>
-                <Link to="/carteira"><Button variant={isActive("/carteira") ? "default" : "ghost"} size="sm"><Wallet className="h-4 w-4 mr-1" /> Carteira</Button></Link>
-                <Link to="/suporte-montador"><Button variant={isActive("/suporte-montador") ? "default" : "ghost"} size="sm"><HelpCircle className="h-4 w-4 mr-1" /> Suporte</Button></Link>
+                <Link to="/dashboard/montador"><Button variant={isActive("/dashboard/montador") ? "default" : "ghost"} size="sm"><LayoutDashboard className="h-4 w-4 mr-1" /> Mural</Button></Link>
+                <Link to="/carteira"><Button variant={isActive("/carteira") ? "default" : "ghost"} size="sm"><FileText className="h-4 w-4 mr-1" /> Meus Orçamentos</Button></Link>
               </>
             )}
-            <Link to="/assistencia"><Button variant={isActive("/assistencia") ? "default" : "ghost"} size="sm"><AlertTriangle className="h-4 w-4 mr-1" /> Ajuda</Button></Link>
             {profile?.role !== "montador" && (
-              <Link to="/sou-montador"><Button variant={isActive("/sou-montador") ? "default" : "ghost"} size="sm"><Wrench className="h-4 w-4 mr-1" /> Sou Montador</Button></Link>
+              <>
+                <Link to="/assistencia"><Button variant={isActive("/assistencia") ? "default" : "ghost"} size="sm"><AlertTriangle className="h-4 w-4 mr-1" /> Ajuda</Button></Link>
+                <Link to="/sou-montador"><Button variant={isActive("/sou-montador") ? "default" : "ghost"} size="sm"><Wrench className="h-4 w-4 mr-1" /> Sou Montador</Button></Link>
+                <Link to="/quem-somos"><Button variant={isActive("/quem-somos") ? "default" : "ghost"} size="sm"><Info className="h-4 w-4 mr-1" /> Sobre</Button></Link>
+              </>
             )}
-            <Link to="/quem-somos"><Button variant={isActive("/quem-somos") ? "default" : "ghost"} size="sm"><Info className="h-4 w-4 mr-1" /> Sobre</Button></Link>
             <NotificationBell unreadCount={unreadCount} onClick={() => setShowNotifs(!showNotifs)} />
             <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4 mr-1" /> Sair</Button>
           </nav>
@@ -112,28 +113,27 @@ const AppLayout = ({ children }: AppLayoutProps) => {
               )}
               {profile?.role === "montador" && (
                 <>
-                  <Link to="/montador" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant={isActive("/montador") ? "default" : "ghost"} size="sm" className="w-full justify-start"><LayoutDashboard className="h-4 w-4 mr-2" /> Mural</Button>
+                  <Link to="/dashboard/montador" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant={isActive("/dashboard/montador") ? "default" : "ghost"} size="sm" className="w-full justify-start"><LayoutDashboard className="h-4 w-4 mr-2" /> Mural</Button>
                   </Link>
                   <Link to="/carteira" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant={isActive("/carteira") ? "default" : "ghost"} size="sm" className="w-full justify-start"><Wallet className="h-4 w-4 mr-2" /> Carteira</Button>
-                  </Link>
-                  <Link to="/suporte-montador" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant={isActive("/suporte-montador") ? "default" : "ghost"} size="sm" className="w-full justify-start"><HelpCircle className="h-4 w-4 mr-2" /> Suporte ao Montador</Button>
+                    <Button variant={isActive("/carteira") ? "default" : "ghost"} size="sm" className="w-full justify-start"><FileText className="h-4 w-4 mr-2" /> Meus Orçamentos</Button>
                   </Link>
                 </>
               )}
-              <Link to="/assistencia" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant={isActive("/assistencia") ? "default" : "ghost"} size="sm" className="w-full justify-start"><AlertTriangle className="h-4 w-4 mr-2" /> Ajuda</Button>
-              </Link>
               {profile?.role !== "montador" && (
-                <Link to="/sou-montador" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant={isActive("/sou-montador") ? "default" : "ghost"} size="sm" className="w-full justify-start"><Wrench className="h-4 w-4 mr-2" /> Sou Montador</Button>
-                </Link>
+                <>
+                  <Link to="/assistencia" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant={isActive("/assistencia") ? "default" : "ghost"} size="sm" className="w-full justify-start"><AlertTriangle className="h-4 w-4 mr-2" /> Ajuda</Button>
+                  </Link>
+                  <Link to="/sou-montador" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant={isActive("/sou-montador") ? "default" : "ghost"} size="sm" className="w-full justify-start"><Wrench className="h-4 w-4 mr-2" /> Sou Montador</Button>
+                  </Link>
+                  <Link to="/quem-somos" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant={isActive("/quem-somos") ? "default" : "ghost"} size="sm" className="w-full justify-start"><Info className="h-4 w-4 mr-2" /> Sobre</Button>
+                  </Link>
+                </>
               )}
-              <Link to="/quem-somos" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant={isActive("/quem-somos") ? "default" : "ghost"} size="sm" className="w-full justify-start"><Info className="h-4 w-4 mr-2" /> Sobre</Button>
-              </Link>
               <div className="border-t border-border mt-1 pt-1">
                 <Button variant="ghost" size="sm" className="w-full justify-start text-destructive" onClick={signOut}>
                   <LogOut className="h-4 w-4 mr-2" /> Sair
