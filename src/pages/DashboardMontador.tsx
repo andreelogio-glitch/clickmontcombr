@@ -432,8 +432,7 @@ const DashboardMontador = () => {
                   const isDesmontagem = order.service_type === "desmontagem";
 
                   const neighborhood =
-                    order.neighborhood ||
-                    (order.address ? order.address.split(",")[0] : "Bairro não informado");
+                    order.address ? order.address.split(",")[0] : "Bairro não informado";
 
                   return (
                     <Card
