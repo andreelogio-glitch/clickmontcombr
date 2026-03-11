@@ -159,7 +159,7 @@ const Auth = () => {
         }
 
         toast.success("Conta criada com sucesso!");
-        window.location.hash = "#/";
+        window.location.hash = role === "montador" ? "#/dashboard/montador" : "#/";
       }
     } catch (error: any) {
       toast.error(error.message);
