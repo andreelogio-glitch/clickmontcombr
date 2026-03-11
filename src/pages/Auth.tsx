@@ -96,11 +96,21 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error, data: loginData } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Login realizado com sucesso!");
-        // Let Index handle role-based routing — just navigate to root
-        window.location.hash = "#/";
+        // Check role to redirect montadores directly
+        const userId = loginData.user?.id;
+        if (userId) {
+          const { data: prof } = await supabase.from("profiles").select("role").eq("user_id", userId).limit(1).maybeSingle();
+          if (prof?.role === "montador") {
+            window.location.hash = "#/dashboard/montador";
+          } else {
+            window.location.hash = "#/";
+          }
+        } else {
+          window.location.hash = "#/";
+        }
       } else {
         const { data: signUpData, error } = await supabase.auth.signUp({
           email,
@@ -149,7 +159,7 @@ const Auth = () => {
         }
 
         toast.success("Conta criada com sucesso!");
-        window.location.hash = "#/";
+        window.location.hash = role === "montador" ? "#/dashboard/montador" : "#/";
       }
     } catch (error: any) {
       toast.error(error.message);
