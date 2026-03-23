@@ -222,13 +222,14 @@ const Chat = () => {
       const path = `${user.id}/arrival-${orderId}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("user-documents").upload(path, file);
       if (upErr) throw upErr;
-      const { data: urlData } = supabase.storage.from("user-documents").getPublicUrl(path);
+      const { data: signedData } = await supabase.storage.from("user-documents").createSignedUrl(path, 7200);
+      const selfieUrl = signedData?.signedUrl || path;
 
       // Send as chat message with image
       await supabase.from("chat_messages").insert({
         order_id: orderId,
         sender_id: user.id,
-        message: `📸 Selfie de chegada: ${urlData.publicUrl}`,
+        message: `📸 Selfie de chegada: ${selfieUrl}`,
         is_preset: false,
       });
       toast.success("Selfie enviada ao cliente!");

@@ -47,8 +47,8 @@ const Auth = () => {
       console.error("Upload error:", error);
       return null;
     }
-    const { data } = supabase.storage.from("user-documents").getPublicUrl(path);
-    return data.publicUrl;
+    // Store the path (not public URL) since bucket is private
+    return path;
   };
 
   const ensureProfileExists = async (userId: string, userRole: "cliente" | "montador", name: string) => {

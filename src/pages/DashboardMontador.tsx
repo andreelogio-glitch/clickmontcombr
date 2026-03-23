@@ -126,7 +126,7 @@ const DashboardMontador = () => {
   const fetchOrders = async () => {
     const { data, error } = await supabase
       .from("orders")
-      .select("*")
+      .select("id, title, description, furniture_type, brand, address, city, status, created_at, is_urgent, service_type, needs_wall_mount, photo_url, client_id, montador_arrived, code_validated, started_at")
       .order("created_at", { ascending: false });
 
     if (error) {
