@@ -161,17 +161,11 @@ const AdminApproval = () => {
                   {m.pix_key && <span>PIX: {m.pix_key}</span>}
                 </div>
 
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {m.selfie_url && (
-                    <a href={m.selfie_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Selfie</a>
-                  )}
-                  {m.document_url && (
-                    <a href={m.document_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Documento</a>
-                  )}
-                  {m.experience_proof_url && (
-                    <a href={m.experience_proof_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Experiência</a>
-                  )}
-                </div>
+                <AdminDocLinks
+                  selfie_url={m.selfie_url}
+                  document_url={m.document_url}
+                  experience_proof_url={m.experience_proof_url}
+                />
 
                 <p className="text-xs text-muted-foreground">
                   Cadastrado em: {new Date(m.created_at).toLocaleString("pt-BR")}
