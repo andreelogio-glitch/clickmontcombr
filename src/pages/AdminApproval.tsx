@@ -23,6 +23,39 @@ interface PendingMontador {
   created_at: string;
 }
 
+const AdminDocLinks = ({ selfie_url, document_url, experience_proof_url }: { selfie_url: string | null; document_url: string | null; experience_proof_url: string | null }) => {
+  const [urls, setUrls] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const paths = [
+      { key: "selfie", path: selfie_url },
+      { key: "document", path: document_url },
+      { key: "experience", path: experience_proof_url },
+    ].filter((p) => p.path);
+
+    if (paths.length === 0) return;
+
+    Promise.all(
+      paths.map(async (p) => {
+        const { data } = await supabase.storage.from("user-documents").createSignedUrl(p.path!, 7200);
+        return { key: p.key, url: data?.signedUrl || "" };
+      })
+    ).then((results) => {
+      const map: Record<string, string> = {};
+      results.forEach((r) => { if (r.url) map[r.key] = r.url; });
+      setUrls(map);
+    });
+  }, [selfie_url, document_url, experience_proof_url]);
+
+  return (
+    <div className="flex flex-wrap gap-2 text-xs">
+      {urls.selfie && <a href={urls.selfie} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Selfie</a>}
+      {urls.document && <a href={urls.document} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Documento</a>}
+      {urls.experience && <a href={urls.experience} target="_blank" rel="noopener noreferrer" className="text-primary underline">Ver Experiência</a>}
+    </div>
+  );
+};
+
 const AdminApproval = () => {
   const { user, signOut } = useAuth();
   const { isAdmin, loading: adminLoading } = useIsAdmin(user);
