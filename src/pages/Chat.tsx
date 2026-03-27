@@ -17,6 +17,7 @@ interface ChatMessage {
   sender_id: string;
   message: string;
   is_preset: boolean;
+  is_image: boolean;
   created_at: string;
 }
 
@@ -235,20 +236,22 @@ const Chat = () => {
     if (!file || !user || !orderId) return;
     setUploadingSelfie(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/arrival-${orderId}-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("user-documents").upload(path, file);
+      const fileName = `selfie-${orderId}-${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage.from("arrival-selfies").upload(fileName, file, {
+        contentType: file.type || "image/jpeg",
+      });
       if (upErr) throw upErr;
-      const { data: signedData } = await supabase.storage.from("user-documents").createSignedUrl(path, 7200);
-      const selfieUrl = signedData?.signedUrl || path;
 
-      // Send as chat message with image
+      const { data: urlData } = supabase.storage.from("arrival-selfies").getPublicUrl(fileName);
+      const publicUrl = urlData.publicUrl;
+
       await supabase.from("chat_messages").insert({
         order_id: orderId,
         sender_id: user.id,
-        message: `📸 Selfie de chegada: ${selfieUrl}`,
+        message: publicUrl,
         is_preset: false,
-      });
+        is_image: true,
+      } as any);
       toast.success("Selfie enviada ao cliente!");
     } catch (err: any) {
       toast.error("Erro ao enviar selfie: " + err.message);
@@ -414,8 +417,10 @@ const Chat = () => {
           )}
           {messages.map((msg, index) => {
             const isMe = msg.sender_id === user?.id;
-            const isImage = msg.message.startsWith("📸 Selfie de chegada:");
-            const imageUrl = isImage ? msg.message.replace("📸 Selfie de chegada: ", "") : null;
+            const isImage = msg.is_image || msg.message.startsWith("📸 Selfie de chegada:");
+            const imageUrl = isImage
+              ? (msg.is_image ? msg.message : msg.message.replace("📸 Selfie de chegada: ", ""))
+              : null;
             const msgDate = new Date(msg.created_at).toDateString();
             const prevDate = index > 0 ? new Date(messages[index - 1].created_at).toDateString() : null;
             const showDateSeparator = index === 0 || msgDate !== prevDate;
