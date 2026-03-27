@@ -4,21 +4,42 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { DollarSign, TrendingUp, Target, Camera } from "lucide-react";
+import { DollarSign, TrendingUp, Target, Camera, Star } from "lucide-react";
 
-interface RecentService {
-  orderId: string;
+interface RecentOrder {
+  id: string;
   title: string;
-  clientName: string;
-  selfieUrl: string | null;
-  completedAt: string;
-  amount: number;
+  status: string;
+  created_at: string;
+  city: string | null;
+  service_type: string;
 }
+
+const statusLabels: Record<string, string> = {
+  pendente: "Novo",
+  com_lance: "Lance enviado",
+  aceito: "Aceito",
+  pago: "Pago",
+  em_andamento: "Em andamento",
+  desmontagem_confirmada: "Desmontagem OK",
+  aguardando_liberacao: "Aguardando liberação",
+  concluido: "Concluído",
+};
+
+const statusColors: Record<string, string> = {
+  pendente: "bg-warning text-warning-foreground",
+  com_lance: "bg-primary text-primary-foreground",
+  pago: "bg-success text-success-foreground",
+  em_andamento: "bg-primary text-primary-foreground",
+  concluido: "bg-muted text-muted-foreground",
+};
 
 const MontadorResumo = () => {
   const { user } = useAuth();
-  const [totalEarnings, setTotalEarnings] = useState(0);
-  const [recentServices, setRecentServices] = useState<RecentService[]>([]);
+  const [balance, setBalance] = useState(0);
+  const [totalServices, setTotalServices] = useState(0);
+  const [rating, setRating] = useState<number | null>(null);
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [totalBids, setTotalBids] = useState(0);
   const [acceptedBids, setAcceptedBids] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -31,15 +52,19 @@ const MontadorResumo = () => {
     if (!user) return;
     setLoading(true);
 
-    // 1. Financial summary from wallet_transactions
-    const { data: txns } = await supabase
-      .from("wallet_transactions")
-      .select("amount")
-      .eq("montador_id", user.id)
-      .eq("type", "credit");
+    // 1. Profile stats (balance, total_services, rating)
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("balance, total_services, rating" as any)
+      .eq("user_id", user.id)
+      .single();
 
-    const total = txns?.reduce((sum, t) => sum + Number(t.amount), 0) ?? 0;
-    setTotalEarnings(total);
+    if (profileData) {
+      const p = profileData as any;
+      setBalance(Number(p.balance) || 0);
+      setTotalServices(Number(p.total_services) || 0);
+      setRating(p.rating != null ? Number(p.rating) : null);
+    }
 
     // 2. Bid conversion stats
     const { data: allBids } = await supabase
@@ -51,68 +76,17 @@ const MontadorResumo = () => {
     setTotalBids(bids.length);
     setAcceptedBids(bids.filter((b) => b.accepted).length);
 
-    // 3. Recent completed services (accepted bids → orders concluído/aguardando_liberacao)
+    // 3. Recent orders (accepted bids)
     const acceptedOrderIds = bids.filter((b) => b.accepted).map((b) => b.order_id);
-
     if (acceptedOrderIds.length > 0) {
-      const { data: completedOrders } = await supabase
+      const { data: orders } = await supabase
         .from("orders")
-        .select("id, title, client_id, created_at, status")
+        .select("id, title, status, created_at, city, service_type")
         .in("id", acceptedOrderIds)
-        .in("status", ["concluido", "aguardando_liberacao"])
         .order("created_at", { ascending: false })
-        .limit(5);
+        .limit(10);
 
-      if (completedOrders && completedOrders.length > 0) {
-        // Fetch client names
-        const clientIds = [...new Set(completedOrders.map((o) => o.client_id))];
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, full_name")
-          .in("user_id", clientIds);
-
-        const profileMap = new Map(profiles?.map((p) => [p.user_id, p.full_name]) ?? []);
-
-        // Fetch selfies from chat_messages (is_image = true)
-        const orderIds = completedOrders.map((o) => o.id);
-        const { data: selfieMessages } = await (supabase
-          .from("chat_messages")
-          .select("order_id, message")
-          .in("order_id", orderIds) as any)
-          .eq("is_image", true)
-          .order("created_at", { ascending: false });
-
-        const selfieMap = new Map<string, string>();
-        selfieMessages?.forEach((m) => {
-          if (!selfieMap.has(m.order_id)) {
-            selfieMap.set(m.order_id, m.message);
-          }
-        });
-
-        // Fetch amounts from wallet
-        const { data: txnsByOrder } = await supabase
-          .from("wallet_transactions")
-          .select("order_id, amount")
-          .eq("montador_id", user.id)
-          .eq("type", "credit")
-          .in("order_id", orderIds);
-
-        const amountMap = new Map<string, number>();
-        txnsByOrder?.forEach((t) => {
-          amountMap.set(t.order_id!, (amountMap.get(t.order_id!) ?? 0) + Number(t.amount));
-        });
-
-        const services: RecentService[] = completedOrders.map((o) => ({
-          orderId: o.id,
-          title: o.title,
-          clientName: profileMap.get(o.client_id) ?? "Cliente",
-          selfieUrl: selfieMap.get(o.id) ?? null,
-          completedAt: o.created_at,
-          amount: amountMap.get(o.id) ?? 0,
-        }));
-
-        setRecentServices(services);
-      }
+      if (orders) setRecentOrders(orders as RecentOrder[]);
     }
 
     setLoading(false);
@@ -130,8 +104,9 @@ const MontadorResumo = () => {
 
   return (
     <div className="space-y-6">
-      {/* Financial Summary Cards */}
+      {/* 3 Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Saldo a Receber */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -139,15 +114,16 @@ const MontadorResumo = () => {
                 <DollarSign className="h-6 w-6 text-success" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Total Ganho</p>
+                <p className="text-xs text-muted-foreground">Saldo a Receber</p>
                 <p className="text-2xl font-bold text-success">
-                  R$ {totalEarnings.toFixed(2)}
+                  R$ {balance.toFixed(2)}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Serviços Concluídos */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -156,21 +132,25 @@ const MontadorResumo = () => {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Serviços Concluídos</p>
-                <p className="text-2xl font-bold">{acceptedBids}</p>
+                <p className="text-2xl font-bold">{totalServices}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Minha Nota */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="rounded-full bg-accent/10 p-3">
-                <Target className="h-6 w-6 text-accent-foreground" />
+              <div className="rounded-full bg-warning/10 p-3">
+                <Star className="h-6 w-6 text-warning fill-warning" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Lances Enviados</p>
-                <p className="text-2xl font-bold">{totalBids}</p>
+                <p className="text-xs text-muted-foreground">Minha Nota</p>
+                <p className="text-2xl font-bold">
+                  {rating != null ? rating.toFixed(1) : "—"}
+                  {rating != null && <span className="text-sm text-muted-foreground ml-1">/ 5</span>}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -209,59 +189,41 @@ const MontadorResumo = () => {
         </CardContent>
       </Card>
 
-      {/* Recent Services with Selfies */}
+      {/* Recent Orders */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Camera className="h-4 w-4 text-primary" />
-            Últimos Serviços
+            Pedidos Recentes
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {recentServices.length === 0 ? (
+          {recentOrders.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">
-              Nenhum serviço concluído ainda. Continue enviando orçamentos!
+              Nenhum serviço ainda. Continue enviando orçamentos!
             </p>
           ) : (
-            <div className="space-y-3">
-              {recentServices.map((service) => (
+            <div className="space-y-2">
+              {recentOrders.map((order) => (
                 <div
-                  key={service.orderId}
-                  className="flex items-center gap-3 rounded-lg border border-border p-3"
+                  key={order.id}
+                  className="flex items-center justify-between rounded-lg border border-border p-3"
                 >
-                  {service.selfieUrl ? (
-                    <div className="relative shrink-0">
-                      <img
-                        src={service.selfieUrl}
-                        alt="Selfie de chegada"
-                        className="h-14 w-14 rounded-lg object-cover border border-border"
-                      />
-                      <Badge className="absolute -bottom-1 -right-1 bg-success/90 text-success-foreground text-[8px] px-1 py-0">
-                        ✅
-                      </Badge>
-                    </div>
-                  ) : (
-                    <div className="h-14 w-14 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <Camera className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{service.title}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{order.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      Cliente: {service.clientName}
+                      {order.city || "Cidade N/I"} · {order.service_type === "desmontagem" ? "Mudança" : "Montagem"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(service.completedAt).toLocaleDateString("pt-BR", {
+                      {new Date(order.created_at).toLocaleDateString("pt-BR", {
                         day: "2-digit",
                         month: "short",
                       })}
                     </p>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-bold text-success">
-                      R$ {service.amount.toFixed(2)}
-                    </p>
-                  </div>
+                  <Badge className={statusColors[order.status] || "bg-muted text-muted-foreground"}>
+                    {statusLabels[order.status] || order.status}
+                  </Badge>
                 </div>
               ))}
             </div>
