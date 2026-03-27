@@ -32,6 +32,7 @@ import {
   Briefcase,
   Clock,
   FileText,
+  TrendingUp,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
