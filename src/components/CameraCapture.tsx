@@ -30,11 +30,16 @@ const CameraCapture = ({ orderId, userId, onUploadSuccess }: CameraCaptureProps)
 
   const takePhoto = () => {
     if (!videoRef.current) return;
+    const video = videoRef.current;
+    const srcW = video.videoWidth || 640;
+    const srcH = video.videoHeight || 480;
+    const maxW = 800;
+    const scale = srcW > maxW ? maxW / srcW : 1;
     const canvas = document.createElement("canvas");
-    canvas.width = videoRef.current.videoWidth || 640;
-    canvas.height = videoRef.current.videoHeight || 480;
-    canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
-    setPhoto(canvas.toDataURL("image/jpeg"));
+    canvas.width = Math.round(srcW * scale);
+    canvas.height = Math.round(srcH * scale);
+    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    setPhoto(canvas.toDataURL("image/jpeg", 0.7));
     stopCamera();
   };
 
