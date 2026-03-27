@@ -79,7 +79,7 @@ const MontadorResumo = () => {
           .from("chat_messages")
           .select("order_id, message")
           .in("order_id", orderIds)
-          .eq("is_image" as any, true)
+          .eq("is_image" as any, true as any)
           .order("created_at", { ascending: false });
 
         const selfieMap = new Map<string, string>();
