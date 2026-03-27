@@ -106,6 +106,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_image: boolean
           is_preset: boolean
           message: string
           order_id: string
@@ -114,6 +115,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_image?: boolean
           is_preset?: boolean
           message: string
           order_id: string
@@ -122,6 +124,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_image?: boolean
           is_preset?: boolean
           message?: string
           order_id?: string
