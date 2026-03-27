@@ -430,6 +430,9 @@ const Chat = () => {
                   ) : (
                     msg.message
                   )}
+                  <p className={`text-[10px] mt-1 ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                    {formatMessageDate(msg.created_at)}
+                  </p>
                 </div>
               </div>
             );
