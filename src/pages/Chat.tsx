@@ -412,27 +412,52 @@ const Chat = () => {
               Nenhuma mensagem ainda. Use os botões abaixo para iniciar.
             </p>
           )}
-          {messages.map((msg) => {
+          {messages.map((msg, index) => {
             const isMe = msg.sender_id === user?.id;
             const isImage = msg.message.startsWith("📸 Selfie de chegada:");
             const imageUrl = isImage ? msg.message.replace("📸 Selfie de chegada: ", "") : null;
+            const msgDate = new Date(msg.created_at).toDateString();
+            const prevDate = index > 0 ? new Date(messages[index - 1].created_at).toDateString() : null;
+            const showDateSeparator = index === 0 || msgDate !== prevDate;
+
+            const now = new Date();
+            const date = new Date(msg.created_at);
+            const yesterday = new Date();
+            yesterday.setDate(now.getDate() - 1);
+            let dateLabel: string;
+            if (date.toDateString() === now.toDateString()) {
+              dateLabel = "Hoje";
+            } else if (date.toDateString() === yesterday.toDateString()) {
+              dateLabel = "Ontem";
+            } else {
+              dateLabel = date.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+            }
 
             return (
-              <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
-                  isMe ? "gradient-primary text-primary-foreground rounded-br-md" : "bg-secondary text-secondary-foreground rounded-bl-md"
-                }`}>
-                  {isImage && imageUrl ? (
-                    <div>
-                      <p className="text-xs mb-1 opacity-80">📸 Selfie de chegada</p>
-                      <img src={imageUrl} alt="Selfie do montador" className="rounded-lg max-w-full max-h-48 object-cover" />
-                    </div>
-                  ) : (
-                    msg.message
-                  )}
-                  <p className={`text-[10px] mt-1 ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                    {formatMessageDate(msg.created_at)}
-                  </p>
+              <div key={msg.id}>
+                {showDateSeparator && (
+                  <div className="flex items-center gap-3 my-4">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">{dateLabel}</span>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
+                )}
+                <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
+                    isMe ? "gradient-primary text-primary-foreground rounded-br-md" : "bg-secondary text-secondary-foreground rounded-bl-md"
+                  }`}>
+                    {isImage && imageUrl ? (
+                      <div>
+                        <p className="text-xs mb-1 opacity-80">📸 Selfie de chegada</p>
+                        <img src={imageUrl} alt="Selfie do montador" className="rounded-lg max-w-full max-h-48 object-cover" />
+                      </div>
+                    ) : (
+                      msg.message
+                    )}
+                    <p className={`text-[10px] mt-1 ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                      {formatMessageDate(msg.created_at)}
+                    </p>
+                  </div>
                 </div>
               </div>
             );
