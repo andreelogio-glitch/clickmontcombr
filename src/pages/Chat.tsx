@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Lock, Unlock, Send, Phone, MessageSquare, ShieldCheck, Camera, KeyRound, UserCheck, AlertTriangle, Zap } from "lucide-react";
+import { Lock, Unlock, Send, Phone, MessageSquare, ShieldCheck, KeyRound, UserCheck, AlertTriangle, Zap } from "lucide-react";
+import CameraCapture from "@/components/CameraCapture";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
