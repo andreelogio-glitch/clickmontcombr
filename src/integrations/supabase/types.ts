@@ -328,6 +328,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          balance: number
           city: string | null
           cnpj: string | null
           created_at: string
@@ -340,11 +341,14 @@ export type Database = {
           lgpd_accepted_at: string | null
           phone: string | null
           pix_key: string | null
+          rating: number | null
           role: string
           selfie_url: string | null
+          total_services: number
           user_id: string
         }
         Insert: {
+          balance?: number
           city?: string | null
           cnpj?: string | null
           created_at?: string
@@ -357,11 +361,14 @@ export type Database = {
           lgpd_accepted_at?: string | null
           phone?: string | null
           pix_key?: string | null
+          rating?: number | null
           role?: string
           selfie_url?: string | null
+          total_services?: number
           user_id: string
         }
         Update: {
+          balance?: number
           city?: string | null
           cnpj?: string | null
           created_at?: string
@@ -374,8 +381,10 @@ export type Database = {
           lgpd_accepted_at?: string | null
           phone?: string | null
           pix_key?: string | null
+          rating?: number | null
           role?: string
           selfie_url?: string | null
+          total_services?: number
           user_id?: string
         }
         Relationships: []
