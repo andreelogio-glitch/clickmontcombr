@@ -166,19 +166,6 @@ const Chat = () => {
     if (data) setMessages(data as ChatMessage[]);
   };
 
-  const subscribeToMessages = () => {
-    const channel = supabase
-      .channel(`chat-${orderId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "chat_messages", filter: `order_id=eq.${orderId}` },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new as ChatMessage]);
-        }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  };
 
   const sendPreset = async (text: string) => {
     if (!user || !orderId) return;
