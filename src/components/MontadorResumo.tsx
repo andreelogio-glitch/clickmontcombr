@@ -75,11 +75,11 @@ const MontadorResumo = () => {
 
         // Fetch selfies from chat_messages (is_image = true)
         const orderIds = completedOrders.map((o) => o.id);
-        const { data: selfieMessages } = await supabase
+        const { data: selfieMessages } = await (supabase
           .from("chat_messages")
           .select("order_id, message")
-          .in("order_id", orderIds)
-          .eq("is_image" as any, true as any)
+          .in("order_id", orderIds) as any)
+          .eq("is_image", true)
           .order("created_at", { ascending: false });
 
         const selfieMap = new Map<string, string>();
