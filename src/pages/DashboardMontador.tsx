@@ -32,6 +32,7 @@ import {
   Briefcase,
   Clock,
   FileText,
+  TrendingUp,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -39,6 +40,7 @@ import { useNavigate } from "react-router-dom";
 import { calcMontadorReceives, calcClientTotal } from "@/lib/fees";
 import MontadorOnboarding from "@/components/MontadorOnboarding";
 import logoClickmont from "@/assets/logo-clickmont.png";
+import MontadorResumo from "@/components/MontadorResumo";
 
 interface Order {
   id: string;
@@ -508,8 +510,12 @@ const DashboardMontador = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="mural" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="resumo" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="resumo" className="flex items-center gap-1">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">Resumo</span>
+            </TabsTrigger>
             <TabsTrigger value="mural" className="flex items-center gap-1">
               <Briefcase className="h-4 w-4" />
               <span className="hidden sm:inline">Mural</span>
@@ -533,6 +539,11 @@ const DashboardMontador = () => {
               <span className="hidden sm:inline">Histórico</span>
             </TabsTrigger>
           </TabsList>
+
+          {/* ===== RESUMO ===== */}
+          <TabsContent value="resumo">
+            <MontadorResumo />
+          </TabsContent>
 
           {/* ===== MURAL ===== */}
           <TabsContent value="mural" className="space-y-4">
