@@ -115,8 +115,14 @@ export const PushPermissionBanner = () => {
     const check = async () => {
       if (!("PushManager" in window)) return;
       const subscribed = await isSubscribedToPush();
-      const dismissed = localStorage.getItem("push-banner-dismissed");
-      if (!subscribed && !dismissed) setShow(true);
+      const dismissedAt = localStorage.getItem("push-banner-dismissed");
+
+      let isExpired = true;
+      if (dismissedAt) {
+        isExpired = new Date() > new Date(dismissedAt);
+      }
+
+      if (!subscribed && isExpired) setShow(true);
     };
     check();
   }, [user]);
@@ -134,8 +140,10 @@ export const PushPermissionBanner = () => {
   };
 
   const handleDismiss = () => {
+    const nextAttempt = new Date();
+    nextAttempt.setDate(nextAttempt.getDate() + 7);
+    localStorage.setItem("push-banner-dismissed", nextAttempt.toISOString());
     setShow(false);
-    localStorage.setItem("push-banner-dismissed", "true");
   };
 
   if (!show) return null;
