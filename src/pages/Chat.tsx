@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Lock, Unlock, Send, Phone, MessageSquare, ShieldCheck, Camera, KeyRound, UserCheck, AlertTriangle, Zap } from "lucide-react";
+import { Lock, Unlock, Send, Phone, MessageSquare, ShieldCheck, KeyRound, UserCheck, AlertTriangle, Zap } from "lucide-react";
+import CameraCapture from "@/components/CameraCapture";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
@@ -80,9 +81,7 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [codeInput, setCodeInput] = useState("");
   const [validatingCode, setValidatingCode] = useState(false);
-  const [uploadingSelfie, setUploadingSelfie] = useState(false);
   const [chatTemplates, setChatTemplates] = useState<{ id: string; content: string }[]>([]);
-  const selfieInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isPaid = order?.status === "pago" || order?.status === "em_andamento" || order?.status === "desmontagem_confirmada" || order?.status === "aguardando_liberacao" || order?.status === "concluido";
@@ -231,34 +230,7 @@ const Chat = () => {
     setValidatingCode(false);
   };
 
-  const handleSelfieUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user || !orderId) return;
-    setUploadingSelfie(true);
-    try {
-      const fileName = `selfie-${orderId}-${Date.now()}.jpg`;
-      const { error: upErr } = await supabase.storage.from("arrival-selfies").upload(fileName, file, {
-        contentType: file.type || "image/jpeg",
-      });
-      if (upErr) throw upErr;
 
-      const { data: urlData } = supabase.storage.from("arrival-selfies").getPublicUrl(fileName);
-      const publicUrl = urlData.publicUrl;
-
-      await supabase.from("chat_messages").insert({
-        order_id: orderId,
-        sender_id: user.id,
-        message: publicUrl,
-        is_preset: false,
-        is_image: true,
-      } as any);
-      toast.success("Selfie enviada ao cliente!");
-    } catch (err: any) {
-      toast.error("Erro ao enviar selfie: " + err.message);
-    } finally {
-      setUploadingSelfie(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -490,25 +462,8 @@ const Chat = () => {
                 className="flex-1"
               />
               {/* Selfie button for montador */}
-              {isMontador && (
-                <>
-                  <input
-                    ref={selfieInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="user"
-                    className="hidden"
-                    onChange={handleSelfieUpload}
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => selfieInputRef.current?.click()}
-                    disabled={uploadingSelfie}
-                    title="Enviar selfie de chegada"
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                </>
+              {isMontador && user && orderId && (
+                <CameraCapture orderId={orderId} userId={user.id} />
               )}
               {chatTemplates.length > 0 && (
                 <Popover>
