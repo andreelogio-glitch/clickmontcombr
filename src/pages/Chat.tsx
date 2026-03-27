@@ -232,34 +232,7 @@ const Chat = () => {
     setValidatingCode(false);
   };
 
-  const handleSelfieUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user || !orderId) return;
-    setUploadingSelfie(true);
-    try {
-      const fileName = `selfie-${orderId}-${Date.now()}.jpg`;
-      const { error: upErr } = await supabase.storage.from("arrival-selfies").upload(fileName, file, {
-        contentType: file.type || "image/jpeg",
-      });
-      if (upErr) throw upErr;
 
-      const { data: urlData } = supabase.storage.from("arrival-selfies").getPublicUrl(fileName);
-      const publicUrl = urlData.publicUrl;
-
-      await supabase.from("chat_messages").insert({
-        order_id: orderId,
-        sender_id: user.id,
-        message: publicUrl,
-        is_preset: false,
-        is_image: true,
-      } as any);
-      toast.success("Selfie enviada ao cliente!");
-    } catch (err: any) {
-      toast.error("Erro ao enviar selfie: " + err.message);
-    } finally {
-      setUploadingSelfie(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -491,25 +464,8 @@ const Chat = () => {
                 className="flex-1"
               />
               {/* Selfie button for montador */}
-              {isMontador && (
-                <>
-                  <input
-                    ref={selfieInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="user"
-                    className="hidden"
-                    onChange={handleSelfieUpload}
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => selfieInputRef.current?.click()}
-                    disabled={uploadingSelfie}
-                    title="Enviar selfie de chegada"
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                </>
+              {isMontador && user && orderId && (
+                <CameraCapture orderId={orderId} userId={user.id} />
               )}
               {chatTemplates.length > 0 && (
                 <Popover>
