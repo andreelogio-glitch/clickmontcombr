@@ -82,22 +82,39 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
-    if (orderId) {
-      fetchOrder();
-      fetchMessages();
-      subscribeToMessages();
-      const orderChannel = supabase
-        .channel(`order-${orderId}`)
-        .on(
-          "postgres_changes",
-          { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${orderId}` },
-          (payload) => {
-            setOrder((prev) => prev ? { ...prev, ...payload.new } as any : prev);
-          }
-        )
-        .subscribe();
-      return () => { supabase.removeChannel(orderChannel); };
-    }
+    if (!orderId) return;
+
+    fetchOrder();
+    fetchMessages();
+
+    // Realtime: escuta novas mensagens do chat filtradas por order_id
+    const chatChannel = supabase
+      .channel(`chat-${orderId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chat_messages", filter: `order_id=eq.${orderId}` },
+        (payload) => {
+          setMessages((prev) => [...prev, payload.new as ChatMessage]);
+        }
+      )
+      .subscribe();
+
+    // Realtime: escuta atualizações do pedido
+    const orderChannel = supabase
+      .channel(`order-${orderId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${orderId}` },
+        (payload) => {
+          setOrder((prev) => prev ? { ...prev, ...payload.new } as any : prev);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(chatChannel);
+      supabase.removeChannel(orderChannel);
+    };
   }, [orderId]);
 
   useEffect(() => {
