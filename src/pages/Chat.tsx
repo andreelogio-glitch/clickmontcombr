@@ -424,9 +424,11 @@ const Chat = () => {
                     isMe ? "gradient-primary text-primary-foreground rounded-br-md" : "bg-secondary text-secondary-foreground rounded-bl-md"
                   }`}>
                     {isImage && imageUrl ? (
-                      <div>
-                        <p className="text-xs mb-1 opacity-80">📸 Selfie de chegada</p>
+                      <div className="relative">
                         <img src={imageUrl} alt="Selfie do montador" className="rounded-lg max-w-full max-h-48 object-cover" />
+                        <Badge className="absolute bottom-2 left-2 bg-success/90 text-success-foreground text-[10px] px-2 py-0.5 backdrop-blur-sm">
+                          📸 Selfie de Chegada
+                        </Badge>
                       </div>
                     ) : (
                       msg.message
