@@ -81,9 +81,7 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [codeInput, setCodeInput] = useState("");
   const [validatingCode, setValidatingCode] = useState(false);
-  const [uploadingSelfie, setUploadingSelfie] = useState(false);
   const [chatTemplates, setChatTemplates] = useState<{ id: string; content: string }[]>([]);
-  const selfieInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isPaid = order?.status === "pago" || order?.status === "em_andamento" || order?.status === "desmontagem_confirmada" || order?.status === "aguardando_liberacao" || order?.status === "concluido";
