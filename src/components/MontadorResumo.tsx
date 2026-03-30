@@ -16,7 +16,8 @@ interface RecentOrder {
 }
 
 const statusLabels: Record<string, string> = {
-  pendente: "Novo",
+  aguardando: "Aguardando",
+  pendente: "Aguardando",
   com_lance: "Lance enviado",
   aceito: "Aceito",
   pago: "Pago",

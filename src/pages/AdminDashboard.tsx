@@ -43,11 +43,12 @@ interface ChatTemplate {
 }
 
 const orderStatusLabels: Record<string, string> = {
-  pendente: "Pendente", com_lance: "Com lance", aceito: "Aceito",
+  aguardando: "Aguardando", pendente: "Aguardando", com_lance: "Com lance", aceito: "Aceito",
   pago: "Pago", em_andamento: "Em andamento", desmontagem_confirmada: "Desmontagem OK",
   aguardando_liberacao: "Aguardando liberação", concluido: "Concluído",
 };
 const orderStatusColors: Record<string, string> = {
+  aguardando: "bg-muted text-muted-foreground",
   pendente: "bg-muted text-muted-foreground", com_lance: "bg-warning text-warning-foreground",
   aceito: "bg-primary text-primary-foreground", pago: "bg-success text-success-foreground",
   em_andamento: "bg-accent text-accent-foreground",
@@ -305,15 +306,17 @@ const AdminDashboard = () => {
   const pendingWithdrawals = walletTxs.filter((t) => t.type === "debit" && t.status === "pendente");
   const pendingMontadores = allProfiles.filter((p) => p.role === "montador" && !p.is_approved);
 
-  // Financial summary calculations
+  // Financial summary calculations (nova regra: montador=77%, ClickMont=23%)
   const custodyOrders = orders.filter((o) => ["pago", "em_andamento", "desmontagem_confirmada", "aguardando_liberacao"].includes(o.status));
+  // custodyTotal = valor total em escrow (valor_montagem = montador_amount / 0.77)
   const custodyTotal = walletTxs
     .filter((t) => t.type === "credit" && ["auditoria", "pendente"].includes(t.status))
-    .reduce((sum, t) => sum + Math.round(t.amount * 1.20 * 100) / 100, 0);
-  
+    .reduce((sum, t) => sum + Math.round((t.amount / 0.77) * 100) / 100, 0);
+
+  // projectedProfit = comissão ClickMont (23% do valor_montagem = 23/77 do valor montador)
   const projectedProfit = walletTxs
     .filter((t) => t.type === "credit" && ["auditoria", "disponivel"].includes(t.status))
-    .reduce((sum, t) => sum + Math.round(t.amount * 0.25 * 100) / 100, 0);
+    .reduce((sum, t) => sum + Math.round((t.amount * 23 / 77) * 100) / 100, 0);
 
   const pendingRelease = orders.filter((o) => o.status === "aguardando_liberacao").length;
 
