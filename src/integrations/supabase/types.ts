@@ -237,6 +237,7 @@ export type Database = {
           code_validated: boolean | null
           created_at: string
           description: string
+          foto_da_nota: string | null
           furniture_type: string
           id: string
           is_urgent: boolean
@@ -247,6 +248,7 @@ export type Database = {
           started_at: string | null
           status: string
           title: string
+          valor_da_nota: number
           verification_code: string | null
         }
         Insert: {
@@ -257,6 +259,7 @@ export type Database = {
           code_validated?: boolean | null
           created_at?: string
           description: string
+          foto_da_nota?: string | null
           furniture_type: string
           id?: string
           is_urgent?: boolean
@@ -267,6 +270,7 @@ export type Database = {
           started_at?: string | null
           status?: string
           title: string
+          valor_da_nota?: number
           verification_code?: string | null
         }
         Update: {
@@ -277,6 +281,7 @@ export type Database = {
           code_validated?: boolean | null
           created_at?: string
           description?: string
+          foto_da_nota?: string | null
           furniture_type?: string
           id?: string
           is_urgent?: boolean
@@ -287,6 +292,7 @@ export type Database = {
           started_at?: string | null
           status?: string
           title?: string
+          valor_da_nota?: number
           verification_code?: string | null
         }
         Relationships: []

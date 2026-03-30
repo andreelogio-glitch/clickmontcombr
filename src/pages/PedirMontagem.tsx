@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Wrench, Package, Truck, MapPin, FileText, Lock, ShieldCheck, Upload, CalendarDays, AlertTriangle } from "lucide-react";
+import { Wrench, Package, Truck, MapPin, FileText, Lock, ShieldCheck, Upload, CalendarDays, AlertTriangle, Receipt } from "lucide-react";
 import logoClickmont from "@/assets/logo-clickmont.png";
 
 const FURNITURE_TYPES = [
@@ -38,6 +38,7 @@ const PedirMontagem = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [fotaNotaFile, setFotoNotaFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -47,6 +48,7 @@ const PedirMontagem = () => {
     city: "",
     service_type: "montagem" as ServiceType,
     preferred_date: "",
+    valor_da_nota: "",
     is_urgent: false,
     needs_wall_mount: false,
   });
@@ -54,10 +56,22 @@ const PedirMontagem = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    const valorNota = parseFloat(form.valor_da_nota);
+    if (!valorNota || valorNota <= 0) {
+      toast.error("Informe o valor da nota fiscal do móvel.");
+      return;
+    }
+    if (!fotaNotaFile) {
+      toast.error("A foto da nota fiscal é obrigatória para evitar fraudes.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       let photo_url: string | null = null;
+      let foto_da_nota_url: string | null = null;
 
       if (photoFile) {
         const fileExt = photoFile.name.split(".").pop();
@@ -66,9 +80,17 @@ const PedirMontagem = () => {
           .from("user-documents")
           .upload(filePath, photoFile);
         if (uploadError) throw uploadError;
-        // Store path since bucket is private
         photo_url = filePath;
       }
+
+      // Upload foto da nota (obrigatória)
+      const notaExt = fotaNotaFile.name.split(".").pop();
+      const notaPath = `${user.id}/nota_${Date.now()}.${notaExt}`;
+      const { error: notaUploadError } = await supabase.storage
+        .from("user-documents")
+        .upload(notaPath, fotaNotaFile);
+      if (notaUploadError) throw notaUploadError;
+      foto_da_nota_url = notaPath;
 
       // Map mudanca to desmontagem for DB (fractioned logic handled by service_type)
       const dbServiceType = form.service_type === "mudanca" ? "desmontagem" : form.service_type;
@@ -84,7 +106,9 @@ const PedirMontagem = () => {
         _photo_url: photo_url || "",
         _is_urgent: form.is_urgent,
         _needs_wall_mount: form.needs_wall_mount,
-      });
+        _valor_da_nota: valorNota,
+        _foto_da_nota: foto_da_nota_url,
+      } as any);
 
       if (error) throw error;
       toast.success("Pedido criado com sucesso! Montadores da região serão notificados.");
@@ -145,6 +169,48 @@ const PedirMontagem = () => {
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 required
               />
+            </div>
+
+            {/* Valor da Nota Fiscal */}
+            <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
+              <div>
+                <Label htmlFor="valor_da_nota" className="flex items-center gap-1 font-semibold">
+                  <Receipt className="h-4 w-4 text-primary" />
+                  Valor da Nota Fiscal do Móvel (R$) *
+                </Label>
+                <Input
+                  id="valor_da_nota"
+                  type="number"
+                  step="0.01"
+                  min="1"
+                  placeholder="Ex: 1500.00"
+                  value={form.valor_da_nota}
+                  onChange={(e) => setForm({ ...form, valor_da_nota: e.target.value })}
+                  required
+                  className="mt-1"
+                />
+                {form.valor_da_nota && parseFloat(form.valor_da_nota) > 0 && (
+                  <p className="text-xs text-primary font-medium mt-1">
+                    Taxa de montagem: <strong>R$ {(parseFloat(form.valor_da_nota) * 0.10).toFixed(2)}</strong> (10% da nota)
+                  </p>
+                )}
+              </div>
+
+              {/* Foto da Nota Fiscal */}
+              <div>
+                <Label className="flex items-center gap-1 font-semibold">
+                  <Upload className="h-4 w-4 text-primary" />
+                  Foto da Nota Fiscal *
+                </Label>
+                <p className="text-[11px] text-muted-foreground mb-1">Obrigatória para garantia e prevenção de fraudes</p>
+                <Input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => setFotoNotaFile(e.target.files?.[0] || null)}
+                  required
+                />
+                {fotaNotaFile && <p className="text-xs text-success mt-1">✅ {fotaNotaFile.name}</p>}
+              </div>
             </div>
 
             <div>

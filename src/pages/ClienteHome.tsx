@@ -10,7 +10,7 @@ import { PlusCircle, Package, DollarSign, Check, MessageSquare, ExternalLink, He
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { calcClientTotal, calcMontadorReceives, calcSameDayBonus, calcDesmontagemFirst, calcDesmontagemSecond } from "@/lib/fees";
+import { calcValorMontagem, calcClientTotal, calcMontadorReceives, calcSameDayBonus, calcDesmontagemFirst, calcDesmontagemSecond } from "@/lib/fees";
 
 interface Order {
   id: string;
@@ -20,6 +20,10 @@ interface Order {
   service_type: string;
   created_at: string;
   is_urgent?: boolean;
+  valor_da_nota: number;
+  verification_code?: string | null;
+  montador_arrived?: boolean;
+  code_validated?: boolean;
 }
 
 interface Bid {
@@ -33,6 +37,7 @@ interface Bid {
 }
 
 const statusLabels: Record<string, string> = {
+  aguardando: "Aguardando lances",
   pendente: "Aguardando lances",
   com_lance: "Lance recebido!",
   aceito: "Aguardando pagamento",
@@ -44,6 +49,7 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
+  aguardando: "bg-muted text-muted-foreground",
   pendente: "bg-muted text-muted-foreground",
   com_lance: "bg-warning text-warning-foreground",
   aceito: "bg-primary text-primary-foreground",
@@ -126,10 +132,9 @@ const ClienteHome = () => {
 
   const handlePayment = async (orderId: string) => {
     const order = orders.find((o) => o.id === orderId);
-    const acceptedBid = (bids[orderId] || []).find((b) => b.accepted);
-    if (!order || !acceptedBid) return;
+    if (!order) return;
 
-    const totalAmount = calcClientTotal(acceptedBid.amount);
+    const totalAmount = calcValorMontagem(order.valor_da_nota);
 
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
@@ -159,8 +164,10 @@ const ClienteHome = () => {
     if (!acceptedBid) return;
 
     const order = orders.find((o) => o.id === orderId);
-    const isUrgent = !!(order as any)?.is_urgent;
-    const montadorAmount = calcMontadorReceives(acceptedBid.amount, isUrgent);
+    if (!order) return;
+
+    const valorMontagem = calcValorMontagem(order.valor_da_nota);
+    const montadorAmount = calcMontadorReceives(valorMontagem);
     const first40 = calcDesmontagemFirst(montadorAmount);
 
     await supabase.from("orders").update({ status: "desmontagem_confirmada" }).eq("id", orderId);
@@ -171,7 +178,7 @@ const ClienteHome = () => {
       type: "credit",
       status: "auditoria",
       amount: first40,
-      description: `Desmontagem 40%${isUrgent ? " (Urgente - Taxa Zero)" : ""} - Pedido confirmado pelo cliente`,
+      description: `Desmontagem 40% - Pedido confirmado pelo cliente`,
     });
 
     toast.success("Obrigado! O pagamento de 40% foi enviado para análise da plataforma e será liberado ao montador em breve.");
@@ -184,9 +191,11 @@ const ClienteHome = () => {
     if (!acceptedBid) return;
 
     const order = orders.find((o) => o.id === orderId);
-    const isDesmontagem = order?.service_type === "desmontagem";
-    const isUrgent = !!(order as any)?.is_urgent;
-    const montadorAmount = calcMontadorReceives(acceptedBid.amount, isUrgent);
+    if (!order) return;
+
+    const isDesmontagem = order.service_type === "desmontagem";
+    const valorMontagem = calcValorMontagem(order.valor_da_nota);
+    const montadorAmount = calcMontadorReceives(valorMontagem);
     const releaseAmount = isDesmontagem ? calcDesmontagemSecond(montadorAmount) : montadorAmount;
     const label = isDesmontagem ? "Montagem 60%" : "Serviço completo";
 
@@ -318,24 +327,24 @@ const ClienteHome = () => {
                 <CardContent className="space-y-3">
                   {orderBids.length > 0 && order.status === "com_lance" && (
                     <div className="space-y-3">
-                      <p className="text-sm font-medium">Lances recebidos:</p>
-                      {orderBids.map((bid) => {
-                        const clientTotal = calcClientTotal(bid.amount);
-                        return (
+                      <div className="rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+                        <strong>Taxa de montagem:</strong> R$ {calcValorMontagem(order.valor_da_nota).toFixed(2)} (10% da nota de R$ {order.valor_da_nota.toFixed(2)})
+                      </div>
+                      <p className="text-sm font-medium">Montadores disponíveis:</p>
+                      {orderBids.map((bid) => (
                           <div key={bid.id} className="flex items-center justify-between rounded-lg border border-border p-3">
                             <div>
                               <p className="font-semibold text-primary flex items-center gap-1">
-                                <DollarSign className="h-4 w-4" /> R$ {clientTotal.toFixed(2)}
+                                <DollarSign className="h-4 w-4" /> R$ {calcValorMontagem(order.valor_da_nota).toFixed(2)}
                               </p>
-                              <p className="text-xs text-muted-foreground">(Lance: R$ {bid.amount.toFixed(2)} + taxa 15%)</p>
+                              <p className="text-xs text-muted-foreground">Taxa do serviço (10% da nota fiscal)</p>
                               {bid.message && <p className="text-sm text-muted-foreground mt-1">{bid.message}</p>}
                             </div>
                             <Button size="sm" className="gradient-primary text-primary-foreground" onClick={() => acceptBid(bid)}>
                               <Check className="h-4 w-4 mr-1" /> Aceitar
                             </Button>
                           </div>
-                        );
-                      })}
+                        ))}
                       {/* Security trust badge */}
                       <div className="rounded-lg bg-[hsl(210,60%,96%)] border border-[hsl(210,60%,85%)] p-3 flex items-start gap-3">
                         <Lock className="h-5 w-5 text-[hsl(210,70%,50%)] shrink-0 mt-0.5" />
@@ -351,9 +360,10 @@ const ClienteHome = () => {
 
                   {order.status === "aceito" && acceptedBid && (
                     <div className="border-t border-border pt-3 space-y-3">
-                      <p className="text-sm">
-                        Total a pagar: <strong className="text-primary text-lg">R$ {calcClientTotal(acceptedBid.amount).toFixed(2)}</strong>
-                      </p>
+                      <div className="text-sm space-y-0.5">
+                        <p className="text-muted-foreground">Nota fiscal: R$ {order.valor_da_nota.toFixed(2)}</p>
+                        <p>Taxa de montagem (10%): <strong className="text-primary text-lg">R$ {calcValorMontagem(order.valor_da_nota).toFixed(2)}</strong></p>
+                      </div>
 
                       {/* Guarantee seal */}
                       <div className="rounded-lg bg-[hsl(40,90%,95%)] border border-[hsl(40,80%,70%)] p-3 flex items-start gap-3">

@@ -37,7 +37,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useNavigate } from "react-router-dom";
-import { calcMontadorReceives, calcClientTotal } from "@/lib/fees";
+import { calcValorMontagem, calcMontadorReceives } from "@/lib/fees";
 import MontadorOnboarding from "@/components/MontadorOnboarding";
 import logoClickmont from "@/assets/logo-clickmont.png";
 import MontadorResumo from "@/components/MontadorResumo";
@@ -54,6 +54,7 @@ interface Order {
   service_type: string;
   created_at: string;
   client_id: string;
+  valor_da_nota: number;
   is_urgent?: boolean;
   needs_wall_mount?: boolean;
   montador_arrived?: boolean;
@@ -70,7 +71,8 @@ interface Bid {
 }
 
 const statusLabels: Record<string, string> = {
-  pendente: "Novo",
+  aguardando: "Aguardando",
+  pendente: "Aguardando",
   com_lance: "Lance enviado",
   aceito: "Aceito",
   pago: "Pago",
@@ -81,6 +83,7 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
+  aguardando: "bg-warning text-warning-foreground",
   pendente: "bg-warning text-warning-foreground",
   com_lance: "bg-primary text-primary-foreground",
   aceito: "bg-accent text-accent-foreground",
@@ -128,7 +131,7 @@ const DashboardMontador = () => {
   const fetchOrders = async () => {
     const { data, error } = await supabase
       .from("orders")
-      .select("id, title, description, furniture_type, brand, address, city, status, created_at, is_urgent, service_type, needs_wall_mount, photo_url, client_id, montador_arrived, code_validated, started_at")
+      .select("id, title, description, furniture_type, brand, address, city, status, created_at, is_urgent, service_type, needs_wall_mount, photo_url, client_id, montador_arrived, code_validated, started_at, valor_da_nota")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -276,7 +279,7 @@ const DashboardMontador = () => {
   );
 
   const muralOrders = orders.filter(
-    (o) => o.status === "pendente" && !myBidOrderIds.has(o.id)
+    (o) => (o.status === "aguardando" || o.status === "pendente") && !myBidOrderIds.has(o.id)
   );
 
   const filteredMural =
@@ -468,16 +471,17 @@ const DashboardMontador = () => {
                       </div>
                     )}
 
-                    {parsedAmount > 0 && (
+                    {selectedOrder.valor_da_nota > 0 && (
                       <div className="flex items-start gap-1.5 text-xs text-muted-foreground rounded-lg bg-muted p-2">
                         <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                         <span>
-                          Seu lance: R$ {parsedAmount.toFixed(2)} → Cliente paga: R${" "}
-                          {calcClientTotal(parsedAmount).toFixed(2)} → Você recebe:{" "}
-                          <strong className={isUrgent ? "text-destructive" : "text-success"}>
-                            R$ {calcMontadorReceives(parsedAmount, isUrgent).toFixed(2)}
+                          Nota fiscal: R$ {selectedOrder.valor_da_nota.toFixed(2)} →{" "}
+                          Taxa de montagem (10%): R$ {calcValorMontagem(selectedOrder.valor_da_nota).toFixed(2)} →{" "}
+                          Você recebe:{" "}
+                          <strong className="text-success">
+                            R$ {calcMontadorReceives(calcValorMontagem(selectedOrder.valor_da_nota)).toFixed(2)}
                           </strong>
-                          {isUrgent ? " (🔥 Taxa Zero!)" : " (comissão 10%)"}
+                          {" "}(77%)
                           {isDesmontagem && " · 40% após desmontagem, 60% após montagem"}
                         </span>
                       </div>
@@ -727,10 +731,13 @@ const DashboardMontador = () => {
                           </p>
                         )}
 
-                        {acceptedBid && (
+                        {order.valor_da_nota > 0 && (
                           <p className="text-sm text-muted-foreground">
-                            Valor do lance:{" "}
-                            <strong className="text-primary">R$ {acceptedBid.amount.toFixed(2)}</strong>
+                            Você vai receber:{" "}
+                            <strong className="text-success">
+                              R$ {calcMontadorReceives(calcValorMontagem(order.valor_da_nota)).toFixed(2)}
+                            </strong>
+                            <span className="text-xs ml-1">(77% de R$ {calcValorMontagem(order.valor_da_nota).toFixed(2)})</span>
                           </p>
                         )}
 
@@ -777,7 +784,6 @@ const DashboardMontador = () => {
               <div className="grid gap-4">
                 {historicoOrders.map((order) => {
                   const acceptedBid = myBids.find((b) => b.order_id === order.id && b.accepted);
-                  const isUrgent = !!order.is_urgent;
 
                   return (
                     <Card key={order.id}>
@@ -789,15 +795,13 @@ const DashboardMontador = () => {
                               {order.furniture_type} ·{" "}
                               {new Date(order.created_at).toLocaleDateString("pt-BR")}
                             </p>
-                            {acceptedBid && (
+                            {acceptedBid && order.valor_da_nota > 0 && (
                               <p className="text-sm mt-1">
-                                Valor:{" "}
+                                Valor recebido:{" "}
                                 <strong className="text-success">
-                                  R$ {calcMontadorReceives(acceptedBid.amount, isUrgent).toFixed(2)}
+                                  R$ {calcMontadorReceives(calcValorMontagem(order.valor_da_nota)).toFixed(2)}
                                 </strong>
-                                {isUrgent && (
-                                  <span className="text-xs text-destructive ml-1">(Taxa Zero)</span>
-                                )}
+                                <span className="text-xs text-muted-foreground ml-1">(77% da taxa)</span>
                               </p>
                             )}
                           </div>
