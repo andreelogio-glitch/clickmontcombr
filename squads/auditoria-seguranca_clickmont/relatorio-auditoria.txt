@@ -1,0 +1,20 @@
+Auditoria de Segurança ClickMont – Resumo
+Data: 2026-03-31
+Alvos: Rotas, RBAC, fluxos Cliente/Montador/Admin
+
+Achados Principais:
+- Rotas protegidas: Verified via ProtectedRoute; Cliente tem acesso a /pedir-montagem e /dashboard/cliente; Montador tem acesso a /dashboard/montador; Admin tem acesso a /admin/...
+- RBAC DB: has_role() implementado; app_role enum existente; políticas em profiles/orders atualizadas para usar has_role()
+- Fluxos de cliente: Cliente vê apenas área do cliente; Painel de serviços permanece restrito ao Montador
+- Fluxos de montador: Montador pode ver serviços disponíveis e enviar lances; não visualiza área de cliente indevidamente
+- Admin: Painéis administrativos disponíveis apenas para admin
+- Auditoria: Logs em platform_logs presentes; verificados
+
+Patches/Recomendações:
+- Atualizar documentação de RBAC com exemplos de políticas (RBAC) no DB
+- Adicionar testes automatizados de autorização (end-to-end) para rotas protegidas
+- Garantir que o fluxo de envio de orçamento pelo montador não leve a exposição de dados do cliente
+- Incluir testes de carga e regressão de políticas de RBAC
+
+Observações Finais:
+- A auditoria está pronta para gerar patches e guiar correções; precisa de aprovação para aplicar patches no código/infra
