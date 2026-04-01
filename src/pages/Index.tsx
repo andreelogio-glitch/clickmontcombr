@@ -7,7 +7,7 @@ import LandingPage from "./LandingPage";
 
 const Index = () => {
   const { user, profile, loading } = useAuth();
-  const { isAdmin, loading: adminLoading } = useIsAdmin(user);
+  const { isAdmin } = useIsAdmin();
 
   if (loading) {
     return (
@@ -18,14 +18,6 @@ const Index = () => {
   }
 
   if (!user) return <LandingPage />;
-
-  if (adminLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
 
   if (isAdmin) return <Navigate to="/admin" replace />;
 
