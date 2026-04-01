@@ -4,7 +4,17 @@ Execute estes passos na ORDEM indicada para completar o lancamento.
 
 ---
 
-## PASSO 1: Criar Storage Buckets
+## PASSO 1: Setup Admin (andreelogio@gmail.com)
+
+**Execute no Supabase SQL Editor:**
+https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql
+
+1. Cole e execute: `supabase/migrations/20260401000006_setup_admin_user.sql`
+2. Verifique se aparece "Admin configurado com sucesso!"
+
+---
+
+## PASSO 2: Criar Storage Buckets
 
 **Supabase Dashboard:** https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/storage
 
@@ -25,18 +35,13 @@ Execute estes passos na ORDEM indicada para completar o lancamento.
    - File size limit: **2MB**
    - Allowed MIME types: `image/png, image/jpeg, image/webp`
 
-5. Execute no SQL Editor (https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql):
-   ```sql
-   -- Cole o conteudo de supabase/migrations/20260401000004_storage_setup_executable.sql
-   ```
+5. Execute no SQL Editor: `supabase/migrations/20260401000004_storage_setup_executable.sql`
 
 ---
 
-## PASSO 2: Configurar Secrets das Edge Functions
+## PASSO 3: Configurar Secrets das Edge Functions
 
 **Dashboard:** https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/functions/secrets
-
-Adicione os seguintes secrets:
 
 | Secret | Valor |
 |--------|-------|
@@ -49,7 +54,16 @@ Adicione os seguintes secrets:
 
 ---
 
-## PASSO 3: Registrar Webhook do Mercado Pago
+## PASSO 4: Cadastrar Montador e Cliente
+
+1. Acesse: https://clickmont.com.br/cadastro
+2. Crie conta como **MONTADOR**: `montador@teste.com`
+3. Crie conta como **CLIENTE**: `cliente@teste.com`
+4. Execute no SQL Editor: `supabase/migrations/20260401000007_setup_test_users.sql`
+
+---
+
+## PASSO 5: Registrar Webhook do Mercado Pago
 
 1. Acesse: https://www.mercadopago.com.br/developers/panel
 2. Selecione sua aplicacao
@@ -57,13 +71,11 @@ Adicione os seguintes secrets:
    ```
    https://zwfiadmmfgillrqhlbjw.supabase.co/functions/v1/mp-webhook
    ```
-4. Marque eventos: `payment.created`, `payment.updated`, `payment.pending`, `payment.rejected`, `payment.refunded`
+4. Marque: `payment.created`, `payment.updated`, `payment.pending`, `payment.rejected`, `payment.refunded`
 
 ---
 
-## PASSO 4: Deploy Edge Functions
-
-Execute no terminal:
+## PASSO 6: Deploy Edge Functions
 
 ```powershell
 cd C:\Users\Andre Ramos\Documents\Projetos\clickmontcombr
@@ -71,36 +83,19 @@ $env:SUPABASE_ACCESS_TOKEN = 'seu_pat_aqui'
 npm run supabase:deploy
 ```
 
-Ou use o script interativo:
-```powershell
-.\scripts\sprint0-deploy.ps1
-```
-
 ---
 
-## PASSO 5: Criar Novo GitHub PAT
+## PASSO 7: Novo GitHub PAT
 
-1. Acesse: https://github.com/settings/tokens/new
-2. Configure:
-   - **Token name:** `clickmont-deploy`
-   - **Expiration:** `90 days`
-   - **Scopes:** `repo`, `workflow`, `admin:repo_hook`
-3. Copie o token gerado
-4. Adicione como Secret `GITHUB_TOKEN` em:
+1. https://github.com/settings/tokens/new
+2. Scopes: `repo`, `workflow`, `admin:repo_hook`
+3. Adicione como Secret `GITHUB_TOKEN` em:
    https://github.com/andreelogio-glitch/clickmontcombr/settings/secrets/actions
 
 ---
 
-## PASSO 6: Push do Codigo
+## PASSO 8: Push do Codigo
 
-```powershell
-cd C:\Users\Andre Ramos\Documents\Projetos\clickmontcombr
-git add .
-git commit -m "feat(sprint0): scripts e configuracao para lancamento"
-git push origin feat/auditoria-seguranca-clickmont
-```
-
-Depois, faça merge para `main`:
 ```powershell
 git checkout main
 git merge feat/auditoria-seguranca-clickmont
@@ -109,53 +104,39 @@ git push origin main
 
 ---
 
-## PASSO 7: Criar Usuarios de Teste
+## Checklist Final
 
-1. Acesse https://clickmont.com.br
-2. Crie 3 contas:
-   - `admin@clickmont.com.br` (voce)
-   - `montador@teste.com`
-   - `cliente@teste.com`
-3. Execute no Supabase SQL Editor:
-   ```sql
-   -- Cole o conteudo de supabase/migrations/20260401000005_test_users_executable.sql
-   ```
-4. Substitua os UUIDs pelos IDs reais dos usuarios criados
-
----
-
-## PASSO 8: Verificar Tudo
-
-1. Site: https://clickmont.com.br
-2. Login como admin
-3. Verifique /admin
-4. Crie um pedido como cliente
-5. Veja no mural como montador
-6. Teste o chat
-
----
-
-## Checklist de Verificacao
-
+- [ ] Admin configurado (andreelogio@gmail.com)
 - [ ] Storage buckets criados (3 buckets)
 - [ ] Politicas RLS configuradas
 - [ ] Edge function secrets configurados
+- [ ] Montador e Cliente cadastrados
 - [ ] Webhook Mercado Pago registrado
 - [ ] Edge functions deployadas
 - [ ] Novo GitHub PAT configurado
-- [ ] Codigo pushado para main
-- [ ] CI/CD executando
-- [ ] 3 usuarios de teste criados
-- [ ] Fluxo admin verificado
-- [ ] Fluxo cliente verificado
-- [ ] Fluxo montador verificado
-- [ ] Chat funcionando
+- [ ] Codigo mergeado para main
+- [ ] Login admin funcionando (/admin)
+- [ ] Login montador funcionando (/montador)
+- [ ] Login cliente funcionando (ClienteHome)
 
 ---
 
-## Arquivos Criados
+## Ordem de Execucao
 
-- `scripts/sprint0-deploy.ps1` - Script de deploy interativo
-- `supabase/migrations/20260401000004_storage_setup_executable.sql` - Storage buckets
-- `supabase/migrations/20260401000005_test_users_executable.sql` - Usuarios de teste
-- `.github/workflows/ci.yml` - Pipeline CI/CD
+```
+1. Setup Admin (SQL)
+   ↓
+2. Storage Buckets (Dashboard + SQL)
+   ↓
+3. Secrets (Dashboard)
+   ↓
+4. Cadastrar Montador/Cliente (Site)
+   ↓
+5. Setup Montador/Cliente (SQL)
+   ↓
+6. Webhook Mercado Pago
+   ↓
+7. Deploy Edge Functions
+   ↓
+8. GitHub PAT + Push
+```
