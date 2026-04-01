@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClickMont - Banner Instagram Story</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      width: 1080px;
+      height: 1920px;
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px;
+      position: relative;
+    }
+    
+    .logo {
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #FF6B00, #FF8C00);
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 8px 30px rgba(255,107,0,0.4);
+    }
+    
+    .logo-icon span {
+      font-size: 44px;
+      font-weight: 900;
+      color: white;
+    }
+    
+    .logo-text {
+      font-size: 38px;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -1px;
+    }
+    
+    .hero-icon {
+      width: 280px;
+      height: 280px;
+      margin-bottom: 50px;
+      position: relative;
+    }
+    
+    .hero-icon-bg {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255,107,0,0.2), rgba(255,140,0,0.1));
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 3px solid rgba(255,107,0,0.3);
+    }
+    
+    .hero-icon-inner {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, #FF6B00, #FF8C00);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 20px 60px rgba(255,107,0,0.4);
+    }
+    
+    .hero-icon-inner svg {
+      width: 100px;
+      height: 100px;
+      fill: white;
+    }
+    
+    .content {
+      text-align: center;
+      max-width: 850px;
+    }
+    
+    .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #FF6B00, #FF8C00);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 50px;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 35px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      box-shadow: 0 4px 20px rgba(255,107,0,0.4);
+    }
+    
+    .headline {
+      font-size: 88px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.05;
+      margin-bottom: 28px;
+      text-shadow: 0 4px 30px rgba(0,0,0,0.3);
+    }
+    
+    .highlight {
+      background: linear-gradient(135deg, #FF6B00, #FFA500);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .subheadline {
+      font-size: 32px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.5;
+      margin-bottom: 60px;
+    }
+    
+    .cta {
+      display: inline-block;
+      background: linear-gradient(135deg, #FF6B00, #FF8C00);
+      color: white;
+      padding: 26px 70px;
+      border-radius: 60px;
+      font-size: 28px;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 10px 50px rgba(255,107,0,0.5);
+      transition: transform 0.3s ease;
+    }
+    
+    .cta:hover {
+      transform: scale(1.05);
+    }
+    
+    .features {
+      position: absolute;
+      bottom: 120px;
+      left: 80px;
+      right: 80px;
+      display: flex;
+      justify-content: space-around;
+    }
+    
+    .feature {
+      text-align: center;
+    }
+    
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 12px;
+    }
+    
+    .feature-icon svg {
+      width: 28px;
+      height: 28px;
+      fill: #FF6B00;
+    }
+    
+    .feature span {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .swipe-up {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .swipe-up span {
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    .swipe-arrow {
+      width: 30px;
+      height: 30px;
+      border-left: 3px solid rgba(255,255,255,0.5);
+      border-bottom: 3px solid rgba(255,255,255,0.5);
+      transform: rotate(-45deg);
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0) rotate(-45deg); }
+      40% { transform: translateY(-10px) rotate(-45deg); }
+      60% { transform: translateY(-5px) rotate(-45deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <div class="logo-icon">
+        <span>M</span>
+      </div>
+      <span class="logo-text">ClickMont</span>
+    </div>
+    
+    <div class="hero-icon">
+      <div class="hero-icon-bg">
+        <div class="hero-icon-inner">
+          <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+        </div>
+      </div>
+    </div>
+    
+    <div class="content">
+      <div class="badge">Monte com Experts</div>
+      <h1 class="headline">Móveis Montados,<br><span class="highlight">Problemas Resolvidos</span></h1>
+      <p class="subheadline">Encontre profissionais verificados para<br>montar seus móveis com qualidade</p>
+      <a href="#" class="cta">Quero Montar!</a>
+    </div>
+    
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        </div>
+        <span>Verificados</span>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+        </div>
+        <span>Garantia</span>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        </div>
+        <span>Pagamento Seguro</span>
+      </div>
+    </div>
+    
+    <div class="swipe-up">
+      <span>Arraste para cima</span>
+      <div class="swipe-arrow"></div>
+    </div>
+  </div>
+</body>
+</html>

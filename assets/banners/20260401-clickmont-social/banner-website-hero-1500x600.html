@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClickMont - Banner Website Hero</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      width: 1500px;
+      height: 600px;
+      background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 50%, #FFA500 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 50px 100px;
+      position: relative;
+    }
+    
+    .decoration-1 {
+      position: absolute;
+      top: -150px;
+      right: -150px;
+      width: 600px;
+      height: 600px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+    
+    .decoration-2 {
+      position: absolute;
+      bottom: -200px;
+      left: -150px;
+      width: 700px;
+      height: 700px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    
+    .decoration-3 {
+      position: absolute;
+      top: 50%;
+      right: 200px;
+      transform: translateY(-50%);
+      width: 500px;
+      height: 500px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 650px;
+      z-index: 1;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      background: white;
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
+    
+    .logo-icon span {
+      font-size: 44px;
+      font-weight: 900;
+      color: #FF6B00;
+    }
+    
+    .logo-text {
+      font-size: 40px;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -1px;
+    }
+    
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      width: fit-content;
+    }
+    
+    .headline {
+      font-size: 64px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.05;
+      margin-bottom: 24px;
+      text-shadow: 0 4px 30px rgba(0,0,0,0.15);
+    }
+    
+    .subheadline {
+      font-size: 24px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 40px;
+      line-height: 1.5;
+    }
+    
+    .cta-group {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .cta-primary {
+      display: inline-block;
+      background: white;
+      color: #FF6B00;
+      padding: 20px 48px;
+      border-radius: 50px;
+      font-size: 20px;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+    
+    .cta-primary:hover {
+      transform: scale(1.05);
+    }
+    
+    .cta-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+      padding: 20px 32px;
+      border-radius: 50px;
+      font-size: 18px;
+      font-weight: 600;
+      text-decoration: none;
+      border: 2px solid rgba(255,255,255,0.5);
+      transition: all 0.3s ease;
+    }
+    
+    .cta-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: white;
+    }
+    
+    .cta-secondary svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+    
+    .visual {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .visual-container {
+      width: 450px;
+      height: 450px;
+      position: relative;
+    }
+    
+    .visual-bg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      height: 400px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+    }
+    
+    .visual-main {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: 300px;
+      background: white;
+      border-radius: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+    }
+    
+    .visual-main svg {
+      width: 150px;
+      height: 150px;
+      fill: #FF6B00;
+    }
+    
+    .floating-card {
+      position: absolute;
+      background: white;
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .floating-card-1 {
+      top: 20px;
+      right: -20px;
+    }
+    
+    .floating-card-2 {
+      bottom: 40px;
+      left: -30px;
+    }
+    
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #FF6B00, #FF8C00);
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .card-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: white;
+    }
+    
+    .card-content {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+    
+    .card-subtitle {
+      font-size: 12px;
+      font-weight: 500;
+      color: #666;
+    }
+    
+    .trust-badges {
+      position: absolute;
+      bottom: 50px;
+      left: 100px;
+      display: flex;
+      gap: 24px;
+    }
+    
+    .trust-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .trust-badge svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+      opacity: 0.9;
+    }
+    
+    .trust-badge span {
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="decoration-1"></div>
+    <div class="decoration-2"></div>
+    <div class="decoration-3"></div>
+    
+    <div class="content">
+      <div class="logo">
+        <div class="logo-icon">
+          <span>M</span>
+        </div>
+        <span class="logo-text">ClickMont</span>
+      </div>
+      
+      <div class="badge">Monte com Experts</div>
+      
+      <h1 class="headline">Móveis Montados<br>sem Estresse</h1>
+      <p class="subheadline">Encontre profissionais verificados para montar seus móveis com qualidade, segurança e garantia de serviço.</p>
+      
+      <div class="cta-group">
+        <a href="#" class="cta-primary">Solicitar Montagem</a>
+        <a href="#" class="cta-secondary">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Como funciona
+        </a>
+      </div>
+    </div>
+    
+    <div class="visual">
+      <div class="visual-container">
+        <div class="visual-bg"></div>
+        <div class="visual-main">
+          <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+        </div>
+        
+        <div class="floating-card floating-card-1">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          </div>
+          <div class="card-content">
+            <span class="card-title">+500 Montagens</span>
+            <span class="card-subtitle">Realizadas com sucesso</span>
+          </div>
+        </div>
+        
+        <div class="floating-card floating-card-2">
+          <div class="card-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+          </div>
+          <div class="card-content">
+            <span class="card-title">100% Garantido</span>
+            <span class="card-subtitle">Seu dinheiro seguro</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="trust-badges">
+      <div class="trust-badge">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        <span>Profissionais Verificados</span>
+      </div>
+      <div class="trust-badge">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        <span>Garantia de Serviço</span>
+      </div>
+      <div class="trust-badge">
+        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        <span>Pagamento Seguro</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
