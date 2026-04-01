@@ -1,14 +1,10 @@
-/// <reference lib="webworker" />
-
-declare const self: ServiceWorkerGlobalScope;
-
 // Handle push notifications
 self.addEventListener("push", (event) => {
   if (!event.data) return;
 
   const data = event.data.json();
   const title = data.title || "Clickmont";
-  const options: NotificationOptions = {
+  const options = {
     body: data.body || "",
     icon: data.icon || "/pwa-192x192.png",
     badge: data.badge || "/pwa-192x192.png",
@@ -29,14 +25,12 @@ self.addEventListener("notificationclick", (event) => {
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      // Focus existing window if available
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && "focus" in client) {
           client.navigate(url);
           return client.focus();
         }
       }
-      // Open new window
       return self.clients.openWindow(url);
     })
   );
