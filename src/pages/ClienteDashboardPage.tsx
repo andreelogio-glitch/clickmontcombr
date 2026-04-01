@@ -15,7 +15,6 @@ const ClienteDashboardPage = () => {
   }
 
   if (!user) return <Navigate to="/auth" replace />;
-  if (profile?.role === "montador") return <Navigate to="/dashboard/montador" replace />;
 
   return (
     <AppLayout>

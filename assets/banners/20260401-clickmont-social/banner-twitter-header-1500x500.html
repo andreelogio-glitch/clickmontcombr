@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClickMont - Banner Twitter/X Header</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      width: 1500px;
+      height: 500px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 40px 80px;
+      position: relative;
+    }
+    
+    .decoration-1 {
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 400px;
+      height: 400px;
+      background: linear-gradient(135deg, rgba(255,107,0,0.3), rgba(255,140,0,0.1));
+      border-radius: 50%;
+    }
+    
+    .decoration-2 {
+      position: absolute;
+      bottom: -150px;
+      left: -100px;
+      width: 500px;
+      height: 500px;
+      background: linear-gradient(135deg, rgba(255,107,0,0.2), rgba(255,140,0,0.05));
+      border-radius: 50%;
+    }
+    
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 700px;
+      z-index: 1;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .logo-icon {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #FF6B00, #FF8C00);
+      border-radius: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 8px 30px rgba(255,107,0,0.4);
+    }
+    
+    .logo-icon span {
+      font-size: 38px;
+      font-weight: 900;
+      color: white;
+    }
+    
+    .logo-text {
+      font-size: 36px;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -1px;
+    }
+    
+    .headline {
+      font-size: 56px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      text-shadow: 0 4px 30px rgba(0,0,0,0.3);
+    }
+    
+    .highlight {
+      background: linear-gradient(135deg, #FF6B00, #FFA500);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .subheadline {
+      font-size: 22px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 28px;
+    }
+    
+    .cta {
+      display: inline-block;
+      background: linear-gradient(135deg, #FF6B00, #FF8C00);
+      color: white;
+      padding: 18px 45px;
+      border-radius: 50px;
+      font-size: 20px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 8px 30px rgba(255,107,0,0.4);
+      transition: transform 0.3s ease;
+      width: fit-content;
+    }
+    
+    .cta:hover {
+      transform: scale(1.05);
+    }
+    
+    .visual {
+      width: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .visual-container {
+      width: 300px;
+      height: 300px;
+      position: relative;
+    }
+    
+    .visual-bg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 280px;
+      height: 280px;
+      background: linear-gradient(135deg, rgba(255,107,0,0.2), rgba(255,140,0,0.1));
+      border-radius: 50%;
+    }
+    
+    .visual-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 200px;
+      background: white;
+      border-radius: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    
+    .visual-icon svg {
+      width: 100px;
+      height: 100px;
+      fill: #FF6B00;
+    }
+    
+    .badges {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      display: flex;
+      gap: 10px;
+    }
+    
+    .badge {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      padding: 10px 18px;
+      border-radius: 25px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .badge svg {
+      width: 18px;
+      height: 18px;
+      fill: #FF6B00;
+    }
+    
+    .badge span {
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .stats {
+      position: absolute;
+      bottom: 40px;
+      left: 80px;
+      display: flex;
+      gap: 40px;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #FF6B00;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="decoration-1"></div>
+    <div class="decoration-2"></div>
+    
+    <div class="content">
+      <div class="logo">
+        <div class="logo-icon">
+          <span>M</span>
+        </div>
+        <span class="logo-text">ClickMont</span>
+      </div>
+      
+      <h1 class="headline">Monte Seus Móveis com<br><span class="highlight">Profissionais Experts</span></h1>
+      <p class="subheadline">Serviço rápido, seguro e com garantia</p>
+      <a href="#" class="cta">Solicitar Agora</a>
+    </div>
+    
+    <div class="visual">
+      <div class="visual-container">
+        <div class="visual-bg"></div>
+        <div class="visual-icon">
+          <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+        </div>
+      </div>
+      
+      <div class="badges">
+        <div class="badge">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          <span>Verificados</span>
+        </div>
+        <div class="badge">
+          <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+          <span>Garantia</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">500+</div>
+        <div class="stat-label">Montagens</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">98%</div>
+        <div class="stat-label">Satisfação</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">24h</div>
+        <div class="stat-label">Resposta</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

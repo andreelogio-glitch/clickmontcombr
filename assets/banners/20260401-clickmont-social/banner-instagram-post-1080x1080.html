@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClickMont - Banner Instagram Post</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      width: 1080px;
+      height: 1080px;
+      background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 50%, #FFA500 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px;
+      position: relative;
+    }
+    
+    .logo {
+      position: absolute;
+      top: 60px;
+      left: 60px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .logo-icon {
+      width: 70px;
+      height: 70px;
+      background: white;
+      border-radius: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .logo-icon span {
+      font-size: 36px;
+      font-weight: 900;
+      color: #FF6B00;
+    }
+    
+    .logo-text {
+      font-size: 32px;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -1px;
+    }
+    
+    .content {
+      text-align: center;
+      max-width: 800px;
+    }
+    
+    .badge {
+      display: inline-block;
+      background: white;
+      color: #FF6B00;
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .headline {
+      font-size: 72px;
+      font-weight: 900;
+      color: white;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      text-shadow: 0 4px 30px rgba(0,0,0,0.2);
+    }
+    
+    .subheadline {
+      font-size: 26px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.95);
+      line-height: 1.4;
+      margin-bottom: 50px;
+    }
+    
+    .cta {
+      display: inline-block;
+      background: white;
+      color: #FF6B00;
+      padding: 22px 50px;
+      border-radius: 60px;
+      font-size: 22px;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+      transition: transform 0.3s ease;
+    }
+    
+    .cta:hover {
+      transform: scale(1.05);
+    }
+    
+    .icon-container {
+      position: absolute;
+      bottom: 60px;
+      right: 60px;
+      display: flex;
+      gap: 16px;
+    }
+    
+    .icon-circle {
+      width: 50px;
+      height: 50px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .icon-circle svg {
+      width: 24px;
+      height: 24px;
+      fill: white;
+    }
+    
+    .check-badge {
+      position: absolute;
+      bottom: 80px;
+      left: 60px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.15);
+      padding: 14px 22px;
+      border-radius: 30px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .check-badge svg {
+      width: 24px;
+      height: 24px;
+      fill: #4CAF50;
+    }
+    
+    .check-badge span {
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    
+    .decoration {
+      position: absolute;
+      opacity: 0.1;
+    }
+    
+    .decoration-1 {
+      top: -100px;
+      right: -100px;
+      width: 400px;
+      height: 400px;
+      background: white;
+      border-radius: 50%;
+    }
+    
+    .decoration-2 {
+      bottom: -150px;
+      left: -150px;
+      width: 500px;
+      height: 500px;
+      background: white;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+    
+    <div class="logo">
+      <div class="logo-icon">
+        <span>M</span>
+      </div>
+      <span class="logo-text">ClickMont</span>
+    </div>
+    
+    <div class="content">
+      <div class="badge">Serviço Profissional</div>
+      <h1 class="headline">Monte Seus<br>Móveis sem Estresse</h1>
+      <p class="subheadline">Profissionais verificados • Garantia de serviço<br>Pagamento seguro após conclusão</p>
+      <a href="#" class="cta">Solicitar Agora</a>
+    </div>
+    
+    <div class="check-badge">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      <span>Profissional verificado</span>
+    </div>
+    
+    <div class="icon-container">
+      <div class="icon-circle">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

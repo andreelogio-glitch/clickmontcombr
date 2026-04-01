@@ -1,0 +1,19 @@
+{
+  "patches": [
+    {
+      "id": "rg01",
+      "description": "Refinar RBAC: garantir has_role() uso em todas as políticas de profiles e orders",
+      "files": ["supabase/migrations/20260331230000_fix_app_role_and_hardcoded_uuid.sql"]
+    },
+    {
+      "id": "rg02",
+      "description": "Alterar ProtectedRoute para reforçar redirecionamentos de clientes/montadores",
+      "files": ["src/components/ProtectedRoute.tsx"]
+    },
+    {
+      "id": "rg03",
+      "description": "Adicionar testes de acesso: cliente não acessa montador; montador não acessa cliente",
+      "files": ["src/tests/authorization.test.tsx"]
+    }
+  ]
+}

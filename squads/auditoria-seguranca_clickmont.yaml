@@ -1,0 +1,54 @@
+name: auditoria-seguranca_clickmont
+version: 0.1.0
+description: Auditoria de RBAC, rotas e fluxos de acesso entre Cliente, Montador e Admin no ClickMont
+phases:
+  - phase: Rotas e RBAC
+    goals:
+      - Verificar uso de ProtectedRoute em todas as rotas relevantes
+      - Garantir que Cliente acesse apenas área de cliente
+      - Garantir que Montador acesse apenas área de montador
+      - Garantir que Admin acesse apenas área administrativa
+    tasks:
+      - name: Analisar ProtectedRoute e permissões
+        details: varrer App.tsx, ProtectedRoute.tsx e páginas de dashboard
+      - name: Verificar redirecionamentos de clientes e montadores
+        details: confirmar que cliente não é redirecionado para painel de serviços por engano; montador não vê painel do cliente
+  - phase: RBAC no DB
+    goals:
+      - Validar enum app_role existe e políticas usam has_role()
+      - Confirmar políticas em profiles e orders apontam para admin/montador/cliente corretamente
+    tasks:
+      - name: Checar migrations de RBAC
+        details: abrir migrations 20260331230000, 20260331220000
+      - name: Checar has_role() implícito
+        details: conferir function public.has_role()
+  - phase: Fluxos de usuário
+    goals:
+      - Cliente: confirmar acesso apenas à sua dashboard e pedido
+      - Montador: confirmar acesso ao painel de serviços disponíveis e envio de orçamento
+      - Admin: confirmar painéis administrativos
+    tasks:
+      - name: Verificar ClienteHome/ClienteDashboardPage
+        details: confirmar páginas expõem apenas componentes permitidos
+      - name: Verificar MontadorDashboardPage
+        details: confirmar envio de orçamentos e acesso ao painel de serviços
+  - phase: Relatório & Patches
+    goals:
+      - Gerar relatório consolidado com achados
+      - Sugerir patches no código e na configuração
+    tasks:
+      - name: Gerar relatório de achados
+        outputs: relatorio-auditoria.txt
+      - name: Sugerir patches
+        outputs: patches.json
+  - phase: Aprovações
+    goals:
+      - Requerer aprovação do cliente antes de aplicar mudanças
+    tasks:
+      - name: Preparar checklist de aceitação
+        outputs: checklist-aceitacao.md
+
+outputs:
+- relatorio-auditoria.txt
+- patches.json
+- checklist-aceitacao.md

@@ -1,0 +1,11 @@
+Auditoria de Segurança - Checklist de Aceitação
+- [ ] Rotas protegidas: client, montador, admin estão adequadamente restritos?
+- [ ] Cliente não vê painel de serviços (somente área de cliente)
+- [ ] Montador pode ver painel de serviços e enviar orçamentos (lances) apenas no seu dashboard
+- [ ] Admin possui acesso aos painéis administrativos
+- [ ] RBAC no DB está consistentemente aplicando has_role() em profiles/orders
+- [ ] Logs de auditoria (platform_logs) registram ações administrativas
+- [ ] Não há vazamento de endpoints sensíveis para usuários não autorizados
+- [ ] Migrações de RBAC aplicadas com sucesso no ambiente de desenvolvimento
+- [ ] Relatório de achados gerado (relatorio-auditoria.txt)
+- [ ] Patch proposals gerados (patches.json)
