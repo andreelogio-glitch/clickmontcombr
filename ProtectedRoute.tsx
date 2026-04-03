@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,8 +9,9 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const { user, profile, loading } = useAuth();
+  const { isAdmin, loading: adminLoading } = useIsAdmin(user);
 
-  if (loading) {
+  if (loading || adminLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-gray-500">Carregando...</p>
@@ -19,6 +21,11 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Admin tem acesso a todas as rotas protegidas
+  if (isAdmin) {
+    return <>{children}</>;
   }
 
   if (allowedRoles && profile?.role && !allowedRoles.includes(profile.role)) {

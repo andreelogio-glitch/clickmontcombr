@@ -1,12 +1,14 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Navigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
 import AdminDashboard from "./AdminDashboard";
 
 const AdminDashboardPage = () => {
-  const { user, profile, loading } = useAuth();
+  const { user, loading } = useAuth();
+  const { isAdmin, loading: adminLoading } = useIsAdmin(user);
 
-  if (loading || (user && !profile)) {
+  if (loading || adminLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -15,7 +17,7 @@ const AdminDashboardPage = () => {
   }
 
   if (!user) return <Navigate to="/auth" replace />;
-  if (profile?.role !== "admin") return <Navigate to="/" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
 
   return (
     <AppLayout>
