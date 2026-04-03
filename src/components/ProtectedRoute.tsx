@@ -1,5 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,6 +10,18 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const { user, profile, loading } = useAuth();
+
+  useEffect(() => {
+    // Validação profunda com Supabase client-side verify (Mitigação sugerida por Samuel Segurança)
+    const verifyDeepSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session && user) {
+        console.error("Conflito de estado: Usuário logado no state mas sem sessão válida no backend. Forçando logout.");
+        window.location.href = "/auth";
+      }
+    };
+    if (user && profile) verifyDeepSession();
+  }, [user, profile]);
 
   if (loading || !profile) {
     return (
