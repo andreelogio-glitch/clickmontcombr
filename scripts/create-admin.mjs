@@ -5,7 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = 'https://zwfiadmmfgillrqhlbjw.supabase.co';
+const SUPABASE_URL = 'https://mmfsgzsvhktcyflarlae.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3ZmlhZG1tZmdpbGxycWhsYmp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTE3OTcsImV4cCI6MjA4NzYyNzc5N30.xqCG6hExgRWq5uuA8TxIkDlAunQj7NOMr2zEIhVt394';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -43,7 +43,7 @@ async function createAdminUser() {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('⚠️  PASSO SEGUINTE (OBRIGATORIO):');
   console.log('   Execute o SQL abaixo no Supabase SQL Editor');
-  console.log('   URL: https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql/new');
+  console.log('   URL: https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/sql/new');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('');
   console.log(`-- Cole e execute este SQL no Supabase SQL Editor:`);

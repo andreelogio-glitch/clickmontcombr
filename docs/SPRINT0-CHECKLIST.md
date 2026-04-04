@@ -7,7 +7,7 @@ Execute estes passos na ORDEM indicada para completar o lancamento.
 ## PASSO 1: Setup Admin (andreelogio@gmail.com)
 
 **Execute no Supabase SQL Editor:**
-https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql
+https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/sql
 
 1. Cole e execute: `supabase/migrations/20260401000006_setup_admin_user.sql`
 2. Verifique se aparece "Admin configurado com sucesso!"
@@ -16,7 +16,7 @@ https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql
 
 ## PASSO 2: Criar Storage Buckets
 
-**Supabase Dashboard:** https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/storage
+**Supabase Dashboard:** https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/storage
 
 1. Clique em **"New Bucket"**
 
@@ -41,11 +41,11 @@ https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql
 
 ## PASSO 3: Configurar Secrets das Edge Functions
 
-**Dashboard:** https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/functions/secrets
+**Dashboard:** https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/functions/secrets
 
 | Secret | Valor |
 |--------|-------|
-| SUPABASE_URL | `https://zwfiadmmfgillrqhlbjw.supabase.co` |
+| SUPABASE_URL | `https://mmfsgzsvhktcyflarlae.supabase.co` |
 | SUPABASE_ANON_KEY | (copie do Settings > API) |
 | SUPABASE_SERVICE_ROLE_KEY | (copie do Settings > API) |
 | MERCADOPAGO_ACCESS_TOKEN | (do Mercado Pago Developers) |
@@ -69,7 +69,7 @@ https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql
 2. Selecione sua aplicacao
 3. Webhook URL:
    ```
-   https://zwfiadmmfgillrqhlbjw.supabase.co/functions/v1/mp-webhook
+   https://mmfsgzsvhktcyflarlae.supabase.co/functions/v1/mp-webhook
    ```
 4. Marque: `payment.created`, `payment.updated`, `payment.pending`, `payment.rejected`, `payment.refunded`
 

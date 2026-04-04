@@ -11,7 +11,7 @@ Write-Host ""
 
 # Credenciais Supabase
 $ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp3ZmlhZG1tZmdpbGxycWhsYmp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNTE3OTcsImV4cCI6MjA4NzYyNzc5N30.xqCG6hExgRWq5uuA8TxIkDlAunQj7NOMr2zEIhVt394"
-$SUPABASE_URL = "https://zwfiadmmfgillrqhlbjw.supabase.co"
+$SUPABASE_URL = "https://mmfsgzsvhktcyflarlae.supabase.co"
 
 $headers = @{
     "apikey" = $ANON_KEY

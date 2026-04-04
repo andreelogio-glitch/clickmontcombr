@@ -4,7 +4,7 @@
 -- Data: 2026-04-01
 -- 
 -- Para executar:
--- 1. Acesse: https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql
+-- 1. Acesse: https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/sql
 -- 2. Cole este SQL e clique em "Run"
 -- ============================================
 

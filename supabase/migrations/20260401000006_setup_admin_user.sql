@@ -3,7 +3,7 @@
 -- Execute no Supabase SQL Editor
 -- Data: 2026-04-01
 --
--- 1. Acesse: https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql
+-- 1. Acesse: https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/sql
 -- 2. Cole e execute este SQL
 -- ============================================
 

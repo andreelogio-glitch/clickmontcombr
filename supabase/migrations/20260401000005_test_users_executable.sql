@@ -8,7 +8,7 @@
 --    - admin@clickmont.com.br (sera seu admin)
 --    - montador@clickmont.com.br (sera montador)
 --    - cliente@clickmont.com.br (sera cliente)
--- 2. Acesse: https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql
+-- 2. Acesse: https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/sql
 -- 3. Execute este SQL
 -- ============================================
 

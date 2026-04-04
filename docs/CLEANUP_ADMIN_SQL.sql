@@ -1,7 +1,7 @@
 -- ============================================
 -- LIMPEZA DO BANCO - CLICKMONT
 -- Execute no Supabase SQL Editor
--- https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql
+-- https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/sql
 -- ============================================
 
 -- 1. ENCONTRA O ID DO ADMIN

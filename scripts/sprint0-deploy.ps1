@@ -93,7 +93,7 @@ function Check-SiteStatus {
         Write-Warning "Site pode estar offline: $url"
     }
     
-    $supabaseUrl = "https://zwfiadmmfgillrqhlbjw.supabase.co"
+    $supabaseUrl = "https://mmfsgzsvhktcyflarlae.supabase.co"
     try {
         $response = Invoke-WebRequest -Uri $supabaseUrl -Method Head -TimeoutSec 10 -UseBasicParsing
         Write-Success "Supabase online: $supabaseUrl"
@@ -116,7 +116,7 @@ function Test-EdgeFunctions {
     }
     
     $functions = @(
-        @{ Name = "get-vapid-key"; Url = "https://zwfiadmmfgillrqhlbjw.supabase.co/functions/v1/get-vapid-key" }
+        @{ Name = "get-vapid-key"; Url = "https://mmfsgzsvhktcyflarlae.supabase.co/functions/v1/get-vapid-key" }
     )
     
     foreach ($func in $functions) {
@@ -136,7 +136,7 @@ function Test-EdgeFunctions {
 # ============================================
 function Check-Database {
     Write-Step "Verificando Banco de Dados (acesse via Supabase Dashboard)"
-    Write-Host "URL: https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/sql"
+    Write-Host "URL: https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/sql"
     Write-Host ""
     Write-Host "Execute os SQL migrations em:"
     Write-Host "  - supabase/migrations/20260401000001_setup_storage.sql"
@@ -191,7 +191,7 @@ function Show-FullChecklist {
     Write-Host ""
     
     Write-Host "[ ] 1. STORAGE BUCKETS (Supabase Dashboard)" -ForegroundColor White
-    Write-Host "     https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/storage"
+    Write-Host "     https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/storage"
     Write-Host "     - user-documents (privado)"
     Write-Host "     - product-photos (publico)"
     Write-Host "     - avatars (publico)"
@@ -199,7 +199,7 @@ function Show-FullChecklist {
     Write-Host ""
     
     Write-Host "[ ] 2. EDGE FUNCTION SECRETS (Supabase Dashboard)" -ForegroundColor White
-    Write-Host "     https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/functions/secrets"
+    Write-Host "     https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/functions/secrets"
     Write-Host "     - SUPABASE_URL"
     Write-Host "     - SUPABASE_ANON_KEY"
     Write-Host "     - SUPABASE_SERVICE_ROLE_KEY"
@@ -210,7 +210,7 @@ function Show-FullChecklist {
     
     Write-Host "[ ] 3. WEBHOOK MERCADO PAGO" -ForegroundColor White
     Write-Host "     https://www.mercadopago.com.br/developers/panel"
-    Write-Host "     URL: https://zwfiadmmfgillrqhlbjw.supabase.co/functions/v1/mp-webhook"
+    Write-Host "     URL: https://mmfsgzsvhktcyflarlae.supabase.co/functions/v1/mp-webhook"
     Write-Host "     Eventos: payment.created, payment.updated, payment.pending, etc."
     Write-Host ""
     

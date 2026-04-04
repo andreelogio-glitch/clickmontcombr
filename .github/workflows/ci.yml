@@ -9,7 +9,7 @@ on:
 
 env:
   NODE_VERSION: '20'
-  SUPABASE_PROJECT_REF: 'zwfiadmmfgillrqhlbjw'
+  SUPABASE_PROJECT_REF: 'mmfsgzsvhktcyflarlae'
 
 jobs:
   lint:

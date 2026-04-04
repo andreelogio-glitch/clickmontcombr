@@ -2,7 +2,7 @@
 
 ## Como Configurar Secrets
 
-1. Acesse: https://supabase.com/dashboard/project/zwfiadmmfgillrqhlbjw/functions/secrets
+1. Acesse: https://supabase.com/dashboard/project/mmfsgzsvhktcyflarlae/functions/secrets
 2. Clique em **"Add a new secret"** para cada secret abaixo
 
 ---
@@ -62,6 +62,6 @@ npx supabase functions deploy get-vapid-key
 Teste no terminal:
 
 ```bash
-curl -X GET "https://zwfiadmmfgillrqhlbjw.supabase.co/functions/v1/get-vapid-key" \
+curl -X GET "https://mmfsgzsvhktcyflarlae.supabase.co/functions/v1/get-vapid-key" \
   -H "Authorization: Bearer SEU_ANON_KEY"
 ```
