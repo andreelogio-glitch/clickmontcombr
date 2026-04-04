@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const VAPID_PUBLIC_KEY_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-vapid-key`;
+const VAPID_PUBLIC_KEY_URL = 'https://zwfiadmmfgillrqhlbjw.supabase.co/functions/v1/get-vapid-key';
 
 let vapidKey: string | null = null;
 
